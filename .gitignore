@@ -3,12 +3,14 @@
 # Protege el repositorio contra archivos masivos (>100 MB), datasets crudos y credenciales
 # ==============================================================================
 
-# 1. Datasets descargados y muestras masivas (~27.4 GB locales)
-data_samples/
-Datasets/
+# 1. Datasets descargados y muestras masivas (~27.4 GB locales en raíz)
+/data_samples/
+/Datasets/
 
-# 2. Materia de cursos externos (contiene PDFs pesados, datasets, venv, node_modules y kaggle.json)
-Materia Util/
+# 2. Materia de cursos externos y carpetas de reuniones previas (>1.2 GB de PDFs, PPTX, caché)
+/Materia Util/
+/otras reuniones/
+*.rar
 
 # 3. Credenciales y secretos (NUNCA subir a GitHub)
 **/kaggle.json

@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dataset 04: MHIST — Magíster UDP (Con Peras y Manzanas)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0; height: 100%; overflow: hidden;
+      font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #0b1120; color: #0f172a;
+    }
+    .deck-shell {
+      display: flex; flex-direction: column; height: 100vh; width: 100vw;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    }
+    .topbar {
+      height: 54px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      padding: 0 16px; background: rgba(15, 23, 42, 0.95);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+      color: #e2e8f0;
+    }
+    .stage {
+      flex: 1; display: flex; align-items: center; justify-content: center;
+      padding: 12px 18px; overflow: hidden; position: relative;
+    }
+    .slide-card {
+      width: 100%; max-width: 1360px; height: 100%; max-height: 790px;
+      background: #ffffff; border-radius: 18px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+      display: none; flex-direction: column; overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      animation: fadeSlide 0.22s ease-out;
+    }
+    .slide-card.active { display: flex; }
+    @keyframes fadeSlide {
+      from { opacity: 0; transform: translateY(8px) scale(0.992); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .slide-header {
+      padding: 14px 26px 10px;
+      border-bottom: 2px solid #e2e8f0;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      background: linear-gradient(90deg, #f8fafc 0%, #ffffff 100%);
+      flex-shrink: 0;
+    }
+    .slide-body {
+      flex: 1; padding: 16px 26px; overflow-y: auto; background: #ffffff;
+    }
+    .slide-footer {
+      height: 34px; flex-shrink: 0; padding: 0 26px; background: #f8fafc;
+      border-top: 1px solid #e2e8f0;
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 11.5px; color: #64748b;
+    }
+    .analogy-box {
+      background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+      border-left: 5px solid #d97706;
+      border-radius: 10px; padding: 12px 15px;
+    }
+    .zoomable {
+      cursor: zoom-in; transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+    .zoomable:hover {
+      transform: scale(1.014); box-shadow: 0 10px 25px rgba(15, 23, 42, 0.16);
+    }
+    .tag-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 700;
+      letter-spacing: 0.03em; text-transform: uppercase;
+    }
+    .progress-bar-track { height: 4px; width: 100%; background: rgba(255, 255, 255, 0.12); }
+    .progress-bar-fill {
+      height: 100%; background: linear-gradient(90deg, #14b8a6, #f59e0b, #e11d48);
+      transition: width 0.25s ease;
+    }
+    #lightboxModal {
+      display: none; position: fixed; inset: 0; z-index: 70;
+      background: rgba(2, 6, 23, 0.93); backdrop-filter: blur(6px);
+      align-items: center; justify-content: center; flex-direction: column; padding: 24px;
+    }
+    #lightboxModal.open { display: flex; }
+    #notesDrawer {
+      display: none; position: fixed; right: 20px; bottom: 56px; z-index: 50;
+      width: 450px; max-width: calc(100vw - 40px); max-height: 60vh;
+      background: #0f172a; color: #f1f5f9; border-radius: 14px;
+      border: 1px solid #334155; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+      flex-direction: column; overflow: hidden;
+    }
+    #notesDrawer.open { display: flex; }
+    #gridModal, #guideModal {
+      display: none; position: fixed; inset: 0; z-index: 60;
+      background: rgba(15, 23, 42, 0.95); padding: 26px; overflow-y: auto;
+    }
+    #gridModal.open, #guideModal.open { display: block; }
+    
+  </style>
+</head>
+<body>
+<div class="deck-shell">
+  <header class="topbar">
+    <div class="flex items-center gap-2.5 min-w-0">
+      <a href="../presentacion_reunion_20_noviembre.html" class="w-8 h-8 rounded-lg bg-teal-600 hover:bg-teal-500 flex items-center justify-center font-black text-white text-xs shrink-0" title="Volver a Presentación Central">UDP</a>
+      <div class="hidden xl:block truncate">
+        <div class="text-xs font-bold text-white leading-tight truncate">Dataset 04: MHIST — Pólipos Colorrectales, Consenso Médico &amp; Auditoría</div>
+        <div class="text-[10px] text-slate-400 truncate">Lucas Vicuña &bull; Prof. Guía: Dr. Jorge Eduardo Zambrano Ibujés</div>
+      </div>
+      <div class="hidden lg:flex items-center gap-1 ml-2 pl-2 border-l border-slate-700">
+        <a href="../presentacion_reunion_20_noviembre.html" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-semibold transition">Hub Central</a><a href="01_breakhis.html" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-semibold transition">01 BreaKHis</a><a href="02_pcam.html" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-semibold transition">02 PCam</a><a href="03_nct_crc.html" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-semibold transition">03 NCT-CRC</a><span class="px-2 py-1 rounded bg-teal-600 text-white text-[11px] font-bold">04 MHIST</span><a href="05_camelyon16.html" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-semibold transition">05 CAMELYON16</a>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-1.5 shrink-0">
+      <button onclick="prevSlide()" class="px-2 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold flex items-center gap-1" title="Anterior (←)">
+        <i data-lucide="chevron-left" class="w-4 h-4"></i> Ant
+      </button>
+      <span id="slideCounter" class="text-xs font-mono bg-slate-800 px-2.5 py-1.5 rounded-lg text-teal-300 font-bold">1 / 8</span>
+      <button onclick="nextSlide()" class="px-2 py-1.5 rounded-lg bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold flex items-center gap-1" title="Siguiente (→ / Espacio)">
+        Sig <i data-lucide="chevron-right" class="w-4 h-4"></i>
+      </button>
+      <button onclick="toggleGuide()" class="ml-1 px-2.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center gap-1" title="Informe Guía Completo (I)">
+        <i data-lucide="book-open" class="w-4 h-4"></i> Informe
+      </button>
+      <button onclick="toggleGrid()" class="px-2 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold flex items-center gap-1" title="Índice Visual (G)">
+        <i data-lucide="layout-grid" class="w-4 h-4"></i>
+      </button>
+      <button onclick="toggleNotes()" class="px-2.5 py-1.5 rounded-lg bg-amber-600/90 hover:bg-amber-500 text-white text-xs font-semibold flex items-center gap-1" title="Guion Orador (N)">
+        <i data-lucide="mic" class="w-4 h-4"></i> Guion
+      </button>
+      <button onclick="toggleFullscreen()" class="px-2 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold" title="Pantalla Completa (F)">
+        <i data-lucide="maximize-2" class="w-4 h-4"></i>
+      </button>
+    </div>
+  </header>
+  <div class="progress-bar-track"><div id="progressFill" class="progress-bar-fill" style="width: 12.50%"></div></div>
+
+  <main class="stage">
+    <!-- SLIDE 1: Portada: MHIST y Consenso Médico -->
+    <section class="slide-card active" data-title="Portada: MHIST y Consenso Médico" data-notes="&lt;strong&gt;Cómo presentar MHIST con total honestidad científica:&lt;/strong&gt; Profesor, este caso ilustra por qué nuestra auditoría del código fue fundamental. El notebook 04 antiguo no lograba bajar los datos (URL 404), generaba silenciosamente un CSV falso con Test 100% SSA y simulaba votos aleatorios. Purgamos todo artefacto falso, dejamos documentado el formulario institucional DUA (333 MB) y trabajamos solo con la Tabla 1 verificada de Wei et al. (2021).">
+
+      <div class="h-full flex flex-col justify-between p-9 bg-gradient-to-br from-slate-900 via-amber-950 to-slate-900 text-white">
+        <div class="flex items-center justify-between">
+          <span class="tag-pill bg-amber-500/20 text-amber-300 border border-amber-400/30">Dataset Referencia DUA #4 &bull; Auditoría de Integridad</span>
+          <span class="text-xs font-mono text-slate-300">04_MHIST_EDA.ipynb &bull; Slide 1 / 8</span>
+        </div>
+        <div class="max-w-4xl my-auto">
+          <div class="text-amber-300 font-bold text-xs uppercase tracking-widest mb-2">Pólipos Colorrectales &bull; Wei et al. (AIME 2021) &bull; Dartmouth BMIRDS</div>
+          <h1 class="text-4xl md:text-5xl font-black tracking-tight leading-tight mb-4">
+            MHIST: La Junta de <span class="text-amber-300">7 Patólogos</span> y Purga de Datos Sintéticos
+          </h1>
+          <p class="text-base text-slate-200 leading-relaxed mb-6">
+            Dataset compacto de <strong>333 MB</strong> (tras aceptar DUA oficial): <strong>3,152 imágenes</strong> etiquetadas por consenso de 7 especialistas entre pólipo benigno (<strong>HP</strong>) y lesión precancerígena (<strong>SSA</strong>).
+          </p>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3.5">
+            <div class="bg-white/10 backdrop-blur rounded-xl p-3.5 border border-white/15">
+              <div class="text-2xl font-black text-teal-300">3,152</div>
+              <div class="text-xs text-slate-300 mt-0.5">Train: 2,175 &bull; Test: 977<br>(Tabla 1 Wei et al. 2021)</div>
+            </div>
+            <div class="bg-white/10 backdrop-blur rounded-xl p-3.5 border border-white/15">
+              <div class="text-2xl font-black text-amber-300">7 Votos</div>
+              <div class="text-xs text-slate-300 mt-0.5">Consenso de 7 patólogos GI<br>Casos 7/7 claros vs 4/3 borde</div>
+            </div>
+            <div class="bg-white/10 backdrop-blur rounded-xl p-3.5 border border-white/15">
+              <div class="text-2xl font-black text-rose-300">0.33 GB</div>
+              <div class="text-xs text-slate-300 mt-0.5">Descarga muy liviana tras DUA<br>bmirds.github.io/MHIST/</div>
+            </div>
+            <div class="bg-white/10 backdrop-blur rounded-xl p-3.5 border border-white/15">
+              <div class="text-2xl font-black text-emerald-300">CSV Purgado</div>
+              <div class="text-xs text-slate-300 mt-0.5">Eliminado fallback corrupto<br>(100% SSA en Test falso)</div>
+            </div>
+          </div>
+        </div>
+        <div class="flex flex-wrap items-center justify-between pt-4 border-t border-white/15 text-xs text-slate-300">
+          <span><strong>Conexión:</strong> Amigüedad clínica (Gadermayr 2024) + Pre-training Kang et al. (2023)</span>
+          <span>Clic en gráficas para Zoom &bull; Tecla <strong>I</strong> abre Informe Guía completo</span>
+        </div>
+      </div>
+    </section>
+    <!-- SLIDE 2: Con Peras y Manzanas: El Veredicto 4 a 3 -->
+    <section class="slide-card" data-title="Con Peras y Manzanas: El Veredicto 4 a 3" data-notes="&lt;strong&gt;Analogía directa:&lt;/strong&gt; Imagine que 7 árbitros revisan el VAR de un gol milimétrico. Cuando los 7 dicen gol (7/7), es un caso fácil; cuando 4 dicen sí y 3 dicen no (4/7), es el límite real del conocimiento médico! MHIST publica ese conteo exacto de votos por parche, dándonos oro puro para validar si nuestra Atención MIL duda (α distribuido o confianza baja) justo donde los humanos dudaron.">
+      <div class="slide-header">
+        <div>
+          <span class="tag-pill bg-amber-100 text-amber-800">Analogía Central &bull; Incertidumbre Clínica</span>
+          <h2 class="text-xl md:text-2xl font-black text-slate-900 mt-1">¿Qué Mide MHIST y Por Qué Importa el Desacuerdo Entre 7 Médicos?</h2>
+        </div>
+        <span class="text-xs font-mono text-slate-500 shrink-0">Slide 2 / 8</span>
+      </div>
+      <div class="slide-body">
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center h-full">
+        <div class="lg:col-span-6 space-y-3">
+          <div class="analogy-box">
+            <div class="font-bold text-amber-900 text-sm mb-1">Analogía del Jurado Médico (7 Patólogos)</div>
+            <p class="text-xs text-amber-950 leading-relaxed">
+              Distinguir un <strong>Pólipo Hiperplásico (HP, benigno, 68.6%)</strong> de un <strong>Adenoma Serrado Sésil (SSA, precancerígeno, 31.4%)</strong> bajo el microscopio es notoriamente difícil.<br><br>
+              &bull; <strong>Caso fácil (7/7 votos):</strong> Todas las criptas claramente aserradas o hiperplásicas.<br>
+              &bull; <strong>Caso gris (4/7 vs 3/7 votos):</strong> Morfología mixta o ambigua donde los expertos se dividen!
+            </p>
+          </div>
+          <div class="bg-slate-900 text-white rounded-xl p-4 text-xs space-y-2">
+            <div class="font-bold text-teal-300 uppercase">Valor Metodológico para MIL (08 Oct &amp; Reliability 2025)</div>
+            <p class="text-slate-300 leading-relaxed">
+              &bull; <strong>Regla relajada MIL (Foulds &amp; Frank / 08 Oct):</strong> A diferencia de la suposición estándar binaria pura, lesiones serradas admiten umbralización de densidad o atención ponderada.<br>
+              &bull; <strong>Calibración de Confianza (Gadermayr §6.7 / CLAM):</strong> Medir si los puntajes \(\hat{Y}\) y mapas \(\alpha_k\) de ABMIL caen cerca de 0.5 justo cuando los 7 patólogos votaron 4-3!
+            </p>
+          </div>
+        </div>
+        <div class="lg:col-span-6 grid grid-cols-1 gap-3 text-xs">
+          <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200">
+            <div class="font-black text-emerald-900 text-sm mb-1">Clase HP (Hyperplastic Polyp &mdash; Negativa / Benigna)</div>
+            <p class="text-slate-700">2,162 imágenes oficiales (<strong>68.59%</strong>): Train <strong>1,545</strong> + Test <strong>617</strong>. Criptas intestinales con arquitectura más superficial sin dilatación basal pronunciada.</p>
+          </div>
+          <div class="p-4 rounded-xl bg-rose-50 border border-rose-200">
+            <div class="font-black text-rose-900 text-sm mb-1">Clase SSA (Sessile Serrated Adenoma &mdash; Precancerígena)</div>
+            <p class="text-slate-700">990 imágenes oficiales (<strong>31.41%</strong>): Train <strong>630 (28.97%)</strong> + Test <strong>360 (36.85%)</strong>. Alto potencial maligno hacia cáncer colorrectal si no se reseca.</p>
+          </div>
+          <div class="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-950">
+            <strong>Tamaño ideal para prototipado (333 MB):</strong> Imágenes <code class="bg-white px-1 rounded">224&times;224 px @ 40x</code> capturadas del mismo formato que ViT/ResNet, con descarga minúscula una vez aceptado el DUA institucional.
+          </div>
+        </div>
+      </div>
+      </div>
+      <div class="slide-footer">
+        <span>No todos los tumores son blanco o negro: hay zonas fronterizas donde ni 7 especialistas concuerdan al 100%.</span>
+        <span>Wei et al. (AIME 2021)</span>
+      </div>
+    </section>
+    <!-- SLIDE 3: Qué Descubrió y Arregló la Auditoría en Notebook 04 -->
+    <section class="slide-card" data-title="Qué Descubrió y Arregló la Auditoría en Notebook 04" data-notes="&lt;strong&gt;Explicación honesta para tu profesor:&lt;/strong&gt; En la versión previa del notebook, el link raw de GitHub daba 404 y el código caía en un except silencioso que escribía 3,000 filas ficticias (1,000 de test todas SSA y votos Bernoulli irreales!). En ciencia eso invalida cualquier conclusión. Limpiamos ese archivo, validamos estrictamente si existe un annotations.csv real y dejamos lista la lectura en cuanto aprobemos el DUA hoy.">
+      <div class="slide-header">
+        <div>
+          <span class="tag-pill bg-rose-100 text-rose-800">Notebook 04 &bull; Rigor Científico</span>
+          <h2 class="text-xl md:text-2xl font-black text-slate-900 mt-1">Auditoría Crítica: Por Qué Purgamos el CSV Falso y Rehizimos `04_MHIST_EDA.ipynb`</h2>
+        </div>
+        <span class="text-xs font-mono text-slate-500 shrink-0">Slide 3 / 8</span>
+      </div>
+      <div class="slide-body">
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch text-xs">
+        <div class="lg:col-span-6 border-2 border-rose-300 bg-rose-50/70 rounded-xl p-4 space-y-2">
+          <div class="font-black text-rose-900 text-sm">Problema Detectado Antes de la Auditoría</div>
+          <ul class="list-disc pl-4 space-y-1.5 text-slate-700 leading-relaxed">
+            <li>La URL heredada de GitHub <code class="bg-white px-1 rounded">raw.githubusercontent.com/...</code> devolvía <strong>HTTP 404</strong> porque Dartmouth BMIRDS protege los enlaces reales tras aceptación de licencia (DUA).</li>
+            <li>El script anterior tenía un <strong>modo demo defectuoso</strong> que generaba un falso <code class="bg-white px-1 rounded">annotations.csv</code> con <strong>3,000 filas</strong> inventadas (<code class="bg-white px-1 rounded">MHIST_A00</code>) poniendo <strong>99.4% HP en Train y 100% SSA en Test</strong>!</li>
+            <li>Peor aún: simulaba aleatoriamente la columna "Votos de Patólogos" haciendo parecer datos falsos como consenso clínico real.</li>
+          </ul>
+        </div>
+        <div class="lg:col-span-6 border-2 border-emerald-300 bg-emerald-50/70 rounded-xl p-4 space-y-2">
+          <div class="font-black text-emerald-900 text-sm">Solución Aplicada en <code class="bg-white px-1.5 rounded">04_MHIST_EDA.ipynb</code></div>
+          <ul class="list-disc pl-4 space-y-1.5 text-slate-700 leading-relaxed">
+            <li>Se eliminó físicamente el CSV corrupto y todas sus gráficas derivadas erróneas.</li>
+            <li>Se implementó el validador estricto <code class="bg-white px-1 rounded">es_csv_mhist_valido(df)</code> que verifica columnas oficiales, ausencia de IDs sintéticos y existencia real del zip/imágenes.</li>
+            <li>Cuando no está descargado aún, usa explícita y transparentemente la <strong>Tabla 1 oficial de Wei et al. (2021)</strong>: <code class="bg-white px-1 rounded">Train 1,545 HP / 630 SSA</code> &bull; <code class="bg-white px-1 rounded">Test 617 HP / 360 SSA</code>, sin inventar votos falsos.</li>
+            <li>Se documentó paso a paso la ruta oficial DUA en <code class="bg-white px-1 rounded">bmirds.github.io/MHIST/</code> (~333 MB).</li>
+          </ul>
+        </div>
+      </div>
+      </div>
+      <div class="slide-footer">
+        <span>Nunca inventar datos sintéticos silenciosos cuando un dataset académico exige DUA oficial.</span>
+        <span>Bug #3 de la Auditoría General resuelto</span>
+      </div>
+    </section>
+    <!-- SLIDE 4: Gráfica Auditada & Tablas Excel (Wei et al. 2021) -->
+    <section class="slide-card" data-title="Gráfica Auditada &amp; Tablas Excel (Wei et al. 2021)" data-notes="&lt;strong&gt;Lectura de las gráficas regeneradas:&lt;/strong&gt; Notará que en la gráfica derecha el notebook documenta honestamente con un cartel explícito que los votos detallados dependen del archivo oficial post-DUA, mientras a izquierda y centro muestra los porcentajes reales exactos (28.97% SSA en Train vs 36.85% SSA en Test).">
+      <div class="slide-header">
+        <div>
+          <span class="tag-pill bg-teal-100 text-teal-800">Evidencia Oficial &bull; Tabla 1 Verificada</span>
+          <h2 class="text-xl md:text-2xl font-black text-slate-900 mt-1">Distribución Oficial y Planificación de Pseudo-Bags (`K=20`)</h2>
+        </div>
+        <span class="text-xs font-mono text-slate-500 shrink-0">Slide 4 / 8</span>
+      </div>
+      <div class="slide-body">
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center h-full">
+        <div class="lg:col-span-8 flex flex-col items-center bg-slate-50 border border-slate-200 rounded-xl p-2">
+          <img src="../../figures/04_MHIST/mhist_distribucion.png" alt="Distribución Oficial MHIST Wei et al. 2021 sin votos inventados" class="zoomable rounded-lg max-h-[480px] w-full object-contain" />
+        </div>
+        <div class="lg:col-span-4 space-y-3 text-xs">
+          <div class="bg-slate-900 text-white rounded-xl p-3.5">
+            <div class="font-bold text-amber-300 mb-1.5">Ejemplo de Pseudo-Bags Planificadas</div>
+            <p class="text-[11px] text-slate-300 mb-2">De <code class="text-teal-300">mhist_pseudobags_simuladas.xlsx</code> (100 bolsas modo referencia, K=20 parches c/u):</p>
+            <table class="w-full text-[11px] font-mono">
+              <thead class="text-slate-400 border-b border-slate-700"><tr><th class="py-1 text-left">Bag</th><th>Y</th><th class="text-right">HP</th><th class="text-right">SSA</th><th class="text-right">%SSA</th></tr></thead>
+              <tbody class="divide-y divide-slate-800">
+                <tr><td class="py-1">bag_0001</td><td class="text-emerald-300">0</td><td class="text-right">20</td><td class="text-right">0</td><td class="text-right">0%</td></tr>
+                <tr><td class="py-1">bag_0002</td><td class="text-rose-300 font-bold">1</td><td class="text-right">17</td><td class="text-right">3</td><td class="text-right">15%</td></tr>
+                <tr><td class="py-1">bag_0007</td><td class="text-rose-300 font-bold">1</td><td class="text-right">16</td><td class="text-right">4</td><td class="text-right">20%</td></tr>
+                <tr><td class="py-1">bag_0008</td><td class="text-rose-300 font-bold">1</td><td class="text-right">19</td><td class="text-right">1</td><td class="text-right">5%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-950">
+            <strong>Transparencia total:</strong> Todas las filas llevan la etiqueta de modo <code class="bg-white px-1 rounded">Planificacion referencia</code> hasta descargar los JPGs reales vía DUA.
+          </div>
+        </div>
+      </div>
+      </div>
+      <div class="slide-footer">
+        <span>Fuentes: mhist_estadisticas_clases.xlsx, mhist_anotaciones.xlsx y mhist_pseudobags_simuladas.xlsx</span>
+        <span>Clic en la imagen para ampliar</span>
+      </div>
+    </section>
+    <!-- SLIDE 5: Simulador: Junta de 7 Médicos & Pseudo-Bag -->
+    <section class="slide-card" data-title="Simulador: Junta de 7 Médicos &amp; Pseudo-Bag" data-notes="&lt;strong&gt;Cómo demostrar la utilidad con el Prof. Zambrano:&lt;/strong&gt; Alterne primero los votos hasta dejar 4 médicos SSA y 3 médicos HP: explicará cómo la etiqueta oficial pasa a ser SSA pero con alta entropía/incertidumbre humana (57%). Luego pruebe una Pseudo-Bag con solo 1 parche SSA de 20 (bag_0008): es imposible para Mean Pooling si solo confiamos en el promedio global.">
+      <div class="slide-header">
+        <div>
+          <span class="tag-pill bg-teal-100 text-teal-800">Laboratorio Interactivo &bull; Consenso &amp; Umbral MIL</span>
+          <h2 class="text-xl md:text-2xl font-black text-slate-900 mt-1">Simulador: Votación de 7 Patólogos GI y Diagnóstico de Pseudo-Bolsa</h2>
+        </div>
+        <span class="text-xs font-mono text-slate-500 shrink-0">Slide 5 / 8</span>
+      </div>
+      <div class="slide-body">
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+        <div class="lg:col-span-6 bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="font-black text-slate-900 text-sm">Panel VAR Médico: 7 Patólogos Evaluando 1 Parche</h3>
+              <div class="flex gap-1">
+                <button onclick="setMhistVotes(7)" class="px-2 py-1 rounded bg-rose-600 text-white text-[11px] font-bold">Unánime 7/7</button>
+                <button onclick="setMhistVotes(4)" class="px-2 py-1 rounded bg-amber-600 text-white text-[11px] font-bold">Borde 4/3</button>
+              </div>
+            </div>
+            <div id="mhistDocs" class="grid grid-cols-7 gap-1.5 my-3"></div>
+          </div>
+          <div id="mhistVerdict" class="p-3 rounded-lg border text-xs"></div>
+        </div>
+        <div class="lg:col-span-6 bg-slate-900 text-white rounded-xl p-5 flex flex-col justify-between text-xs">
+          <div>
+            <div class="font-bold text-teal-300 uppercase mb-2">Simulador de Pseudo-Bolsa <code class="text-amber-300">(K=20 parches)</code></div>
+            <p class="text-slate-300 mb-3">Ajusta cuántos parches SSA (precancerígenos) caen dentro de una bolsa de pólipo:</p>
+            <div class="flex justify-between font-bold mb-1"><span>Parches SSA en la Bolsa (<span id="mhSsaNum">3</span> / 20)</span><span id="mhBagId" class="font-mono text-amber-300">Equivalente bag_0002 (15%)</span></div>
+            <input id="mhSlSsa" type="range" min="0" max="10" value="3" oninput="updateMhistBag()" class="w-full accent-rose-500 mb-4">
+            <div class="grid grid-cols-3 gap-2 text-center">
+              <div class="p-2.5 rounded bg-slate-800 border border-slate-700"><div class="text-slate-400">Real Bolsa</div><div id="mhBagTrue" class="font-black text-base mt-1"></div></div>
+              <div class="p-2.5 rounded bg-slate-800 border border-slate-700"><div class="text-slate-400">Mean Pool</div><div id="mhBagMean" class="font-black text-base mt-1"></div></div>
+              <div class="p-2.5 rounded bg-slate-800 border border-teal-500/40"><div class="text-teal-300">Gated Attn</div><div id="mhBagAttn" class="font-black text-base mt-1"></div></div>
+            </div>
+          </div>
+          <div class="text-[11px] text-slate-300 mt-3 pt-2 border-t border-slate-700">
+            Idea de experimento para tesis: filtrar entrenamiento usando solo parches de alto consenso (&ge;6/7) y testear calibración sobre casos grises (4/7)!
+          </div>
+        </div>
+      </div>
+      </div>
+      <div class="slide-footer">
+        <span>Haz clic en cada médico (Dr. 1..Dr. 7) para alternar voto HP (benigno) vs SSA (precancerígeno).</span>
+        <span>Modelando ambigüedad clínica 4/7 vs 7/7</span>
+      </div>
+    </section>
+    <!-- SLIDE 6: Relación con Papers (Kang 2023, Gadermayr 2024) -->
+    <section class="slide-card" data-title="Relación con Papers (Kang 2023, Gadermayr 2024)" data-notes="&lt;strong&gt;Observación fascinante de Kang et al. (2023, Tabla 3) sobre MHIST:&lt;/strong&gt; MHIST es el único dataset de los 4 donde ImageNet supervisado resiste bien en Linear Eval (76.25% ResNet / 78.51% ViT-S), PERO al añadir preentrenamiento multi-cohorte (TCGA + TULIP = 36K WSIs) o fine-tuning con MoCo v2 sobre TCGA, la precisión salta de 78.92% a &lt;strong&gt;85.88%&lt;/strong&gt; (+6.96 puntos) y 82.29% lineal! Eso prueba que en datasets chicos (~3k parches) los pesos pre-entrenados marcan toda la diferencia.">
+      <div class="slide-header">
+        <div>
+          <span class="tag-pill bg-indigo-100 text-indigo-800">Literatura y Reuniones &bull; Bajo Volumen de Datos</span>
+          <h2 class="text-xl md:text-2xl font-black text-slate-900 mt-1">¿Qué Nos Enseña Kang et al. (CVPR 2023) Sobre MHIST en Nuestra Tesis?</h2>
+        </div>
+        <span class="text-xs font-mono text-slate-500 shrink-0">Slide 6 / 8</span>
+      </div>
+      <div class="slide-body">
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs items-stretch h-full">
+        <div class="border border-slate-200 rounded-xl p-4 bg-white space-y-2">
+          <div class="font-black text-slate-900 text-sm">Resultados Reales en MHIST (Kang CVPR 2023, Tab. 3 &amp; 5)</div>
+          <table class="w-full text-[11px] font-mono border border-slate-200">
+            <thead class="bg-slate-900 text-white"><tr><th class="p-2 text-left">Método (Pretraining)</th><th class="p-2 text-right">Linear</th><th class="p-2 text-right">Fine-Tune</th></tr></thead>
+            <tbody class="divide-y divide-slate-200">
+              <tr><td class="p-2 font-sans">ResNet-50 Random</td><td class="p-2 text-right">63.15%</td><td class="p-2 text-right">75.54%</td></tr>
+              <tr><td class="p-2 font-sans">ResNet-50 ImageNet Sup.</td><td class="p-2 text-right">76.25%</td><td class="p-2 text-right">78.92%</td></tr>
+              <tr class="bg-emerald-50 font-bold text-emerald-900"><td class="p-2 font-sans">ResNet-50 MoCo v2 (TCGA)</td><td class="p-2 text-right">77.07%</td><td class="p-2 text-right">85.88%</td></tr>
+              <tr><td class="p-2 font-sans">ResNet-50 Barlow Twins (TCGA)</td><td class="p-2 text-right font-bold">78.81%</td><td class="p-2 text-right">81.27%</td></tr>
+              <tr class="bg-teal-50 font-bold text-teal-900"><td class="p-2 font-sans">ResNet-50 MoCo v2 (TCGA+TULIP)</td><td class="p-2 text-right font-black">82.29%</td><td class="p-2 text-right">&mdash;</td></tr>
+            </tbody>
+          </table>
+          <p class="text-slate-600 leading-relaxed pt-1">Con un dataset pequeño (3,152 imgs), el salto de MoCo v2 sobre ImageNet en fine-tuning es <strong>+6.96%</strong>.</p>
+        </div>
+        <div class="space-y-3">
+          <div class="analogy-box">
+            <div class="font-bold text-amber-900 text-sm">Puente con Reunión 25 Sep &amp; Zambrano (2022)</div>
+            <p class="text-amber-950 mt-1 leading-relaxed">
+              Precisamente cuando hay <strong>pocos datos etiquetados</strong> (~2,175 de entrenamiento en MHIST), re-entrenar millones de parámetros desde cero sobreajusta. Tanto <strong>Zambrano (2022)</strong> (sin entrenar en capas intermedias) como <strong>Kang (2023)</strong> (SSL congelado) atacan exactamente esta escasez médica.
+            </p>
+          </div>
+          <div class="p-3.5 rounded-xl bg-slate-900 text-white">
+            <div class="font-bold text-teal-300 mb-1">¿Qué Decidimos Hoy Sobre MHIST? (Slide Central)</div>
+            <p class="text-slate-300 leading-relaxed">Enviar hoy la solicitud DUA en <code class="text-amber-300">bmirds.github.io/MHIST/</code> (toma minutos, descarga de 333 MB) como prueba complementaria rápida y de incertidumbre médica, <strong>sin bloquear BreaKHis/PCam/CAMELYON16</strong> que ya están en disco.</p>
+          </div>
+        </div>
+      </div>
+      </div>
+      <div class="slide-footer">
+        <span>Fuente: Kang et al. (CVPR 2023, Tabla 3 & Tabla 5) en Referencias/.</span>
+        <span>Por qué pocos datos exigen mejores representaciones</span>
+      </div>
+    </section>
+    <!-- SLIDE 7: Hilo con Reuniones Previas (25 Sep / 08 Oct / 09 Nov) -->
+    <section class="slide-card" data-title="Hilo con Reuniones Previas (25 Sep / 08 Oct / 09 Nov)" data-notes="&lt;strong&gt;Conexión rápida:&lt;/strong&gt; Con apenas 333 MB, MHIST encaja en la discusión del 08 Oct sobre heterogeneidad/suposiciones relajadas y en el 09 Nov para estudiar si las puntuaciones de atención reflajan ambigüedad diagnóstica real.">
+      <div class="slide-header">
+        <div>
+          <span class="tag-pill bg-teal-100 text-teal-800">Evolución del Magíster &bull; Puente Entre Reuniones</span>
+          <h2 class="text-xl md:text-2xl font-black text-slate-900 mt-1">¿Cómo MHIST Complementa la Ruta de las 4 Reuniones?</h2>
+        </div>
+        <span class="text-xs font-mono text-slate-500 shrink-0">Slide 7 / 8</span>
+      </div>
+      <div class="slide-body">
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs items-stretch h-full">
+        <div class="p-4 rounded-xl bg-amber-50 border border-amber-200">
+          <div class="font-black text-amber-900 text-sm mb-1">25 Sep &amp; Zambrano (2022) &mdash; Escasez de Anotaciones</div>
+          <p class="text-slate-700 leading-relaxed">Solo 2,175 imágenes de entrenamiento: excelente escenario para comprobar que características congeladas (capas intermedias o SSL) evitan sobreajuste mejor que redes entrenadas desde cero.</p>
+        </div>
+        <div class="p-4 rounded-xl bg-indigo-50 border border-indigo-200">
+          <div class="font-black text-indigo-900 text-sm mb-1">08 Oct (Informe MIL) &mdash; Suposición Relajada vs Extrema</div>
+          <p class="text-slate-700 leading-relaxed">En <code class="bg-white px-1 rounded">mhist_pseudobags_simuladas.xlsx</code> evaluamos bolsas con densidad variable de SSA (5% a 20%) comparando el límite clásico <code class="bg-white px-1 rounded">exists</code> contra agregación ponderada.</p>
+        </div>
+        <div class="p-4 rounded-xl bg-teal-50 border border-teal-200">
+          <div class="font-black text-teal-900 text-sm mb-1">09 Nov (Gated Attention) &mdash; Atención Ante Duda 4/7</div>
+          <p class="text-slate-700 leading-relaxed">El mecanismo \(\tanh \odot \sigma\) permite analizar si parches donde 4 médicos dicen SSA y 3 dicen HP reciben pesos intermedios y calibrados.</p>
+        </div>
+        <div class="p-4 rounded-xl bg-rose-50 border border-rose-200">
+          <div class="font-black text-rose-900 text-sm mb-1">20 Nov (Auditoría) &mdash; Disciplina Reproducible</div>
+          <p class="text-slate-700 leading-relaxed">Nuestra purga del CSV sintético falso garantiza que cuando llegue el DUA oficial evaluaremos 100% sobre etiquetas verificadas de Dartmouth BMIRDS.</p>
+        </div>
+      </div>
+      </div>
+      <div class="slide-footer">
+        <span>Añade una dimensión poco estudiada en MIL: qué ocurre cuando el consenso de 7 expertos está dividido (4/3).</span>
+        <span>25 Sep &rarr; 08 Oct &rarr; 09 Nov &rarr; 20 Nov</span>
+      </div>
+    </section>
+    <!-- SLIDE 8: Plan de Solicitud DUA & Navegación -->
+    <section class="slide-card" data-title="Plan de Solicitud DUA &amp; Navegación" data-notes="&lt;strong&gt;Resumen para el profesor:&lt;/strong&gt; Dejar claro que MHIST suma apenas +0.33 GB (muy por debajo del límite de 10 GB), quedó 100% libre de datos sintéticos corruptos y agrega la dimensión única de concordancia inter-observador (7 patólogos) a nuestra tesis.">
+      <div class="slide-header">
+        <div>
+          <span class="tag-pill bg-emerald-100 text-emerald-800">Conclusión &bull; Paso Operativo</span>
+          <h2 class="text-xl md:text-2xl font-black text-slate-900 mt-1">Checklist Para Activar MHIST Oficial y Conectar al Benchmark Principal</h2>
+        </div>
+        <span class="text-xs font-mono text-slate-500 shrink-0">Slide 8 / 8</span>
+      </div>
+      <div class="slide-body">
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5 items-center h-full">
+        <div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-xs space-y-2">
+          <div class="font-black text-amber-900 text-sm">Pasos Cuando Llegue la Aprobación DUA (+333 MB)</div>
+          <ol class="list-decimal pl-4 space-y-1.5 text-slate-700">
+            <li>Completar el formulario de investigación en <code class="bg-white px-1 rounded">https://bmirds.github.io/MHIST/</code> con correo institucional UDP.</li>
+            <li>Guardar <code class="bg-white px-1 rounded">images.zip</code> (333 MB) + <code class="bg-white px-1 rounded">annotations.csv</code> en <code class="bg-white px-1 rounded">data_samples/mhist/</code>.</li>
+            <li>Re-ejecutar <code class="bg-white px-1 rounded">04_MHIST_EDA.ipynb</code>: automáticamente verificará filas reales y analizará el consenso real de los 7 patólogos vs nuestras métricas ABMIL.</li>
+          </ol>
+        </div>
+        <div class="bg-slate-900 text-white rounded-xl p-5 space-y-2.5 text-xs">
+          <div class="font-bold text-teal-300 uppercase">Navegación Rápida</div>
+          <button onclick="toggleGuide()" class="w-full py-2.5 px-4 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold flex items-center justify-between"><span>Abrir Informe Guía Completo de MHIST</span><span>Tecla I</span></button>
+          <a href="05_camelyon16.html" class="w-full py-2.5 px-4 rounded-lg bg-rose-700 hover:bg-rose-600 text-white font-bold flex items-center justify-between"><span>Seguir al Dataset 05: CAMELYON16 (Gold Standard!)</span><span>&rarr;</span></a>
+          <a href="../presentacion_reunion_20_noviembre.html" class="w-full py-2.5 px-4 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold flex items-center justify-between border border-slate-700"><span>Volver a Presentación Central (20 Nov)</span><span>Hub</span></a>
+        </div>
+      </div>
+      </div>
+      <div class="slide-footer">
+        <span>Tecla I abre el Informe Guía de MHIST con todos los detalles.</span>
+        <span>04_MHIST &rarr; Siguiente: 05_CAMELYON16</span>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="lightboxModal" onclick="closeLightbox()">
+  <button onclick="closeLightbox()" class="self-end mb-2 px-3 py-1 rounded bg-white/15 hover:bg-white/25 text-white text-xs font-bold">Cerrar (ESC)</button>
+  <img id="lightboxImg" src="" alt="" class="max-h-[84vh] max-w-[92vw] rounded-xl shadow-2xl border border-white/20 bg-white" onclick="event.stopPropagation()" />
+  <div id="lightboxCap" class="text-slate-200 text-sm mt-3 text-center max-w-3xl"></div>
+</div>
+
+<aside id="notesDrawer">
+  <div class="px-4 py-3 bg-slate-800 border-b border-slate-700 flex items-center justify-between">
+    <div class="flex items-center gap-2 text-xs font-bold text-amber-300">
+      <i data-lucide="mic" class="w-4 h-4"></i> Teleprompter &mdash; Guion de Exposición
+    </div>
+    <button onclick="toggleNotes()" class="text-slate-400 hover:text-white text-xs">Cerrar (N)</button>
+  </div>
+  <div id="notesContent" class="p-4 text-xs leading-relaxed text-slate-200 overflow-y-auto space-y-2"></div>
+</aside>
+
+<div id="gridModal">
+  <div class="max-w-5xl mx-auto">
+    <div class="flex items-center justify-between mb-5 text-white">
+      <h2 class="text-xl font-black">Índice Visual (8 Diapositivas) &mdash; MHIST (Consenso 7M)</h2>
+      <button onclick="toggleGrid()" class="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-xs font-bold">Cerrar (G / ESC)</button>
+    </div>
+    <div id="gridCards" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5"></div>
+  </div>
+</div>
+
+<div id="guideModal">
+  <div class="max-w-4xl mx-auto text-slate-100">
+    <div class="flex flex-wrap items-center justify-between gap-2 mb-5 pb-3 border-b border-slate-700">
+      <div>
+        <span class="text-[11px] font-mono uppercase text-teal-300 font-bold">Documento Complementario de Exposición</span>
+        <h2 class="text-xl font-black text-white">Informe Guía de Exposición — Dataset 04: MHIST (Wei et al., AIME 2021)</h2>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="../guias/04_informe_mhist.md" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-teal-300 text-xs font-bold border border-slate-600">Descargar / Ver .md</a>
+        <button onclick="toggleGuide()" class="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-xs font-bold">Cerrar (I / ESC)</button>
+      </div>
+    </div>
+    <div class="bg-slate-800/80 border border-slate-700 rounded-xl p-4 mb-4">
+<div class="text-xs font-bold uppercase tracking-wider text-teal-300">Ficha de Exposición</div>
+<div class="text-lg font-black text-white mt-1">Informe Guía de Exposición — Dataset 04: MHIST (Wei et al., AIME 2021)</div>
+<div class="text-xs text-slate-300 mt-1">3,152 parches (0.33 GB tras DUA BMIRDS), voto de 7 patólogos (HP vs SSA), purga de CSV sintético corrupto y estudio Kang et al. (2023).</div>
+<div class="mt-3 flex flex-wrap gap-2 text-[11px]"><a href="../guias/04_informe_mhist.md" class="px-2.5 py-1 rounded bg-teal-600 hover:bg-teal-500 text-white font-bold">Abrir archivo Markdown (.md)</a><a href="../../notebooks/04_MHIST_EDA.ipynb" class="px-2.5 py-1 rounded bg-slate-700 hover:bg-slate-600 text-slate-200 font-semibold">Notebook fuente (04_MHIST_EDA.ipynb)</a></div></div>
+<div class="mb-5 bg-slate-800/50 border border-slate-700/80 rounded-xl p-4">
+<h3 class="text-sm font-black text-amber-300 mb-2">1. Resumen de MHIST y Diagnóstico de Auditoría Realizado</h3>
+<p class="text-xs text-slate-200 leading-relaxed mb-2"><strong class="text-white">MHIST</strong> (<em>Minimalist Histopathology Image Analysis Dataset</em>, Wei et al., AIME 2021) clasifica pólipos colorrectales (<code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">224 × 224 px @ 40x</code>) en <strong class="text-white">Hyperplastic Polyp (<code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">HP</code>, benigno)</strong> vs <strong class="text-white">Sessile Serrated Adenoma (<code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">SSA</code>, lesión precancerígena)</strong>, integrando la votación individual de <strong class="text-white">7 patólogos gastrointestinales</strong>. Su peso completo es mínimo (<strong class="text-white">~333 MB</strong>), pero su descarga exige aceptar un <strong class="text-white">Data Use Agreement (DUA)</strong> en Dartmouth BMIRDS.</p>
+<ul class="list-disc pl-5 space-y-1.5 text-xs text-slate-300 leading-relaxed">
+<li><strong class="text-white">Por qué se purgó el archivo local anterior:</strong> Nuestro proceso de auditoría descubrió que la URL heredada de GitHub daba <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">HTTP 404</code> y que el código antiguo generaba silenciosamente un <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">annotations.csv</code> sintético defectuoso (<code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">Test = 100% SSA</code>, <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">Train = 99.4% HP</code>, IDs ficticios <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">MHIST_A00</code> y votos aleatorios).</li>
+<li><strong class="text-white">Estado actual limpio:</strong> Todo archivo sintético fue eliminado. El notebook <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">04_MHIST_EDA.ipynb</code> reporta <strong class="text-white">exclusivamente la Tabla 1 oficial de Wei et al. (2021)</strong> y activa lectura automática real apenas se descarguen los datos vía DUA.</li>
+</ul>
+</div>
+<div class="mb-5 bg-slate-800/50 border border-slate-700/80 rounded-xl p-4">
+<h3 class="text-sm font-black text-amber-300 mb-2">2. Cifras Oficiales Verificadas y Tablas Generadas</h3>
+<div class="overflow-x-auto mt-3"><table class="w-full text-[11px] text-left border border-slate-700 rounded-lg overflow-hidden">
+<thead class="bg-slate-900 text-teal-300"><tr><th class="p-2">Partición Oficial (Wei et al. 2021)</th><th class="p-2">Total Imágenes</th><th class="p-2">HP (Benigno)</th><th class="p-2">SSA (Precancerígeno)</th><th class="p-2">% SSA</th></tr></thead>
+<tbody class="divide-y divide-slate-700/70">
+<tr class="bg-slate-800/40"><td class="p-2 text-slate-200">Train</td><td class="p-2 text-slate-200">2,175</td><td class="p-2 text-slate-200">1,545</td><td class="p-2 text-slate-200">630</td><td class="p-2 text-slate-200">28.97%</td></tr>
+<tr class="bg-slate-800/40"><td class="p-2 text-slate-200">Test</td><td class="p-2 text-slate-200">977</td><td class="p-2 text-slate-200">617</td><td class="p-2 text-slate-200">360</td><td class="p-2 text-slate-200">36.85%</td></tr>
+<tr class="bg-slate-800/40"><td class="p-2 text-slate-200"><strong class="text-white">Total Benchmark</strong></td><td class="p-2 text-slate-200"><strong class="text-white">3,152</strong></td><td class="p-2 text-slate-200"><strong class="text-white">2,162</strong></td><td class="p-2 text-slate-200"><strong class="text-white">990</strong></td><td class="p-2 text-slate-200"><strong class="text-white">31.41%</strong></td></tr>
+</tbody></table></div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+<div class="bg-slate-900/80 border border-slate-700 rounded-lg p-2 text-center"><img src="../../figures/04_MHIST/mhist_distribucion.png" alt="Distribución oficial MHIST sin simulaciones engañosas" class="rounded max-h-40 mx-auto object-contain bg-white" /><div class="text-[10.5px] text-slate-300 mt-1.5">Distribución oficial MHIST sin simulaciones engañosas</div></div>
+</div>
+</div>
+<div class="mb-5 bg-slate-800/50 border border-slate-700/80 rounded-xl p-4">
+<h3 class="text-sm font-black text-amber-300 mb-2">3. Ejemplos Concretos de Pseudo-Bags y Conexión con la Literatura</h3>
+<ul class="list-disc pl-5 space-y-1.5 text-xs text-slate-300 leading-relaxed">
+<li><strong class="text-white">Pseudo-Bags en <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">mhist_pseudobags_simuladas.xlsx</code>:</strong> Muestra exactamente cómo agrupar parches en bolsas sintéticas <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">K=20</code>: <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">bag_0001</code> (<code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">0 SSA / 20 HP -> Y=0</code>), <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">bag_0002</code> (<code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">3 SSA / 17 HP = 15%</code>), <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">bag_0008</code> (<code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">1 SSA / 19 HP = 5%</code>).</li>
+<li><strong class="text-white">Kang et al. (CVPR 2023, Tabla 3 & 5):</strong> Con solo 3,152 muestras, MHIST demuestra el valor extremo de transferir desde grandes cohortes médicas: un modelo <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">ResNet-50</code> ImageNet fine-tuned logra <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">78.92%</code>, mientras que pre-entrenado con <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">MoCo v2</code> sobre TCGA salta a <strong class="text-white"><code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">85.88%</code></strong> (<code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">+6.96%</code>), y pre-entrenado en <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">TCGA + TULIP</code> (con extractor congelado en <em>Linear Evaluation</em>) alcanza <strong class="text-white"><code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">82.29%</code></strong> (superando a <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">76.25%</code> de ImageNet supervisado).</li>
+<li><strong class="text-white">Puente con Reuniones 08 Oct & 09 Nov:</strong> Relaja la suposición rígida de bolsa binaria extrema estudiando el impacto del desacuerdo médico (casos 4/7 vs 7/7) en la calibración de pesos \(\alpha_k\) de Gated Attention.</li>
+</ul>
+</div>
+<div class="mb-4 bg-slate-800/50 border border-slate-700/80 rounded-xl p-4">
+<h3 class="text-sm font-black text-rose-300 mb-2">Preguntas Probables del Prof. Zambrano (Defensa Oral)</h3>
+<div class="mb-2.5 text-xs"><div class="font-bold text-white">1. ¿Vale la pena esperar el DUA de MHIST o seguimos sin él?</div><div class="text-slate-300 mt-0.5 pl-3 border-l-2 border-teal-500">Solicitar el DUA toma 2 minutos y pesa apenas 333 MB, por lo que conviene enviarlo hoy mismo. Sin embargo, nuestro avance experimental NO depende de MHIST: ya tenemos BreaKHis (3.99 GB), PCam Validación (0.86 GB), NCT-CRC-HE completo (15.19 GB) y CAMELYON16 (10.77 GB) listos en disco.</div></div>
+<div class="mb-2.5 text-xs"><div class="font-bold text-white">2. ¿Qué ganamos al revisar manualmente ese CSV de MHIST durante la auditoría?</div><div class="text-slate-300 mt-0.5 pl-3 border-l-2 border-teal-500">Evitamos construir experimentos sobre un Split corrupto que ponía 100% de negativos en Train y 100% de positivos en Test, un error silencioso que habría arruinado cualquier métrica futura si no inspeccionábamos las salidas tabulares fila por fila.</div></div>
+</div>
+  </div>
+</div>
+
+<script>
+  let currentSlide = 0;
+  const slides = Array.from(document.querySelectorAll('.slide-card'));
+  const totalSlides = slides.length;
+
+  function renderMathInSlide() {
+    if (window.renderMathInElement) {
+      renderMathInElement(document.body, {
+        delimiters: [
+          { left: '$$', right: '$$', display: true },
+          { left: '\\(', right: '\\)', display: false }
+        ],
+        throwOnError: false
+      });
+    }
+  }
+
+  function showSlide(idx) {
+    currentSlide = Math.max(0, Math.min(totalSlides - 1, idx));
+    slides.forEach((s, i) => s.classList.toggle('active', i === currentSlide));
+    document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${totalSlides}`;
+    document.getElementById('progressFill').style.width = `${((currentSlide + 1) / totalSlides) * 100}%`;
+    const noteHtml = slides[currentSlide].getAttribute('data-notes') || 'Sin notas.';
+    document.getElementById('notesContent').innerHTML =
+      `<div class="text-teal-300 font-bold mb-1">Slide ${currentSlide + 1}: ${slides[currentSlide].getAttribute('data-title')}</div><p>${noteHtml}</p>`;
+  }
+
+  function nextSlide() { showSlide(currentSlide + 1); }
+  function prevSlide() { showSlide(currentSlide - 1); }
+  function toggleNotes() { document.getElementById('notesDrawer').classList.toggle('open'); }
+  function toggleGuide() {
+    document.getElementById('gridModal').classList.remove('open');
+    document.getElementById('guideModal').classList.toggle('open');
+  }
+
+  function toggleGrid() {
+    document.getElementById('guideModal').classList.remove('open');
+    const gm = document.getElementById('gridModal');
+    const container = document.getElementById('gridCards');
+    if (!gm.classList.contains('open')) {
+      container.innerHTML = slides.map((s, i) => {
+        const activeCls = i === currentSlide ? 'ring-2 ring-teal-400 bg-slate-800' : 'bg-slate-900 hover:bg-slate-800';
+        return `<button onclick="showSlide(${i}); toggleGrid();" class="${activeCls} text-left p-3.5 rounded-xl border border-slate-700 text-white transition">
+          <div class="text-xs font-mono text-teal-400 font-bold mb-1">Slide ${i + 1}</div>
+          <div class="text-xs font-bold leading-snug">${s.getAttribute('data-title')}</div>
+        </button>`;
+      }).join('');
+    }
+    gm.classList.toggle('open');
+  }
+
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen().catch(() => {});
+    }
+  }
+
+  function openLightbox(src, alt) {
+    document.getElementById('lightboxImg').src = src;
+    document.getElementById('lightboxCap').textContent = alt || '';
+    document.getElementById('lightboxModal').classList.add('open');
+  }
+
+  function closeLightbox() { document.getElementById('lightboxModal').classList.remove('open'); }
+
+  document.querySelectorAll('img.zoomable').forEach(img => {
+    img.addEventListener('click', () => openLightbox(img.src, img.alt));
+  });
+
+  document.addEventListener('keydown', (e) => {
+    const lbOpen = document.getElementById('lightboxModal').classList.contains('open');
+    const anyModal = lbOpen || document.getElementById('gridModal').classList.contains('open') || document.getElementById('guideModal').classList.contains('open');
+    if (e.key === 'ArrowRight' || e.key === ' ') {
+      if (anyModal) return;
+      e.preventDefault(); nextSlide();
+    } else if (e.key === 'ArrowLeft') {
+      if (anyModal) return;
+      e.preventDefault(); prevSlide();
+    } else if (e.key.toLowerCase() === 'n') {
+      toggleNotes();
+    } else if (e.key.toLowerCase() === 'g') {
+      toggleGrid();
+    } else if (e.key.toLowerCase() === 'i') {
+      toggleGuide();
+    } else if (e.key.toLowerCase() === 'f') {
+      toggleFullscreen();
+    } else if (e.key === 'Escape') {
+      closeLightbox();
+      document.getElementById('gridModal').classList.remove('open');
+      document.getElementById('guideModal').classList.remove('open');
+    } else if (e.key === 'Home') {
+      if (!anyModal) showSlide(0);
+    } else if (e.key === 'End') {
+      if (!anyModal) showSlide(totalSlides - 1);
+    }
+  });
+
+  
+  let mVotes = [1, 1, 1, 1, 0, 0, 0];
+  function setMhistVotes(nSsa) {
+    mVotes = Array.from({length: 7}, (_, i) => i < nSsa ? 1 : 0);
+    renderMhistVotes();
+  }
+  function toggleMhistDoc(i) { mVotes[i] = mVotes[i] ? 0 : 1; renderMhistVotes(); }
+  function renderMhistVotes() {
+    const c = document.getElementById('mhistDocs');
+    c.innerHTML = mVotes.map((v, i) => `
+      <button onclick="toggleMhistDoc(${i})" class="p-2 rounded-lg border text-center text-[11px] font-bold transition ${v ? 'bg-rose-100 border-rose-400 text-rose-900' : 'bg-emerald-100 border-emerald-400 text-emerald-900'}">
+        <div>Dr.${i + 1}</div>
+        <div class="mt-1 font-mono">${v ? 'SSA' : 'HP'}</div>
+      </button>`).join('');
+    const ssa = mVotes.reduce((a, b) => a + b, 0);
+    const maj = ssa >= 4 ? 'SSA (Precancerígeno)' : 'HP (Benigno)';
+    const agree = Math.max(ssa, 7 - ssa);
+    const isGray = agree === 4;
+    const vd = document.getElementById('mhistVerdict');
+    vd.className = `p-3 rounded-lg border text-xs ${isGray ? 'bg-amber-100 border-amber-300 text-amber-950' : (ssa >= 4 ? 'bg-rose-50 border-rose-200 text-rose-900' : 'bg-emerald-50 border-emerald-200 text-emerald-900')}`;
+    vd.innerHTML = `<strong>Votación: ${ssa} SSA vs ${7 - ssa} HP</strong> &rarr; Etiqueta: <strong>${maj}</strong> (${agree}/7 consenso = ${(agree / 7 * 100).toFixed(0)}%). ${isGray ? 'Caso limítrofe ideal para auditar incertidumbre de Atención MIL!' : 'Consenso médico claro.'}`;
+  }
+  function updateMhistBag() {
+    const nSsa = parseInt(document.getElementById('mhSlSsa').value, 10);
+    document.getElementById('mhSsaNum').textContent = nSsa;
+    const pct = nSsa * 5;
+    document.getElementById('mhBagId').textContent = nSsa === 3 ? 'Equivalente bag_0002 (15%)' : (nSsa === 1 ? 'Equivalente bag_0008 (5%)' : `${pct}% SSA`);
+    const isPos = nSsa > 0;
+    const meanP = (nSsa * 0.90 + (20 - nSsa) * 0.08) / 20;
+    const attnP = isPos ? 0.91 : 0.08;
+    document.getElementById('mhBagTrue').textContent = isPos ? 'Y = 1 (SSA+)' : 'Y = 0 (HP)';
+    document.getElementById('mhBagTrue').className = `font-black text-base mt-1 ${isPos ? 'text-rose-400' : 'text-emerald-300'}`;
+    const mOk = (meanP >= 0.5) === isPos;
+    document.getElementById('mhBagMean').textContent = `${meanP.toFixed(2)} ${mOk ? '✓' : '✗'}`;
+    document.getElementById('mhBagMean').className = `font-black text-base mt-1 ${mOk ? 'text-emerald-300' : 'text-rose-400'}`;
+    document.getElementById('mhBagAttn').textContent = `${attnP.toFixed(2)} ✓`;
+    document.getElementById('mhBagAttn').className = 'font-black text-base mt-1 text-teal-300';
+  }
+  function initDatasetLab() { renderMhistVotes(); updateMhistBag(); }
+
+
+  window.addEventListener('DOMContentLoaded', () => {
+    if (window.lucide) lucide.createIcons();
+    if (typeof initDatasetLab === 'function') initDatasetLab();
+    showSlide(0);
+    setTimeout(renderMathInSlide, 250);
+  });
+</script>
+</body>
+</html>

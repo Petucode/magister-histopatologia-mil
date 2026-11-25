@@ -34,7 +34,8 @@ jobs:
               assert "cells" in data and len(data["cells"]) > 0, f"Notebook vacío: {nb}"
 
           # 2. Validar enlaces e imágenes en Markdown y HTML
-          for md in [ws / "README.md", ws / "docs" / "ANALISIS_PROFUNDO.md"]:
+          md_files = [ws / "README.md", ws / "docs" / "ANALISIS_PROFUNDO.md"] + sorted((ws / "informe").rglob("*.md"))
+          for md in md_files:
               txt = md.read_text(encoding="utf-8")
               for m in re.finditer(r"!\[[^\]]*\]\(([^)]+)\)|\[[^\]]*\]\(([^)]+)\)", txt):
                   href = m.group(1) or m.group(2)
@@ -42,7 +43,8 @@ jobs:
                       if not (md.parent / href).resolve().exists():
                           errors.append(f"Enlace roto en {md}: {href}")
 
-          for html in [ws / "informe" / "presentacion_reunion_20_noviembre.html", ws / "index.html"]:
+          html_files = [ws / "index.html"] + sorted((ws / "informe").rglob("*.html"))
+          for html in html_files:
               txt = html.read_text(encoding="utf-8")
               for m in re.finditer(r'(?:src|href)=["\']([^"\']+)["\']', txt):
                   href = m.group(1)
@@ -50,13 +52,13 @@ jobs:
                       if not (html.parent / href).resolve().exists():
                           errors.append(f"Recurso roto en {html}: {href}")
 
-          # 3. Asegurar cero fugas de datos binarios pesados o tokens
-          forbidden_ext = (".h5", ".tif", ".tiff", ".npy", ".zip", ".rar", ".tar.gz")
+          # 3. Asegurar cero fugas de datos binarios pesados, carpetas ignoradas o tokens
+          forbidden_ext = (".h5", ".tif", ".tiff", ".npy", ".zip", ".rar", ".tar.gz", ".pptx")
           for p in ws.rglob("*"):
               if not p.is_file() or ".git" in p.parts:
                   continue
               low = p.as_posix().lower()
-              if low.endswith(forbidden_ext) or p.name == "kaggle.json":
+              if low.endswith(forbidden_ext) or p.name == "kaggle.json" or "otras reuniones" in p.parts:
                   errors.append(f"Archivo prohibido en repo: {p}")
 
           if errors:

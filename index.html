@@ -2,10 +2,126 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta http-equiv="refresh" content="0; url=informe/presentacion_reunion_20_noviembre.html" />
-  <title>Magíster UDP — Histopatología Digital & MIL</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Magíster UDP — Histopatología Digital &amp; Multiple Instance Learning</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body style="font-family: system-ui, sans-serif; padding: 2rem;">
-  <p>Redirigiendo a la presentación interactiva: <a href="informe/presentacion_reunion_20_noviembre.html">informe/presentacion_reunion_20_noviembre.html</a></p>
+<body class="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-teal-950 text-slate-100 font-sans antialiased">
+  <div class="max-w-6xl mx-auto px-6 py-10">
+    <div class="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-white/10">
+      <div>
+        <span class="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-teal-500/20 text-teal-300 border border-teal-400/30">Universidad Diego Portales &bull; Magíster en Ciencias de la Computación</span>
+        <h1 class="text-3xl md:text-4xl font-black tracking-tight text-white mt-3">
+          Histopatología Digital &amp; Multiple Instance Learning
+        </h1>
+        <p class="text-sm text-slate-300 mt-1">
+          Estudiante: <strong>Lucas Vicuña</strong> (<a href="https://github.com/Petucode/magister-histopatologia-mil" class="text-teal-300 underline hover:text-teal-200">Petucode</a>) &bull; Profesor Guía: <strong>Dr. Jorge Eduardo Zambrano Ibujés</strong>
+        </p>
+      </div>
+      <a href="informe/presentacion_reunion_20_noviembre.html" class="px-5 py-3 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-black text-sm shadow-lg transition flex items-center gap-2">
+        Abrir Presentación Central (20 Nov) &rarr;
+      </a>
+    </div>
+
+    <div class="mt-8 bg-white/5 border border-white/10 rounded-2xl p-6">
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+        <h2 class="text-lg font-black text-amber-300">Hilo Conductor de la Tesis (Reuniones 25 Sep &rarr; 08 Oct &rarr; 09 Nov &rarr; 20 Nov)</h2>
+        <span class="text-xs font-mono text-slate-400">31.4 GB Auditados &bull; 7/7 Notebooks OK</span>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
+        <div class="bg-slate-900/80 border border-rose-500/30 rounded-xl p-3.5">
+          <div class="font-black text-rose-300">25 Septiembre (Seminario I)</div>
+          <p class="text-slate-300 mt-1 leading-relaxed">Hipótesis de <strong>capas intermedias CNN (&le;33%)</strong> en pase único sin fine-tuning (<em>Zambrano 2022</em>) vs parches de píxeles (<em>Sudharshan 2019</em>) en <strong>BreaKHis</strong>.</p>
+        </div>
+        <div class="bg-slate-900/80 border border-indigo-500/30 rounded-xl p-3.5">
+          <div class="font-black text-indigo-300">08 Octubre (Informe MIL)</div>
+          <p class="text-slate-300 mt-1 leading-relaxed">Fundamentos WSL (<em>Dietterich 1997</em>), dilución en Mean Pooling y muro de VRAM \(O(K^2)\) resuelto en <strong>espacio de características</strong>.</p>
+        </div>
+        <div class="bg-slate-900/80 border border-amber-500/30 rounded-xl p-3.5">
+          <div class="font-black text-amber-300">09 Noviembre (Gated Attention)</div>
+          <p class="text-slate-300 mt-1 leading-relaxed">Compuerta Hadamard \(\tanh(Vh)\odot\sigma(Uh)\) (<em>Ilse 2018</em>) en complejidad lineal \(O(K)\) y explicación "Peras y Manzanas".</p>
+        </div>
+        <div class="bg-slate-900/80 border border-teal-500/40 rounded-xl p-3.5">
+          <div class="font-black text-teal-300">20 Noviembre (Ecosistema Auditado)</div>
+          <p class="text-slate-300 mt-1 leading-relaxed"><strong>5 bases de datos</strong> auditadas (<strong>81 IDs</strong> BreaKHis, <strong>32.7k</strong> PCam, <strong>107k</strong> NCT-CRC, MHIST DUA, <strong>399 WSIs / 25k .npy</strong> CAMELYON16).</p>
+        </div>
+      </div>
+    </div>
+
+    <h2 class="text-xl font-black text-white mt-9 mb-4">Presentaciones Dedicadas &amp; Informes Guía por Dataset</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div class="bg-white/5 border border-rose-500/30 rounded-2xl p-5 flex flex-col justify-between">
+        <div>
+          <span class="text-[11px] font-mono font-bold text-rose-300 uppercase">Dataset 01 &bull; 3.99 GB Local</span>
+          <h3 class="text-lg font-black text-white mt-1">BreaKHis v1 (Mama)</h3>
+          <p class="text-xs text-slate-300 mt-1.5 leading-relaxed"><strong>7,909 PNG</strong> (40x–400x) en <strong>81 pacientes únicos</strong> / 82 carpetas (<code class="text-amber-300">14-13412</code> DC+LC). Banco directo de capas intermedias y Sudharshan (2019).</p>
+        </div>
+        <div class="mt-4 flex gap-2 text-xs">
+          <a href="informe/datasets/01_breakhis.html" class="flex-1 py-2 px-3 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-center">Abrir PPT HTML</a>
+          <a href="informe/guias/01_informe_breakhis.md" class="py-2 px-3 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold border border-slate-700">Informe .md</a>
+        </div>
+      </div>
+
+      <div class="bg-white/5 border border-teal-500/30 rounded-2xl p-5 flex flex-col justify-between">
+        <div>
+          <span class="text-[11px] font-mono font-bold text-teal-300 uppercase">Dataset 02 &bull; 0.86 GB HDF5</span>
+          <h3 class="text-lg font-black text-white mt-1">PatchCamelyon (PCam)</h3>
+          <p class="text-xs text-slate-300 mt-1.5 leading-relaxed"><strong>32,768 parches 96&times;96</strong> (50/50) con regla central <strong>32&times;32</strong>, &Delta;G = &minus;0.100 H&amp;E y benchmark SSL <em>Kang et al. (2023)</em>.</p>
+        </div>
+        <div class="mt-4 flex gap-2 text-xs">
+          <a href="informe/datasets/02_pcam.html" class="flex-1 py-2 px-3 rounded-lg bg-teal-600 hover:bg-teal-500 text-white font-bold text-center">Abrir PPT HTML</a>
+          <a href="informe/guias/02_informe_pcam.md" class="py-2 px-3 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold border border-slate-700">Informe .md</a>
+        </div>
+      </div>
+
+      <div class="bg-white/5 border border-indigo-500/30 rounded-2xl p-5 flex flex-col justify-between">
+        <div>
+          <span class="text-[11px] font-mono font-bold text-indigo-300 uppercase">Dataset 03 &bull; 15.19 GB Completo</span>
+          <h3 class="text-lg font-black text-white mt-1">NCT-CRC-HE (Colon)</h3>
+          <p class="text-xs text-slate-300 mt-1.5 leading-relaxed"><strong>107,180 TIF</strong> (9 tejidos: TUM, LYM, STR, ADI, BACK...) con evidencia cuantitativa de <em>domain shift</em> Macenko (&minus;30.77 en BACK).</p>
+        </div>
+        <div class="mt-4 flex gap-2 text-xs">
+          <a href="informe/datasets/03_nct_crc.html" class="flex-1 py-2 px-3 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-center">Abrir PPT HTML</a>
+          <a href="informe/guias/03_informe_nct_crc.md" class="py-2 px-3 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold border border-slate-700">Informe .md</a>
+        </div>
+      </div>
+
+      <div class="bg-white/5 border border-amber-500/30 rounded-2xl p-5 flex flex-col justify-between">
+        <div>
+          <span class="text-[11px] font-mono font-bold text-amber-300 uppercase">Dataset 04 &bull; 0.33 GB DUA</span>
+          <h3 class="text-lg font-black text-white mt-1">MHIST (7 Patólogos)</h3>
+          <p class="text-xs text-slate-300 mt-1.5 leading-relaxed"><strong>3,152 pólipos</strong> HP vs SSA (<em>Wei et al. 2021</em>), purga de CSV sintético corrupto y estudio de consenso médico (4/7 vs 7/7).</p>
+        </div>
+        <div class="mt-4 flex gap-2 text-xs">
+          <a href="informe/datasets/04_mhist.html" class="flex-1 py-2 px-3 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-bold text-center">Abrir PPT HTML</a>
+          <a href="informe/guias/04_informe_mhist.md" class="py-2 px-3 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold border border-slate-700">Informe .md</a>
+        </div>
+      </div>
+
+      <div class="bg-white/5 border border-rose-400/40 rounded-2xl p-5 flex flex-col justify-between">
+        <div>
+          <span class="text-[11px] font-mono font-bold text-rose-300 uppercase">Dataset 05 &bull; 10.77 GB Auditado</span>
+          <h3 class="text-lg font-black text-white mt-1">CAMELYON16 (WSI SOTA)</h3>
+          <p class="text-xs text-slate-300 mt-1.5 leading-relaxed"><strong>399 WSIs (3.17M coords)</strong>, <strong>111 XML</strong> + <strong>25,235 .npy</strong> rescatados. Puente directo con CLAM, TransMIL y confiabilidad PLOS 2025.</p>
+        </div>
+        <div class="mt-4 flex gap-2 text-xs">
+          <a href="informe/datasets/05_camelyon16.html" class="flex-1 py-2 px-3 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-center">Abrir PPT HTML</a>
+          <a href="informe/guias/05_informe_camelyon16.md" class="py-2 px-3 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold border border-slate-700">Informe .md</a>
+        </div>
+      </div>
+
+      <div class="bg-slate-900 border border-slate-700 rounded-2xl p-5 flex flex-col justify-between">
+        <div>
+          <span class="text-[11px] font-mono font-bold text-slate-400 uppercase">Documentación Técnica</span>
+          <h3 class="text-lg font-black text-teal-300 mt-1">Auditoría &amp; Código Fuente</h3>
+          <p class="text-xs text-slate-300 mt-1.5 leading-relaxed">Consulta el informe técnico exhaustivo de los 7 bugs resueltos, notebooks reproducibles y repositorio oficial.</p>
+        </div>
+        <div class="mt-4 flex gap-2 text-xs">
+          <a href="docs/ANALISIS_PROFUNDO.md" class="flex-1 py-2 px-3 rounded-lg bg-slate-800 hover:bg-slate-700 text-teal-300 font-bold text-center border border-slate-700">Análisis Profundo</a>
+          <a href="README.md" class="py-2 px-3 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold border border-slate-700">README</a>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

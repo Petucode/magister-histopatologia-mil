@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dataset 01: BreaKHis v1 — Magíster UDP (Con Peras y Manzanas)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0; height: 100%; overflow: hidden;
+      font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #0b1120; color: #0f172a;
+    }
+    .deck-shell {
+      display: flex; flex-direction: column; height: 100vh; width: 100vw;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    }
+    .topbar {
+      height: 54px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      padding: 0 16px; background: rgba(15, 23, 42, 0.95);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+      color: #e2e8f0;
+    }
+    .stage {
+      flex: 1; display: flex; align-items: center; justify-content: center;
+      padding: 12px 18px; overflow: hidden; position: relative;
+    }
+    .slide-card {
+      width: 100%; max-width: 1360px; height: 100%; max-height: 790px;
+      background: #ffffff; border-radius: 18px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+      display: none; flex-direction: column; overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      animation: fadeSlide 0.22s ease-out;
+    }
+    .slide-card.active { display: flex; }
+    @keyframes fadeSlide {
+      from { opacity: 0; transform: translateY(8px) scale(0.992); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .slide-header {
+      padding: 14px 26px 10px;
+      border-bottom: 2px solid #e2e8f0;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      background: linear-gradient(90deg, #f8fafc 0%, #ffffff 100%);
+      flex-shrink: 0;
+    }
+    .slide-body {
+      flex: 1; padding: 16px 26px; overflow-y: auto; background: #ffffff;
+    }
+    .slide-footer {
+      height: 34px; flex-shrink: 0; padding: 0 26px; background: #f8fafc;
+      border-top: 1px solid #e2e8f0;
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 11.5px; color: #64748b;
+    }
+    .analogy-box {
+      background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+      border-left: 5px solid #d97706;
+      border-radius: 10px; padding: 12px 15px;
+    }
+    .zoomable {
+      cursor: zoom-in; transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+    .zoomable:hover {
+      transform: scale(1.014); box-shadow: 0 10px 25px rgba(15, 23, 42, 0.16);
+    }
+    .tag-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 700;
+      letter-spacing: 0.03em; text-transform: uppercase;
+    }
+    .progress-bar-track { height: 4px; width: 100%; background: rgba(255, 255, 255, 0.12); }
+    .progress-bar-fill {
+      height: 100%; background: linear-gradient(90deg, #14b8a6, #f59e0b, #e11d48);
+      transition: width 0.25s ease;
+    }
+    #lightboxModal {
+      display: none; position: fixed; inset: 0; z-index: 70;
+      background: rgba(2, 6, 23, 0.93); backdrop-filter: blur(6px);
+      align-items: center; justify-content: center; flex-direction: column; padding: 24px;
+    }
+    #lightboxModal.open { display: flex; }
+    #notesDrawer {
+      display: none; position: fixed; right: 20px; bottom: 56px; z-index: 50;
+      width: 450px; max-width: calc(100vw - 40px); max-height: 60vh;
+      background: #0f172a; color: #f1f5f9; border-radius: 14px;
+      border: 1px solid #334155; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+      flex-direction: column; overflow: hidden;
+    }
+    #notesDrawer.open { display: flex; }
+    #gridModal, #guideModal {
+      display: none; position: fixed; inset: 0; z-index: 60;
+      background: rgba(15, 23, 42, 0.95); padding: 26px; overflow-y: auto;
+    }
+    #gridModal.open, #guideModal.open { display: block; }
+    
+  </style>
+</head>
+<body>
+<div class="deck-shell">
+  <header class="topbar">
+    <div class="flex items-center gap-2.5 min-w-0">
+      <a href="../presentacion_reunion_20_noviembre.html" class="w-8 h-8 rounded-lg bg-teal-600 hover:bg-teal-500 flex items-center justify-center font-black text-white text-xs shrink-0" title="Volver a Presentación Central">UDP</a>
+      <div class="hidden xl:block truncate">
+        <div class="text-xs font-bold text-white leading-tight truncate">Dataset 01: BreaKHis v1 — Carcinoma Mamario Multiescala &amp; Capas Intermedias</div>
+        <div class="text-[10px] text-slate-400 truncate">Lucas Vicuña &bull; Prof. Guía: Dr. Jorge Eduardo Zambrano Ibujés</div>
+      </div>
+      <div class="hidden lg:flex items-center gap-1 ml-2 pl-2 border-l border-slate-700">
+        <a href="../presentacion_reunion_20_noviembre.html" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-semibold transition">Hub Central</a><span class="px-2 py-1 rounded bg-teal-600 text-white text-[11px] font-bold">01 BreaKHis</span><a href="02_pcam.html" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-semibold transition">02 PCam</a><a href="03_nct_crc.html" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-semibold transition">03 NCT-CRC</a><a href="04_mhist.html" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-semibold transition">04 MHIST</a><a href="05_camelyon16.html" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-semibold transition">05 CAMELYON16</a>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-1.5 shrink-0">
+      <button onclick="prevSlide()" class="px-2 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold flex items-center gap-1" title="Anterior (←)">
+        <i data-lucide="chevron-left" class="w-4 h-4"></i> Ant
+      </button>
+      <span id="slideCounter" class="text-xs font-mono bg-slate-800 px-2.5 py-1.5 rounded-lg text-teal-300 font-bold">1 / 10</span>
+      <button onclick="nextSlide()" class="px-2 py-1.5 rounded-lg bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold flex items-center gap-1" title="Siguiente (→ / Espacio)">
+        Sig <i data-lucide="chevron-right" class="w-4 h-4"></i>
+      </button>
+      <button onclick="toggleGuide()" class="ml-1 px-2.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center gap-1" title="Informe Guía Completo (I)">
+        <i data-lucide="book-open" class="w-4 h-4"></i> Informe
+      </button>
+      <button onclick="toggleGrid()" class="px-2 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold flex items-center gap-1" title="Índice Visual (G)">
+        <i data-lucide="layout-grid" class="w-4 h-4"></i>
+      </button>
+      <button onclick="toggleNotes()" class="px-2.5 py-1.5 rounded-lg bg-amber-600/90 hover:bg-amber-500 text-white text-xs font-semibold flex items-center gap-1" title="Guion Orador (N)">
+        <i data-lucide="mic" class="w-4 h-4"></i> Guion
+      </button>
+      <button onclick="toggleFullscreen()" class="px-2 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold" title="Pantalla Completa (F)">
+        <i data-lucide="maximize-2" class="w-4 h-4"></i>
+      </button>
+    </div>
+  </header>
+  <div class="progress-bar-track"><div id="progressFill" class="progress-bar-fill" style="width: 10.00%"></div></div>
+
+  <main class="stage">
+    <!-- SLIDE 1: Portada: BreaKHis v1 -->
+    <section class="slide-card active" data-title="Portada: BreaKHis v1" data-notes="&lt;strong&gt;Cómo empezar:&lt;/strong&gt; Profesor, esta presentación profundiza en el primer gran protagonista de nuestra tesis desde el 25 de septiembre: BreaKHis. Mostraremos qué hicimos exactamente en el notebook auditado, el descubrimiento real de los 81 pacientes en 82 carpetas, cómo se relaciona con Sudharshan (2019) y con su paper de capas intermedias (Zambrano et al., 2022).">
+
+      <div class="h-full flex flex-col justify-between p-9 bg-gradient-to-br from-slate-900 via-rose-950 to-slate-900 text-white">
+        <div class="flex items-center justify-between">
+          <span class="tag-pill bg-rose-500/20 text-rose-300 border border-rose-400/30">Dataset Auditado #1 &bull; Etapa 1 Prototipado Inmediato</span>
+          <span class="text-xs font-mono text-slate-300">01_BreaKHis_EDA.ipynb &bull; Slide 1 / 10</span>
+        </div>
+        <div class="max-w-4xl my-auto">
+          <div class="text-rose-300 font-bold text-xs uppercase tracking-widest mb-2">Histopatología de Mama &bull; Spanhol et al. (2016) &amp; Sudharshan et al. (2019)</div>
+          <h1 class="text-4xl md:text-5xl font-black tracking-tight leading-tight mb-4">
+            BreaKHis v1: <span class="text-amber-300">81 Pacientes</span>, 4 Magnificaciones y la Hipótesis de Capas Intermedias
+          </h1>
+          <p class="text-base text-slate-200 leading-relaxed mb-6">
+            Explicación <strong>"con peras y manzanas"</strong> del primer dataset local (<strong>3.99 GB</strong>), corrección crítica del <em>data leakage</em> (<code class="bg-white/10 px-1.5 rounded">14-13412</code>), e hilo conductor desde la <strong>Reunión del 25 de Septiembre</strong> hasta <strong>Gated Attention MIL (09 Nov)</strong>.
+          </p>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3.5">
+            <div class="bg-white/10 backdrop-blur rounded-xl p-3.5 border border-white/15">
+              <div class="text-2xl font-black text-teal-300">7,909</div>
+              <div class="text-xs text-slate-300 mt-0.5">Imágenes PNG 700&times;460 px<br>(2,480 Benigno / 5,429 Maligno)</div>
+            </div>
+            <div class="bg-white/10 backdrop-blur rounded-xl p-3.5 border border-white/15">
+              <div class="text-2xl font-black text-amber-300">81 IDs</div>
+              <div class="text-xs text-slate-300 mt-0.5">Pacientes únicos en 82 carpetas<br>(<span class="font-mono">14-13412</span> aporta DC + LC)</div>
+            </div>
+            <div class="bg-white/10 backdrop-blur rounded-xl p-3.5 border border-white/15">
+              <div class="text-2xl font-black text-rose-300">4 Lentes</div>
+              <div class="text-xs text-slate-300 mt-0.5">40x, 100x, 200x, 400x<br>8 subtipos clínicos reales</div>
+            </div>
+            <div class="bg-white/10 backdrop-blur rounded-xl p-3.5 border border-white/15">
+              <div class="text-2xl font-black text-emerald-300">3.99 GB</div>
+              <div class="text-xs text-slate-300 mt-0.5">En disco (4.27 GB tar.gz)<br>Listo hoy con 0 descarga extra</div>
+            </div>
+          </div>
+        </div>
+        <div class="flex flex-wrap items-center justify-between pt-4 border-t border-white/15 text-xs text-slate-300">
+          <span><strong>Conexión:</strong> Reunión 25 Sep (Zambrano 2022) &rarr; Reunión 09 Nov (Ilse 2018)</span>
+          <span>Clic en cualquier gráfica para ampliar &bull; Tecla <strong>I</strong> abre Informe Guía completo</span>
+        </div>
+      </div>
+    </section>
+    <!-- SLIDE 2: Con Peras y Manzanas: El Álbum Familiar -->
+    <section class="slide-card" data-title="Con Peras y Manzanas: El Álbum Familiar" data-notes="&lt;strong&gt;Cómo contarlo fácil:&lt;/strong&gt; Use la analogía del álbum de fotos en 4 zooms. Si un alumno memoriza la textura única del tejido de un paciente en 40x (Train) y luego ve otra foto 200x del mismo paciente en Test, saca 99% mintiendo. Además explique por qué BreaKHis calza perfecto con la idea del 25 de septiembre: mide solo 700x460, así que entra entera en un solo pase por la CNN hasta una capa intermedia!">
+      <div class="slide-header">
+        <div>
+          <span class="tag-pill bg-amber-100 text-amber-800">Analogía Central &bull; Con Peras y Manzanas</span>
+          <h2 class="text-xl md:text-2xl font-black text-slate-900 mt-1">¿Qué es BreaKHis y por qué las 4 magnifications causan trampa?</h2>
+        </div>
+        <span class="text-xs font-mono text-slate-500 shrink-0">Slide 2 / 10</span>
+      </div>
+      <div class="slide-body">
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch h-full">
+        <div class="lg:col-span-6 flex flex-col justify-between gap-3">
+          <div class="analogy-box">
+            <div class="font-bold text-amber-900 text-sm mb-1">Analogía: 4 Cámaras Apuntando a la Misma Manzana</div>
+            <p class="text-xs text-amber-950 leading-relaxed">
+              Imagina evaluar si un árbol está sano tomándole 25 fotos con zoom <strong>40x</strong> (copa completa), <strong>100x</strong> (ramas), <strong>200x</strong> (hojas) y <strong>400x</strong> (poros). Todos los retratos de ese árbol forman <strong>una única "bolsa" (el paciente)</strong>.<br><br>
+              &bull; <strong>Error fatal en muchos papers (Image-Split):</strong> Poner 20 fotos del árbol #14 en <em>Estudio (Train)</em> y 5 fotos del <strong>mismo árbol #14</strong> en <em>Examen (Test)</em>. La red aprende la corteza y el color del paciente, no el cáncer (inflando falsa precisión a 92–96%).<br>
+              &bull; <strong>Protocolo real (Patient-Split):</strong> Todas las ~97.6 imágenes del paciente van juntas a Train o Test.
+            </p>
+          </div>
+          <div class="bg-slate-900 text-white rounded-xl p-4 space-y-2 text-xs">
+            <div class="font-bold text-teal-300 uppercase tracking-wider">Puente con la Reunión del 25 de Septiembre</div>
+            <p class="text-slate-200 leading-relaxed">
+              Cada imagen BreaKHis mide <strong>700 &times; 460 px</strong> (solo 322 mil píxeles, no 10 Gigapíxeles como WSI). ¡Cabe entera en un solo pase por una CNN truncada (<code class="text-amber-300">l &lt; L</code>)! Así podemos extraer su <strong>mapa intermedio espacial</strong> de una vez y partir ese tensor en <em>K</em> sub-regiones para MIL sin recortar 1,000 parches en píxeles como Sudharshan (2019).
+            </p>
+          </div>
+        </div>
+        <div class="lg:col-span-6 grid grid-cols-2 gap-3 content-center">
+          <div class="border border-slate-200 rounded-xl p-3.5 bg-emerald-50/60">
+            <div class="text-xs font-black text-emerald-900 mb-1">4 Clases Benignas (2,480 imgs)</div>
+            <ul class="text-xs text-slate-700 space-y-1">
+              <li>&bull; <strong>Fibroadenoma (F):</strong> 1,014 <span class="text-rose-700 font-semibold">(¡30% de errores en Spanhol!)</span></li>
+              <li>&bull; <strong>Adenoma Tubular (TA):</strong> 569</li>
+              <li>&bull; <strong>Tumor Filodes (PT):</strong> 453</li>
+              <li>&bull; <strong>Adenosis (A):</strong> 444</li>
+            </ul>
+          </div>
+          <div class="border border-slate-200 rounded-xl p-3.5 bg-rose-50/60">
+            <div class="text-xs font-black text-rose-900 mb-1">4 Clases Malignas (5,429 imgs)</div>
+            <ul class="text-xs text-slate-700 space-y-1">
+              <li>&bull; <strong>Carcinoma Ductal (DC):</strong> 3,451 <span class="font-semibold">(43.6% del dataset!)</span></li>
+              <li>&bull; <strong>Carcinoma Mucinoso (MC):</strong> 792</li>
+              <li>&bull; <strong>Carcinoma Lobular (LC):</strong> 626</li>
+              <li>&bull; <strong>Carcinoma Papilar (PC):</strong> 560</li>
+            </ul>
+          </div>
+          <div class="col-span-2 bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-700">
+            <strong>¿Por qué importa en el diagnóstico real?</strong> En Spanhol et al. (2016, Tabla VIII), el <strong>Fibroadenoma benigno</strong> comparte bordes arquitectónicos con tumores malignos y genera ~<strong>28.5%–31.8% de los falsos positivos</strong>. Excelente campo de prueba para Atención con Compuertas (09 Nov)!
+          </div>
+        </div>
+      </div>
+      </div>
+      <div class="slide-footer">
+        <span>Regla de oro del Seminario 25 Sep: Si 2 imágenes comparten ID paciente, jamás pueden separarse entre Train y Test.</span>
+        <span>Spanhol et al. (2016) &bull; P&D Lab Brasil</span>
+      </div>
+    </section>
+    <!-- SLIDE 3: Qué Hizo el Notebook + Hallazgo de Auditoría -->
+    <section class="slide-card" data-title="Qué Hizo el Notebook + Hallazgo de Auditoría" data-notes="&lt;strong&gt;Explicación clara del notebook:&lt;/strong&gt; Recorra los 5 pasos que programamos: inspección del árbol, parser de metadata, gráficos por subtipo/magnificación, muestreo aleatorio de 200 PNGs para estadística RGB y definición de las bolsas reales por paciente. Deténgase en el cuadro rojo: antes decía &#x27;2 pacientes&#x27; por culpa de splits por &#x27;-&#x27; que tomaban solo el año &#x27;14&#x27;. Y lo más notable: al arreglarlo apareció que 14-13412 aparece en 2 carpetas clínicas (DC y LC): ¡81 pacientes reales en 82 carpetas!">
+      <div class="slide-header">
+        <div>
+          <span class="tag-pill bg-rose-100 text-rose-800">Notebook 01 &bull; Código y Auditoría</span>
+          <h2 class="text-xl md:text-2xl font-black text-slate-900 mt-1">Pipeline Celda a Celda de 01_BreaKHis_EDA.ipynb y el Bug de '14'</h2>
+        </div>
+        <span class="text-xs font-mono text-slate-500 shrink-0">Slide 3 / 10</span>
+      </div>
+      <div class="slide-body">
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
+        <div class="lg:col-span-7 space-y-2.5 text-xs">
+          <div class="font-bold text-slate-800 uppercase tracking-wider text-[11px]">Flujo Ejecutado en <code class="bg-slate-100 px-1.5 py-0.5 rounded">notebooks/01_BreaKHis_EDA.ipynb</code> (17 celdas)</div>
+          <div class="grid grid-cols-1 gap-2">
+            <div class="p-2.5 rounded-lg border border-slate-200 bg-slate-50 flex gap-3 items-start">
+              <span class="w-6 h-6 rounded-full bg-slate-900 text-white font-black flex items-center justify-center shrink-0">1</span>
+              <div><strong>Ingesta y Escaneo Recursivo:</strong> Localiza los <strong>7,909 PNGs</strong> bajo <code class="bg-white px-1 rounded">breast/benign|malignant/SOB/&lt;subtipo&gt;/&lt;carpeta&gt;/&lt;mag&gt;X/</code> y valida peso exacto en disco (<strong>3.99 GB</strong> extraído vs 4.27 GB <code class="bg-white px-1 rounded">.tar.gz</code>).</div>
+            </div>
+            <div class="p-2.5 rounded-lg border border-rose-300 bg-rose-50 flex gap-3 items-start">
+              <span class="w-6 h-6 rounded-full bg-rose-600 text-white font-black flex items-center justify-center shrink-0">2</span>
+              <div><strong>Parser Corregido de ID Paciente:</strong> Nombre típico <code class="bg-white px-1 rounded">SOB_B_A-14-22549AB-100-001.png</code>. Se arregló <code class="bg-white px-1 rounded">tokens[1]</code> &rarr; <code class="bg-white px-1 rounded">f"{{tokens[1]}}-{{tokens[2]}}"</code> exportando las <strong>7,909 filas</strong> a <code class="bg-white px-1 rounded">breakhis_metadata.xlsx</code>.</div>
+            </div>
+            <div class="p-2.5 rounded-lg border border-slate-200 bg-slate-50 flex gap-3 items-start">
+              <span class="w-6 h-6 rounded-full bg-teal-600 text-white font-black flex items-center justify-center shrink-0">3</span>
+              <div><strong>Pivot Subtipo &times; Magnificación &amp; Visualización:</strong> Genera <code class="bg-white px-1 rounded">breakhis_pivot_subtipo_magnificacion.xlsx</code> y 4 paneles en <code class="bg-white px-1 rounded">breakhis_distribucion_clases.png</code>.</div>
+            </div>
+            <div class="p-2.5 rounded-lg border border-slate-200 bg-slate-50 flex gap-3 items-start">
+              <span class="w-6 h-6 rounded-full bg-indigo-600 text-white font-black flex items-center justify-center shrink-0">4</span>
+              <div><strong>Cromatometría RGB (n=200 aleatorias):</strong> Verifica dimensiones uniformes <strong>700&times;460 px</strong> y guarda medias/desviaciones en <code class="bg-white px-1 rounded">breakhis_stats_pixeles.xlsx</code> (<code class="bg-white px-1 rounded">[0.780, 0.635, 0.759]</code>).</div>
+            </div>
+            <div class="p-2.5 rounded-lg border border-slate-200 bg-slate-50 flex gap-3 items-start">
+              <span class="w-6 h-6 rounded-full bg-amber-600 text-white font-black flex items-center justify-center shrink-0">5</span>
+              <div><strong>Construcción Explícita de Bolsas MIL:</strong> Agrupa en hoja <code class="bg-white px-1 rounded">Bags_Pacientes (81)</code> y <code class="bg-white px-1 rounded">Bags_Carpetas_82 (82)</code> dentro de <code class="bg-white px-1 rounded">breakhis_bags_pacientes.xlsx</code>.</div>
+            </div>
+          </div>
+        </div>
+        <div class="lg:col-span-5 flex flex-col justify-between gap-3">
+          <div class="border-2 border-rose-300 bg-rose-50/70 rounded-xl p-4 text-xs">
+            <div class="font-black text-rose-900 text-sm mb-2">Bug #1 Resuelto: ¿Por qué 81 Pacientes en 82 Carpetas?</div>
+            <div class="bg-white rounded-lg p-2.5 border border-rose-200 font-mono text-[11px] mb-2 space-y-1">
+              <div class="text-rose-700">&times; Antes: split('-')[1] = "14" &rarr; ¡2 pacientes!</div>
+              <div class="text-emerald-700">&check; Ahora: f"{{t[1]}}-{{t[2]}}" = "14-13412" &rarr; 81 únicos</div>
+            </div>
+            <p class="text-slate-700 leading-relaxed">
+              En la diapositiva 12 del <strong>Seminario del 25 de Septiembre</strong> (y en Spanhol 2016 / Sudharshan 2019), la literatura suele hablar de "82 pacientes". Nuestra auditoría empírica demuestra por qué: el paciente <code class="bg-white px-1 font-bold">14-13412</code> tiene <strong>246 imágenes</strong> repartidas en <strong>2 carpetas clínicas</strong> (Carcinoma Ductal + Carcinoma Lobular). Si agrupamos por carpeta en vez de por paciente real, ¡se filtra al mismo paciente!
+            </p>
+          </div>
+          <div class="bg-slate-900 text-slate-200 rounded-xl p-3.5 text-xs">
+            <div class="font-bold text-amber-300 mb-1">Ejemplo Concreto de Bolsa Real (Excel Auditado)</div>
+            <div class="font-mono text-[11px] space-y-0.5">
+              <div>&bull; <strong>14-13412:</strong> 246 imgs (DC + LC, 40x–400x)</div>
+              <div>&bull; <strong>14-10926:</strong> 39 imgs (DC, mínimo típico)</div>
+              <div>&bull; <strong>SOB_B_PT_14-21998AB:</strong> 235 imgs (Filodes)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      </div>
+      <div class="slide-footer">
+        <span>Generados: 6 libros Excel en tablas/breakhis_*.xlsx y 3 figuras compuestas en figures/01_BreaKHis/.</span>
+        <span>Auditoría verificada con re-ejecución Jupyter exit=0</span>
+      </div>
+    </section>
+    <!-- SLIDE 4: Distribución Cuantitativa (Gráfica Auditada) -->
+    <section class="slide-card" data-title="Distribución Cuantitativa (Gráfica Auditada)" data-notes="&lt;strong&gt;Lectura guiada para el profesor:&lt;/strong&gt; Muestre cómo el 68.6% son malignas y dentro de malignas Carcinoma Ductal domina casi la mitad (3,451 imágenes). Note que la magnitud está balanceada (~1,820 a ~2,081 por aumento). Eso significa que cuando evaluemos precisión global hay riesgo de sesgo hacia Ductal: debemos usar AUC, F1 macro y GroupKFold estratificado por clase!">
+      <div class="slide-header">
+        <div>
+          <span class="tag-pill bg-teal-100 text-teal-800">Evidencia Empírica &bull; Tablas Excel</span>
+          <h2 class="text-xl md:text-2xl font-black text-slate-900 mt-1">Desbalance Clínico: Clases, 8 Subtipos y 4 Magnificaciones</h2>
+        </div>
+        <span class="text-xs font-mono text-slate-500 shrink-0">Slide 4 / 10</span>
+      </div>
+      <div class="slide-body">
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center h-full">
+        <div class="lg:col-span-8 flex flex-col items-center">
+          <img src="../../figures/01_BreaKHis/breakhis_distribucion_clases.png" alt="Distribución Clases, Subtipos y Magnificaciones de BreaKHis" class="zoomable rounded-xl border border-slate-200 max-h-[530px] w-full object-contain shadow-sm bg-white" />
+        </div>
+        <div class="lg:col-span-4 space-y-3 text-xs">
+          <div class="bg-slate-900 text-white rounded-xl p-3.5">
+            <div class="font-bold text-teal-300 mb-2">Pivote Exacto por Magnificación</div>
+            <table class="w-full text-[11px]">
+              <thead class="text-slate-400 border-b border-slate-700">
+                <tr><th class="py-1 text-left">Zoom</th><th class="text-right">Benigno</th><th class="text-right">Maligno</th><th class="text-right">Total</th></tr>
+              </thead>
+              <tbody class="divide-y divide-slate-800 font-mono">
+                <tr><td class="py-1">40x</td><td class="text-right text-emerald-300">625</td><td class="text-right text-rose-300">1,370</td><td class="text-right font-bold">1,995</td></tr>
+                <tr><td class="py-1">100x</td><td class="text-right text-emerald-300">644</td><td class="text-right text-rose-300">1,437</td><td class="text-right font-bold">2,081</td></tr>
+                <tr><td class="py-1">200x</td><td class="text-right text-emerald-300">623</td><td class="text-right text-rose-300">1,390</td><td class="text-right font-bold">2,013</td></tr>
+                <tr><td class="py-1">400x</td><td class="text-right text-emerald-300">588</td><td class="text-right text-rose-300">1,232</td><td class="text-right font-bold">1,820</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="analogy-box">
+            <div class="font-bold text-amber-900 text-xs">Implicación para tu Experimento</div>
+            <p class="text-[11.5px] text-amber-950 mt-1 leading-relaxed">
+              Si un modelo tonto predice siempre "Maligno", logra <strong>68.6% Accuracy sin ver un píxel</strong>. Por eso en la tesis reportaremos <strong>ROC-AUC, Balanced Accuracy, Macro-F1 e intervalos bootstrap 95%</strong> (exactamente como definiste el 25 de septiembre).
+            </p>
+          </div>
+        </div>
+      </div>
+      </div>
+      <div class="slide-footer">
+        <span>Fuente: breakhis_resumen_estadistico.xlsx y breakhis_pivot_subtipo_magnificacion.xlsx</span>
+        <span>Clic en la imagen para Zoom</span>
+      </div>
+    </section>
+    <!-- SLIDE 5: Muestras Histológicas y Estadística RGB -->
+    <section class="slide-card" data-title="Muestras Histológicas y Estadística RGB" data-notes="&lt;strong&gt;Qué mostrar aquí:&lt;/strong&gt; Arriba las 8 arquitecturas glandulares reales del tejido mamario; abajo, la prueba numérica de por qué las imágenes varían tanto en color entre pacientes (canal Verde pasa de ~0.32 a ~0.85 según tinción y densidad celular). Eso justifica por qué la normalización de tinción o el uso de features invariantes en capas intermedias / SSL importa.">
+      <div class="slide-header">
+        <div>
+          <span class="tag-pill bg-purple-100 text-purple-800">Evidencia Visual &bull; Cromatometría H&amp;E</span>
+          <h2 class="text-xl md:text-2xl font-black text-slate-900 mt-1">Los 8 Subtipos Reales y Variabilidad de Tinción H&E</h2>
+        </div>
+        <span class="text-xs font-mono text-slate-500 shrink-0">Slide 5 / 10</span>
+      </div>
+      <div class="slide-body">
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
+        <div class="lg:col-span-6 flex flex-col items-center bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+          <img src="../../figures/01_BreaKHis/breakhis_muestras.png" alt="Muestras reales de los 8 subtipos de BreaKHis" class="zoomable rounded-lg max-h-[370px] w-full object-contain" />
+          <div class="text-[11px] text-slate-600 mt-1.5 font-medium">8 Subtipos Histológicos reales (PNG 700&times;460 px sin compresión)</div>
+        </div>
+        <div class="lg:col-span-6 flex flex-col items-center bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+          <img src="../../figures/01_BreaKHis/breakhis_estadisticas_pixeles.png" alt="Histograma RGB y variabilidad de píxeles en BreaKHis" class="zoomable rounded-lg max-h-[370px] w-full object-contain" />
+          <div class="text-[11px] text-slate-600 mt-1.5 font-medium">Perfil RGB (n=200): media ~[0.780, 0.635, 0.759] &bull; fuerte dispersión en canal Verde (núcleos)</div>
+        </div>
+      </div>
+      <div class="mt-3 grid grid-cols-3 gap-3 text-xs">
+        <div class="p-2.5 rounded-lg bg-slate-50 border border-slate-200"><strong>Resolución Óptica (Tabla I Spanhol):</strong> 40x = 0.49 &mu;m/px &bull; 100x = 0.20 &mu;m/px &bull; 200x = 0.10 &mu;m/px &bull; 400x = 0.05 &mu;m/px.</div>
+        <div class="p-2.5 rounded-lg bg-rose-50 border border-rose-200"><strong>Pista espectral:</strong> Ductal Carcinoma 200x cae hasta <code class="bg-white px-1">mean_G = 0.319</code> por alta densidad de núcleos teñidos con hematoxilina.</div>
+        <div class="p-2.5 rounded-lg bg-emerald-50 border border-emerald-200"><strong>Tamaño tensor uniforme:</strong> Todas las 200 muestras auditadas tienen exactamente <code class="bg-white px-1">(460, 700, 3)</code>: 0 imágenes corruptas.</div>
+      </div>
+      </div>
+      <div class="slide-footer">
+        <span>Spanhol et al. (2016) destaca: BreaKHis está sin normalización de color deliberadamente.</span>
+        <span>breakhis_stats_pixeles.xlsx (n=200) &bull; Clic para ampliar</span>
+      </div>
+    </section>
+    <!-- SLIDE 6: Doble Nivel MIL + Capas Intermedias -->
+    <section class="slide-card" data-title="Doble Nivel MIL + Capas Intermedias" data-notes="&lt;strong&gt;Momento clave de la tesis:&lt;/strong&gt; En Sudharshan (2019) muestran dos niveles: paciente-como-bolsa (~2,500 parches de 64x64) o imagen-como-bolsa (~100 parches por grilla). Nosotros introducimos el Nivel Propuesto del 25 de septiembre: pasamos la imagen entera de 700x460 UNA VEZ hasta el primer 33% de la CNN y tratamos cada celda espacial del mapa de activación intermedio como una instancia en la bolsa MIL.">
+      <div class="slide-header">
+        <div>
+          <span class="tag-pill bg-indigo-100 text-indigo-800">Diseño Experimental &bull; 25 Sep + 08 Oct</span>
+          <h2 class="text-xl md:text-2xl font-black text-slate-900 mt-1">Dos Formas de Armar la Bolsa en BreaKHis (+ nuestra Hipótesis)</h2>
+        </div>
+        <span class="text-xs font-mono text-slate-500 shrink-0">Slide 6 / 10</span>
+      </div>
+      <div class="slide-body">
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-stretch h-full">
+        <div class="border border-slate-200 bg-slate-50 rounded-xl p-4 flex flex-col justify-between text-xs">
+          <div>
+            <span class="tag-pill bg-slate-200 text-slate-800 mb-2">Nivel A (Sudharshan 2019)</span>
+            <h3 class="font-black text-slate-900 text-sm mb-2">Paciente = Bolsa (~97 imgs)</h3>
+            <p class="text-slate-700 leading-relaxed">Cada uno de los <strong>81 pacientes</strong> es una bolsa <em>X</em>. Sus ~24–246 imágenes (o parches PFTAS de 64&times;64 px) son las instancias.</p>
+            <div class="mt-3 p-2.5 bg-white rounded-lg border border-slate-200 font-mono text-[11px]">
+              Bag 14-14134 &rarr; 142 imgs (Benigno)<br>
+              Bag 14-13412 &rarr; 246 imgs (Maligno)
+            </div>
+          </div>
+          <div class="text-[11px] font-bold text-slate-600 mt-3">Resultado Sudharshan 40x: <strong>92.1% &plusmn; 5.9%</strong> (Non-parametric MIL).</div>
+        </div>
+        <div class="border border-amber-200 bg-amber-50/50 rounded-xl p-4 flex flex-col justify-between text-xs">
+          <div>
+            <span class="tag-pill bg-amber-200 text-amber-900 mb-2">Nivel B (Sudharshan 2019)</span>
+            <h3 class="font-black text-amber-950 text-sm mb-2">Imagen = Bolsa (Parches 64&times;64)</h3>
+            <p class="text-slate-700 leading-relaxed">Cada foto PNG de 700&times;460 px es la bolsa, dividida en ~100 parches en grilla (test) o 1,000 aleatorios (train). Requiere 1 pase de CNN por cada parche.</p>
+            <div class="mt-3 p-2.5 bg-white rounded-lg border border-amber-200 font-mono text-[11px]">
+              1 imagen = ~100 pases CNN<br>
+              7,909 imgs = ~790,900 pases!
+            </div>
+          </div>
+          <div class="text-[11px] font-bold text-amber-800 mt-3">Cuello de botella: altísima redundancia convolucional en bordes solapados.</div>
+        </div>
+        <div class="border-2 border-teal-400 bg-teal-50/70 rounded-xl p-4 flex flex-col justify-between text-xs">
+          <div>
+            <span class="tag-pill bg-teal-200 text-teal-900 mb-2">Propuesta Tesis (25 Sep)</span>
+            <h3 class="font-black text-teal-950 text-sm mb-2">Mapa Intermedio = Bolsa (1 Pase!)</h3>
+            <p class="text-slate-800 leading-relaxed">Entra la imagen <strong>completa (700&times;460)</strong> UNA SOLA VEZ a una CNN congelada (ej. <code class="bg-white px-1 rounded">ResNet50 res3b_branch2c</code>, 33% de profundidad según Zambrano 2022). Cada celda espacial (<em>H'&times;W'</em>) del tensor es una instancia!</p>
+            <div class="mt-3 p-2.5 bg-white rounded-lg border border-teal-200 font-mono text-[11px] text-teal-900">
+              1 imagen &rarr; 1 pase truncado<br>
+              Tensor [H', W', C] &rarr; K=H'&times;W' instancias<br>
+              &rarr; Gated Attention (Ilse 2018)
+            </div>
+          </div>
+          <div class="text-[11px] font-bold text-teal-900 mt-3">Ahorro: hasta 59% menos tiempo extracción + textura fina intacta!</div>
+        </div>
+      </div>
+      </div>
+      <div class="slide-footer">
+        <span>El protocolo por Sub-regiones intermedias evita extraer 1,000 parches en píxeles por imagen.</span>
+        <span>Sudharshan et al. (2019) vs Propuesta Seminario I</span>
+      </div>
+    </section>
+    <!-- SLIDE 7: Simulador: Trampa Leakage vs Capas Intermedias -->
+    <section class="slide-card" data-title="Simulador: Trampa Leakage vs Capas Intermedias" data-notes="&lt;strong&gt;Interacción en vivo con el profesor:&lt;/strong&gt; Haga clic entre &#x27;Partición Rota (tokens[1]=14)&#x27; y &#x27;Partición Real (GroupKFold 81 IDs)&#x27;. Muestre cómo en la partición rota las fotos 40x y 400x de 14-13412 terminan mezcladas en Train y Test, inflando falsamente la Accuracy mientras destruye la generalización clínica.">
+      <div class="slide-header">
+        <div>
+          <span class="tag-pill bg-teal-100 text-teal-800">Laboratorio Interactivo &bull; Regla GroupKFold</span>
+          <h2 class="text-xl md:text-2xl font-black text-slate-900 mt-1">Simulador: ¿Cómo el Parser de Paciente y la Extracción Afectan la Evaluación?</h2>
+        </div>
+        <span class="text-xs font-mono text-slate-500 shrink-0">Slide 7 / 10</span>
+      </div>
+      <div class="slide-body">
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+        <div class="lg:col-span-6 bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="font-black text-slate-900 text-sm">Simulador A: Fuga por Paciente (<code class="text-rose-700">14-13412</code>)</h3>
+              <div class="flex gap-1.5">
+                <button onclick="setBreaKMode('leak')" id="btnLeak" class="px-2.5 py-1 rounded text-xs font-bold bg-rose-600 text-white">Random / Bug '14'</button>
+                <button onclick="setBreaKMode('clean')" id="btnClean" class="px-2.5 py-1 rounded text-xs font-bold bg-slate-200 text-slate-800">GroupKFold (81 IDs)</button>
+              </div>
+            </div>
+            <div id="bkSplitPanel" class="space-y-2.5 text-xs"></div>
+          </div>
+          <div id="bkVerdict" class="mt-3 p-3 rounded-lg border text-xs font-semibold"></div>
+        </div>
+
+        <div class="lg:col-span-6 bg-slate-900 text-white rounded-xl p-4 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="font-bold text-teal-300 text-sm">Simulador B: Costo y Textura según Estrategia</h3>
+              <select id="bkPipeSel" onchange="updateBkPipe()" class="bg-slate-800 border border-slate-600 rounded px-2 py-1 text-xs text-white">
+                <option value="patch_sil">Parches 64x64 + Red Última Capa (Baseline Tradicional)</option>
+                <option value="inter_mid" selected>Pase Único + Capa Intermedia 33% + ABMIL (Propuesta 25 Sep)</option>
+                <option value="patient_bag">Paciente-as-Bag con 81 IDs + Gated Attention (Ilse 2018)</option>
+              </select>
+            </div>
+            <div id="bkPipeMetrics" class="grid grid-cols-3 gap-2.5 my-3 text-center"></div>
+            <p id="bkPipeDesc" class="text-xs text-slate-300 leading-relaxed bg-slate-800/80 p-3 rounded-lg border border-slate-700"></p>
+          </div>
+          <div class="text-[11px] text-amber-300 font-semibold mt-3">
+            Dato base Zambrano (2022, Tabla 9): truncar a 14–33% de profundidad reduce tiempo de extracción hasta <strong>59.33% (DenseNet201)</strong> preservando texturas finas sin fine-tuning.
+          </div>
+        </div>
+      </div>
+      </div>
+      <div class="slide-footer">
+        <span>Experimenta en vivo con los datos reales de 14-13412 (DC + LC) y compara los pipelines.</span>
+        <span>Inspirado en Seminario I (25 Sep) + Auditoría Notebook 01</span>
+      </div>
+    </section>
+    <!-- SLIDE 8: Hilo con Reuniones Previas (25 Sep / 08 Oct / 09 Nov) -->
+    <section class="slide-card" data-title="Hilo con Reuniones Previas (25 Sep / 08 Oct / 09 Nov)" data-notes="&lt;strong&gt;Para destacar la coherencia de la tesis:&lt;/strong&gt; No cambiamos de rumbo en cada reunión: el 25 de septiembre elegimos BreaKHis para la idea de capas intermedias; el 8 de octubre formalizamos el problema matemático MIL y la pérdida por promedio; el 9 de noviembre resolvimos la linealidad de tanh con la compuerta Hadamard; hoy 20 de noviembre tenemos BreaKHis auditado a nivel de paciente único y listo para probar ambos niveles!">
+      <div class="slide-header">
+        <div>
+          <span class="tag-pill bg-teal-100 text-teal-800">Evolución del Magíster &bull; Puente Entre Reuniones</span>
+          <h2 class="text-xl md:text-2xl font-black text-slate-900 mt-1">¿Cómo BreaKHis Conecta Todas las Reuniones Anteriores?</h2>
+        </div>
+        <span class="text-xs font-mono text-slate-500 shrink-0">Slide 8 / 10</span>
+      </div>
+      <div class="slide-body">
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch text-xs">
+        <div class="border border-rose-200 bg-rose-50/50 rounded-xl p-4">
+          <div class="font-black text-rose-900 text-sm mb-1">25 de Septiembre (Seminario I &mdash; Presentación Lucas)</div>
+          <p class="text-slate-700 leading-relaxed">Se propuso usar BreaKHis como banco principal para responder: <em>"¿Pueden sub-regiones de mapas intermedios (ResNet-18/50, EfficientNet-B0 congelados) sustituir a los parches en píxeles?"</em>. Se reportó inicialmente <strong>82 pacientes</strong>; en Noviembre descubrimos y demostramos por qué son <strong>81 IDs en 82 carpetas</strong>.</p>
+        </div>
+        <div class="border border-indigo-200 bg-indigo-50/50 rounded-xl p-4">
+          <div class="font-black text-indigo-900 text-sm mb-1">08 de Octubre (Informe MIL &mdash; Marco Matemático)</div>
+          <p class="text-slate-700 leading-relaxed">Explicó la <strong>heterogeneidad intra-paciente</strong>: incluso un paciente maligno en BreaKHis tiene regiones de tejido transicional benigno. Por eso heredar ciegamente la etiqueta global a cada parche introduce ruido, haciendo superior al paradigma MIL de bolsa frente al voto de instancia única.</p>
+        </div>
+        <div class="border border-amber-200 bg-amber-50/50 rounded-xl p-4">
+          <div class="font-black text-amber-900 text-sm mb-1">09 de Noviembre (Ilse et al. 2018 &mdash; Gated Attention)</div>
+          <p class="text-slate-700 leading-relaxed">Sustituye el <em>Non-parametric MIL</em> y <em>MI-SVM</em> de Sudharshan (2019) por la compuerta diferencial \(\tanh(Vh_k^\top) \odot \sigma(Uh_k^\top)\), operando en el <strong>espacio de embeddings</strong> sin perder interpretabilidad para distinguir Fibroadenoma de Carcinoma Ductal.</p>
+        </div>
+        <div class="border border-emerald-200 bg-emerald-50/60 rounded-xl p-4">
+          <div class="font-black text-emerald-900 text-sm mb-1">20 de Noviembre (Auditoría + Arranque Etapa 1)</div>
+          <p class="text-slate-700 leading-relaxed">Con <strong>3.99 GB</strong> en disco, <code class="bg-white px-1 rounded">breakhis_bags_pacientes.xlsx</code> exportado y <code class="bg-white px-1 rounded">GroupKFold</code> sobre 81 pacientes, BreaKHis queda listo para entrenar esta semana el primer <em>baseline</em> comparando: <strong>PFTAS/Parches vs Capas Intermedias (33%) con Gated Attention</strong>.</p>
+        </div>
+      </div>
+      </div>
+      <div class="slide-footer">
+        <span>Continuidad metodológica exacta entre teoría (Sep–Nov) y los archivos locales auditados (20 Nov).</span>
+        <span>Síntesis transversal de Investigación</span>
+      </div>
+    </section>
+    <!-- SLIDE 9: Relación con Papers Clave (Spanhol, Sudharshan, Zambrano) -->
+    <section class="slide-card" data-title="Relación con Papers Clave (Spanhol, Sudharshan, Zambrano)" data-notes="&lt;strong&gt;Cómo usar esta tabla con el Prof. Zambrano:&lt;/strong&gt; Muestra exactamente dónde nos paramos respecto a los 3 artículos críticos del Nivel 1 de la tesis. Note especialmente la similitud sorprendente: ¡en CAMELYON16, Lu et al. (CLAM 2021) también truncan ResNet50 en el bloque residual 3 (1024-d) en vez de usar la capa final 2048-d, confirmando su hipótesis de capas intermedias!">
+      <div class="slide-header">
+        <div>
+          <span class="tag-pill bg-slate-200 text-slate-800">Literatura Directa &bull; Comparativa Cuantitativa</span>
+          <h2 class="text-xl md:text-2xl font-black text-slate-900 mt-1">Benchmark Bibliográfico Exacto del Repositorio <code class='text-teal-700'>Referencias/</code></h2>
+        </div>
+        <span class="text-xs font-mono text-slate-500 shrink-0">Slide 9 / 10</span>
+      </div>
+      <div class="slide-body">
+
+      <div class="overflow-hidden rounded-xl border border-slate-200 shadow-sm">
+        <table class="w-full text-xs text-left">
+          <thead class="bg-slate-900 text-white">
+            <tr>
+              <th class="p-2.5">Paper (en <code class="text-teal-300">Referencias/</code>)</th>
+              <th class="p-2.5">Nivel / Estrategia MIL</th>
+              <th class="p-2.5">Métricas Reportadas Verificadas</th>
+              <th class="p-2.5">Lección / Brecha para Nuestra Tesis</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200">
+            <tr class="bg-white">
+              <td class="p-2.5 font-bold">Spanhol et al. (2016)<br><span class="font-normal text-slate-500">IEEE TBME (Dataset BreaKHis)</span></td>
+              <td class="p-2.5">Descriptores manuales (PFTAS 162-d, CLBP, GLCM, LBP, ORB) + SVM/RF/QDA; split paciente 70/30.</td>
+              <td class="p-2.5 font-mono">Patient Rec.: <strong>80%–85.1%</strong> (SVM+PFTAS @ 200x; AUC 0.861). Oracle teórico 99%.</td>
+              <td class="p-2.5">~30% de errores vienen de <strong>Fibroadenoma confundido con maligno</strong>. Deja amplio margen de mejora sobre 85%.</td>
+            </tr>
+            <tr class="bg-slate-50">
+              <td class="p-2.5 font-bold">Sudharshan et al. (2019)<br><span class="font-normal text-slate-500">Expert Syst. Appl. (12 MILs)</span></td>
+              <td class="p-2.5">1,000 parches train / ~100 test (<code class="bg-slate-100 px-1">64&times;64</code>, PFTAS 162-d): APR, DD, EM-DD, Citation-kNN, mi/MI-SVM, Non-param, MILCNN.</td>
+              <td class="p-2.5 font-mono">Patient-bag @40x: <strong>92.1%&plusmn;5.9%</strong> (Non-param), <strong>86.9%</strong> MILCNN. Image-bag: 80.8%–87.8%.</td>
+              <td class="p-2.5"><strong>MI-SVM &gt; mi-SVM</strong> (p=0.0029), probando que bolsa &gt; instancia; pero usó descriptores fijos PFTAS o parches sueltos sin atención moderna.</td>
+            </tr>
+            <tr class="bg-white">
+              <td class="p-2.5 font-bold">Zambrano et al. (2022)<br><span class="font-normal text-slate-500">IEEE Access (Prof. Guía)</span></td>
+              <td class="p-2.5">Capas tempranas CNN sin reentrenamiento (DenseNet201 <code class="bg-slate-100 px-1">conv3_block8</code> 14%, ResNet50 <code class="bg-slate-100 px-1">res3b</code> 33%) + filtrado de máscara espacial.</td>
+              <td class="p-2.5 font-mono">Tiempo extracción <strong>&minus;59.33%</strong> (DenseNet201) y <strong>99.56% Acc</strong> en CASIA Lamp sin fine-tuning.</td>
+              <td class="p-2.5">Fundamenta directamente nuestro pase único truncado en BreaKHis: textura repetitiva celular sin sesgo de clases macroscópicas ImageNet.</td>
+            </tr>
+            <tr class="bg-teal-50/70">
+              <td class="p-2.5 font-bold text-teal-900">Puente con CLAM (Lu 2021) &amp; Ilse (2018)</td>
+              <td class="p-2.5">ResNet50 <strong>truncada al 3er bloque residual</strong> (1024-d, ¡intermedia!) + Gated Attention MIL.</td>
+              <td class="p-2.5 font-mono">Reemplaza umbral PFTAS y max-pooling ingenuo por agregación ponderada diferenciable \(\alpha_k\).</td>
+              <td class="p-2.5 font-semibold text-teal-900">Unifica ambas corrientes: capas intermedias (Zambrano) + Atención con Compuertas (Ilse) sobre 81 pacientes limpios.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      </div>
+      <div class="slide-footer">
+        <span>Cifras extraídas directamente de los PDFs en Referencias/ (Spanhol 2016, Sudharshan 2019, Zambrano 2022).</span>
+        <span>Base científica para el capítulo de Experimentos</span>
+      </div>
+    </section>
+    <!-- SLIDE 10: Plan Inmediato y Utilidad en Tesis -->
+    <section class="slide-card" data-title="Plan Inmediato y Utilidad en Tesis" data-notes="&lt;strong&gt;Cierre concreto para este dataset:&lt;/strong&gt; BreaKHis es el campo de pruebas ideal para la Etapa 1 porque cabe entero en local (3.99 GB), sus imágenes de 700x460 permiten probar directamente la hipótesis de mapas intermedios en pase único frente al baseline de parches de Sudharshan (2019), y nuestra auditoría ya eliminó la trampa de &#x27;14&#x27; y separó al paciente 14-13412.">
+      <div class="slide-header">
+        <div>
+          <span class="tag-pill bg-emerald-100 text-emerald-800">Conclusión &bull; Etapa 1 Lista Hoy</span>
+          <h2 class="text-xl md:text-2xl font-black text-slate-900 mt-1">¿Qué Hacemos Mañana con BreaKHis? (Sin Descargas Adicionales)</h2>
+        </div>
+        <span class="text-xs font-mono text-slate-500 shrink-0">Slide 10 / 10</span>
+      </div>
+      <div class="slide-body">
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5 items-center h-full">
+        <div class="space-y-3 text-xs">
+          <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200">
+            <div class="font-black text-emerald-900 text-sm mb-1.5">Protocolo Experimental Recomendado (Etapa 1)</div>
+            <ol class="list-decimal pl-4 space-y-1.5 text-slate-700 leading-relaxed">
+              <li><strong>Partición Estricta:</strong> <code class="bg-white px-1 rounded">StratifiedGroupKFold(n_splits=5)</code> usando la columna auditada <code class="bg-white px-1 rounded">paciente</code> (81 IDs reales, nunca carpeta ni imagen).</li>
+              <li><strong>Baseline SOTA Reproducible:</strong> Parches espaciales + Gated Attention MIL (Ilse 2018) y comparación contra Mean/Max Pooling (08 Oct).</li>
+              <li><strong>Experimento Propio Central (25 Sep):</strong> Barrido de capas intermedias (ResNet-18/50 bloque 2 vs 3 vs 4, DenseNet bloque 3) sobre imagen completa 700&times;460 en pase único + proyección/selección de canales &lambda;.</li>
+              <li><strong>Ablación Clínica:</strong> Analizar sensibilidad por aumento (40x vs 200x) y tasa de falsos positivos en Fibroadenoma.</li>
+            </ol>
+          </div>
+        </div>
+        <div class="bg-slate-900 text-white rounded-xl p-5 space-y-3">
+          <div class="text-xs font-bold uppercase text-teal-300">Recursos Generados Para Esta Exposición</div>
+          <div class="space-y-2 text-xs">
+            <button onclick="toggleGuide()" class="w-full py-2.5 px-4 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold flex items-center justify-between">
+              <span>Abrir Informe Guía Detallado (.md / Lectura)</span>
+              <span>Tecla I</span>
+            </button>
+            <a href="02_pcam.html" class="w-full py-2.5 px-4 rounded-lg bg-teal-700 hover:bg-teal-600 text-white font-bold flex items-center justify-between">
+              <span>Seguir al Dataset 02: PatchCamelyon (PCam)</span>
+              <span>&rarr;</span>
+            </a>
+            <a href="../presentacion_reunion_20_noviembre.html" class="w-full py-2.5 px-4 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold flex items-center justify-between border border-slate-700">
+              <span>Volver a la Presentación Central (20 Nov)</span>
+              <span>Hub</span>
+            </a>
+          </div>
+        </div>
+      </div>
+      </div>
+      <div class="slide-footer">
+        <span>Ir al Informe Guía para ver comandos, ejemplos numéricos completos y defensa de preguntas.</span>
+        <span>01_BreaKHis &rarr; Siguiente: 02_PCam</span>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="lightboxModal" onclick="closeLightbox()">
+  <button onclick="closeLightbox()" class="self-end mb-2 px-3 py-1 rounded bg-white/15 hover:bg-white/25 text-white text-xs font-bold">Cerrar (ESC)</button>
+  <img id="lightboxImg" src="" alt="" class="max-h-[84vh] max-w-[92vw] rounded-xl shadow-2xl border border-white/20 bg-white" onclick="event.stopPropagation()" />
+  <div id="lightboxCap" class="text-slate-200 text-sm mt-3 text-center max-w-3xl"></div>
+</div>
+
+<aside id="notesDrawer">
+  <div class="px-4 py-3 bg-slate-800 border-b border-slate-700 flex items-center justify-between">
+    <div class="flex items-center gap-2 text-xs font-bold text-amber-300">
+      <i data-lucide="mic" class="w-4 h-4"></i> Teleprompter &mdash; Guion de Exposición
+    </div>
+    <button onclick="toggleNotes()" class="text-slate-400 hover:text-white text-xs">Cerrar (N)</button>
+  </div>
+  <div id="notesContent" class="p-4 text-xs leading-relaxed text-slate-200 overflow-y-auto space-y-2"></div>
+</aside>
+
+<div id="gridModal">
+  <div class="max-w-5xl mx-auto">
+    <div class="flex items-center justify-between mb-5 text-white">
+      <h2 class="text-xl font-black">Índice Visual (10 Diapositivas) &mdash; BreaKHis v1</h2>
+      <button onclick="toggleGrid()" class="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-xs font-bold">Cerrar (G / ESC)</button>
+    </div>
+    <div id="gridCards" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5"></div>
+  </div>
+</div>
+
+<div id="guideModal">
+  <div class="max-w-4xl mx-auto text-slate-100">
+    <div class="flex flex-wrap items-center justify-between gap-2 mb-5 pb-3 border-b border-slate-700">
+      <div>
+        <span class="text-[11px] font-mono uppercase text-teal-300 font-bold">Documento Complementario de Exposición</span>
+        <h2 class="text-xl font-black text-white">Informe Guía de Exposición — Dataset 01: BreaKHis v1</h2>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="../guias/01_informe_breakhis.md" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-teal-300 text-xs font-bold border border-slate-600">Descargar / Ver .md</a>
+        <button onclick="toggleGuide()" class="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-xs font-bold">Cerrar (I / ESC)</button>
+      </div>
+    </div>
+    <div class="bg-slate-800/80 border border-slate-700 rounded-xl p-4 mb-4">
+<div class="text-xs font-bold uppercase tracking-wider text-teal-300">Ficha de Exposición</div>
+<div class="text-lg font-black text-white mt-1">Informe Guía de Exposición — Dataset 01: BreaKHis v1</div>
+<div class="text-xs text-slate-300 mt-1">81 pacientes únicos en 82 carpetas, 7,909 imágenes PNG (700×460 px), puente directo con Seminario 25 Sep, Zambrano (2022) y Sudharshan et al. (2019).</div>
+<div class="mt-3 flex flex-wrap gap-2 text-[11px]"><a href="../guias/01_informe_breakhis.md" class="px-2.5 py-1 rounded bg-teal-600 hover:bg-teal-500 text-white font-bold">Abrir archivo Markdown (.md)</a><a href="../../notebooks/01_BreaKHis_EDA.ipynb" class="px-2.5 py-1 rounded bg-slate-700 hover:bg-slate-600 text-slate-200 font-semibold">Notebook fuente (01_BreaKHis_EDA.ipynb)</a></div></div>
+<div class="mb-5 bg-slate-800/50 border border-slate-700/80 rounded-xl p-4">
+<h3 class="text-sm font-black text-amber-300 mb-2">1. Objetivo del Dataset y Rol en la Tesis de Magíster</h3>
+<p class="text-xs text-slate-200 leading-relaxed mb-2">BreaKHis v1 (Spanhol et al., IEEE TBME 2016) es nuestro <strong class="text-white">banco de prototipado rápido de Etapa 1</strong> (ya presente en disco con 3.99 GB extraídos / 4.27 GB <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">.tar.gz</code>, sin descargas adicionales) y el <strong class="text-white">banco experimental central propuesto en el Seminario I (25 de Septiembre)</strong>. A diferencia de las WSI gigapíxel de CAMELYON16, cada imagen PNG de BreaKHis mide <strong class="text-white">700 × 460 píxeles</strong>, lo que permite validar la hipótesis central de la tesis: <em>¿pueden las sub-regiones de mapas de activación intermedios (obtenidos en un único pase truncado por una CNN pre-entrenada) sustituir el recorte costoso en espacio de píxeles?</em></p>
+<ul class="list-disc pl-5 space-y-1.5 text-xs text-slate-300 leading-relaxed">
+<li><strong class="text-white">Volumen verificado en disco:</strong> 7,909 imágenes RGB PNG sin compresión (<code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">700 × 460 px</code>), capturadas con microscopio Olympus BX-50 (lente relé 3.3× + cámara CCD SCC-131AN, recortadas de 752×582 px para quitar bordes negros y anotaciones).</li>
+<li><strong class="text-white">Distribución de clases:</strong> 2,480 Benignas (<strong class="text-white">31.4%</strong>) y 5,429 Malignas (<strong class="text-white">68.6%</strong>), repartidas en 8 subtipos histológicos y 4 factores de aumento (<code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">40x</code>: 1,995; <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">100x</code>: 2,081; <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">200x</code>: 2,013; <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">400x</code>: 1,820).</li>
+<li><strong class="text-white">Utilitario doble en MIL:</strong> Permite formular bolsas tanto a nivel de <strong class="text-white">Paciente = Bolsa</strong> (81 bolsas reales, promedio ~97.6 imágenes/paciente) como de <strong class="text-white">Imagen = Bolsa</strong> (K sub-regiones del mapa de activación intermedio).</li>
+</ul>
+</div>
+<div class="mb-5 bg-slate-800/50 border border-slate-700/80 rounded-xl p-4">
+<h3 class="text-sm font-black text-amber-300 mb-2">2. Cómo Explicarlo en la Reunión ('Con Peras y Manzanas')</h3>
+<p class="text-xs text-slate-200 leading-relaxed mb-2">Use la analogía del <strong class="text-white">álbum fotográfico de 4 lentes para el mismo bosque</strong>: tomar 4 fotos distintas (a 40x panorámica, 100x, 200x y 400x detalle) del mismo árbol sigue siendo <strong class="text-white">el mismo árbol</strong>. Si un estudiante de medicina estudia la foto de 40x del Sr. Pérez y en el examen final le muestran la foto de 400x del <strong class="text-white">mismo Sr. Pérez</strong>, puede memorizar el color de la tinción o la textura del paciente en lugar de aprender qué es un carcinoma. Ese error metodológico se llama <strong class="text-white">data leakage por paciente</strong>.</p>
+</div>
+<div class="mb-5 bg-slate-800/50 border border-slate-700/80 rounded-xl p-4">
+<h3 class="text-sm font-black text-amber-300 mb-2">3. Qué Hizo Exactamente Nuestro Notebook <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">01_BreaKHis_EDA.ipynb</code> + Bug Auditado</h3>
+<p class="text-xs text-slate-200 leading-relaxed mb-2">El notebook ejecuta 5 bloques reproducibles sobre el directorio local <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">BreaKHis_v1/histology_slides/breast/</code>, generando 6 archivos Excel en <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">tablas/</code> y 3 figuras compuestas (15 paneles individuales) en <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">figures/01_BreaKHis/</code>.</p>
+<div class="overflow-x-auto mt-3"><table class="w-full text-[11px] text-left border border-slate-700 rounded-lg overflow-hidden">
+<thead class="bg-slate-900 text-teal-300"><tr><th class="p-2">Etapa del Código</th><th class="p-2">Operación Realizada</th><th class="p-2">Artefacto Generado</th><th class="p-2">Hallazgo / Auditoría</th></tr></thead>
+<tbody class="divide-y divide-slate-700/70">
+<tr class="bg-slate-800/40"><td class="p-2 text-slate-200">1. Exploración árbol</td><td class="p-2 text-slate-200">Recorre <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">benign</code> / <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">malignant</code> / <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">SOB</code> y verifica tamaño real en disco.</td><td class="p-2 text-slate-200"><code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">breakhis_resumen_informe.xlsx</code></td><td class="p-2 text-slate-200">Harmonizado a <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">3.99 GB</code> extraído (<code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">4.27 GB .tar.gz</code>), corrigiendo error antiguo de <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">7.9 GB</code>.</td></tr>
+<tr class="bg-slate-800/40"><td class="p-2 text-slate-200">2. Parser de metadata</td><td class="p-2 text-slate-200">Parsea nombres <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">SOB_B_A-14-22549AB-100-001.png</code> en 7,909 filas.</td><td class="p-2 text-slate-200"><code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">breakhis_metadata.xlsx</code></td><td class="p-2 text-slate-200"><strong class="text-white">Bug Crítico #1 resuelto:</strong> <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">tokens[1]</code> truncaba a <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">'14'</code> (2 pacientes). Arreglado a <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">tokens[1]-tokens[2]</code>.</td></tr>
+<tr class="bg-slate-800/40"><td class="p-2 text-slate-200">3. Tablas pivote y distribución</td><td class="p-2 text-slate-200">Cruza 8 subtipos &times; 4 aumentos y exporta conteos.</td><td class="p-2 text-slate-200"><code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">breakhis_pivot_subtipo_magnificacion.xlsx</code></td><td class="p-2 text-slate-200">Confirma dominancia de Ductal (3,451 = 43.6%) y Fibroadenoma como mayor subtipo benigno (1,014).</td></tr>
+<tr class="bg-slate-800/40"><td class="p-2 text-slate-200">4. Estadística espectral RGB</td><td class="p-2 text-slate-200">Muestrea 200 imágenes, valida forma <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">(460,700,3)</code> y media/std.</td><td class="p-2 text-slate-200"><code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">breakhis_stats_pixeles.xlsx</code></td><td class="p-2 text-slate-200">Media muestral <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">[0.780, 0.635, 0.759]</code>; <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">mean_G</code> cae hasta <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">0.319</code> en carcinomas densos por hematoxilina.</td></tr>
+<tr class="bg-slate-800/40"><td class="p-2 text-slate-200">5. Construcción de Bolsas MIL</td><td class="p-2 text-slate-200">Agrupa por <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">paciente</code> real y por <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">carpeta_clinica</code>.</td><td class="p-2 text-slate-200"><code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">breakhis_bags_pacientes.xlsx</code></td><td class="p-2 text-slate-200">Revela <strong class="text-white">81 pacientes únicos en 82 carpetas</strong> porque el paciente <strong class="text-white"><code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">14-13412</code></strong> tiene biopsias DC y LC.</td></tr>
+</tbody></table></div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+<div class="bg-slate-900/80 border border-slate-700 rounded-lg p-2 text-center"><img src="../../figures/01_BreaKHis/breakhis_distribucion_clases.png" alt="Distribución auditada de BreaKHis" class="rounded max-h-40 mx-auto object-contain bg-white" /><div class="text-[10.5px] text-slate-300 mt-1.5">Distribución auditada de BreaKHis</div></div>
+<div class="bg-slate-900/80 border border-slate-700 rounded-lg p-2 text-center"><img src="../../figures/01_BreaKHis/breakhis_muestras.png" alt="Muestras reales por subtipo en BreaKHis" class="rounded max-h-40 mx-auto object-contain bg-white" /><div class="text-[10.5px] text-slate-300 mt-1.5">Muestras reales por subtipo en BreaKHis</div></div>
+<div class="bg-slate-900/80 border border-slate-700 rounded-lg p-2 text-center"><img src="../../figures/01_BreaKHis/breakhis_estadisticas_pixeles.png" alt="Estadística RGB y variabilidad cromática" class="rounded max-h-40 mx-auto object-contain bg-white" /><div class="text-[10.5px] text-slate-300 mt-1.5">Estadística RGB y variabilidad cromática</div></div>
+</div>
+</div>
+<div class="mb-5 bg-slate-800/50 border border-slate-700/80 rounded-xl p-4">
+<h3 class="text-sm font-black text-amber-300 mb-2">4. Ejemplos Numéricos Concretos de Nuestras Tablas (<code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">tablas/</code>)</h3>
+<ul class="list-disc pl-5 space-y-1.5 text-xs text-slate-300 leading-relaxed">
+<li><strong class="text-white">Caso de cruce multi-carpeta (<code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">breakhis_bags_pacientes.xlsx</code>):</strong> El paciente <strong class="text-white"><code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">14-13412</code></strong> totaliza <strong class="text-white">246 imágenes</strong> repartidas en las 4 magnificaciones (<code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">40, 100, 200, 400</code>), pero abarca <strong class="text-white">dos carpetas clínicas distintas</strong>: <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">ductal_carcinoma</code> y <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">lobular_carcinoma</code>. Si hubiéramos usado el nombre de carpeta como grupo, ¡habríamos partido al mismo paciente en dos!</li>
+<li><strong class="text-white">Bolsa mínima vs máxima observada en muestra (<code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">Bags_Pacientes</code>):</strong> <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">14-10926</code> aporta <strong class="text-white">39 imágenes</strong> (todas DC), mientras <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">14-13412</code> aporta <strong class="text-white">246 imágenes</strong>, y en benignos <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">14-15275</code> tiene <strong class="text-white">53</strong> vs <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">14-21998AB</code> (<code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">phyllodes_tumor</code>) con <strong class="text-white">235 imágenes</strong>.</li>
+<li><strong class="text-white">Evidencia cromática H&E (<code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">breakhis_stats_pixeles.xlsx</code>):</strong> Mientras una lámina clara de <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">tubular_adenoma (100x)</code> registra <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">mean_G = 0.851</code>, una lámina densa de <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">ductal_carcinoma (200x)</code> cae a <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">mean_G = 0.319</code> — exactamente la firma de absorción nuclear por Hematoxilina.</li>
+</ul>
+</div>
+<div class="mb-5 bg-slate-800/50 border border-slate-700/80 rounded-xl p-4">
+<h3 class="text-sm font-black text-amber-300 mb-2">5. Relación Directa con Reuniones Previas y Papers de <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">Referencias/</code></h3>
+<ul class="list-disc pl-5 space-y-1.5 text-xs text-slate-300 leading-relaxed">
+<li><strong class="text-white">Seminario 25 de Septiembre (<code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">Magister_25SEP.pdf</code> & <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">4.metodologia.tex</code>):</strong> Define BreaKHis como validación principal para probar representaciones de <strong class="text-white">capas intermedias</strong> con pesos congelados (ResNet-18, ResNet-50, EfficientNet-B0) evaluadas con partición por paciente y AUC con intervalos bootstrap 95%. Note que ahí se citaban 82 pacientes por convención de Spanhol: nuestra auditoría explica el porqué exacto (<code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">81 IDs</code> en <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">82 carpetas</code>).</li>
+<li><strong class="text-white">Zambrano et al. (IEEE Access 2022, Prof. Guía):</strong> Demuestra en biometría sin fine-tuning que las <strong class="text-white">primeras ≤33% de capas convolucionales</strong> (<code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">DenseNet201 conv3_block8_concat</code> al 14%, <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">ResNet50 res3b_branch2c</code> al 33%, <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">InceptionV3 conv2d_25</code> al 27%) codifican patrones locales de textura fina mejor que las capas finales sesgadas hacia objetos macroscópicos de ImageNet, reduciendo el tiempo de extracción hasta <strong class="text-white">59.33%</strong>. En BreaKHis (<code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">700×460 px</code>), eso permite pasar la foto <strong class="text-white">una vez</strong> y usar la rejilla espacial intermedia como instancias MIL.</li>
+<li><strong class="text-white">Spanhol et al. (IEEE TBME 2016):</strong> Establece el protocolo 70/30 estratificado por paciente (5 repeticiones), obtiene <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">80%–85.1%</code> con PFTAS (162-d) + SVM @ 200x (<code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">AUC = 0.861</code>), y documenta en su <strong class="text-white">Tabla VIII</strong> que ~<strong class="text-white">30% de todos los errores</strong> son tumores benignos <strong class="text-white">Fibroadenoma</strong> clasificados falsamente como malignos.</li>
+<li><strong class="text-white">Sudharshan et al. (ESWA 2019 — Baseline MIL directo en BreaKHis):</strong> Recorta parches <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">64×64</code> con descriptores PFTAS (<code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">1,000</code> aleatorios en train, <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">~100</code> en test por imagen &rarr; <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">~2,500</code> por paciente-bolsa). Compara 12 variantes MIL: obtiene <strong class="text-white">92.1% ± 5.9%</strong> a <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">40x</code> con Non-parametric MIL (vs <strong class="text-white">86.9% ± 5.4%</strong> MILCNN) cuando usa <strong class="text-white">Patient as bag</strong>, bajando a <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">80.8%–87.8%</code> en <em>Image as bag</em>, y probando estadísticamente que <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">MI-SVM</code> supera a <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">mi-SVM</code> (<code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">p = 0.0029</code>).</li>
+<li><strong class="text-white">Puente con 08 Oct & 09 Nov (<code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">Ilse 2018</code> + <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">Lu 2021 CLAM</code>):</strong> Reemplazar los vectores artesanales PFTAS de Sudharshan por embeddings intermedios + <strong class="text-white">Gated Attention</strong> (\(\tanh(Vh_k^\top) \odot \sigma(Uh_k^\top)\)) permite ponderar las regiones más diagnósticas e interpretar qué zonas dispararon una predicción de Fibroadenoma vs Carcinoma Ductal.</li>
+</ul>
+</div>
+<div class="mb-4 bg-slate-800/50 border border-slate-700/80 rounded-xl p-4">
+<h3 class="text-sm font-black text-rose-300 mb-2">Preguntas Probables del Prof. Zambrano (Defensa Oral)</h3>
+<div class="mb-2.5 text-xs"><div class="font-bold text-white">1. ¿Por qué tu informe de Septiembre decía 82 pacientes y ahora muestras 81?</div><div class="text-slate-300 mt-0.5 pl-3 border-l-2 border-teal-500">En Spanhol et al. (2016) hay 82 carpetas clínicas en disco (24 benignas + 58 malignas), por eso toda la literatura cita 82. Al parsear el ID real del paciente <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">14-XXXXX</code> en todas las 7,909 imágenes descubrimos que <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">14-13412</code> aparece simultáneamente en Ductal Carcinoma y Lobular Carcinoma (246 imágenes). Usar el ID único de 81 pacientes evita cualquier fuga al particionar.</div></div>
+<div class="mb-2.5 text-xs"><div class="font-bold text-white">2. ¿Cuál es la ganancia científica concreta frente a Sudharshan et al. (2019)?</div><div class="text-slate-300 mt-0.5 pl-3 border-l-2 border-teal-500">Sudharshan extrajo manualmente 1,000 parches de 64×64 por imagen con textura artesanal PFTAS (162-d) o re-entrenó una CNN pequeña por parche. Nosotros conservamos el mismo protocolo estricto por paciente, pero extraemos sub-regiones directamente desde mapas intermedios (≤33% de profundidad según Zambrano 2022) en un único pase por imagen y las agregamos con Gated Attention (Ilse 2018), ganando eficiencia computacional y mapas espaciales interpretables.</div></div>
+<div class="mb-2.5 text-xs"><div class="font-bold text-white">3. Si Fibroadenoma causa el 30% de falsos positivos en Spanhol, ¿qué podemos hacer?</div><div class="text-slate-300 mt-0.5 pl-3 border-l-2 border-teal-500">Reportar matriz de confusión por subtipo y usar Gated Attention + normalización de tinción o características SSL de dominio médico (como sugiere Kang et al., CVPR 2023), observando en los mapas de calor qué regiones inducen al error frente a Ductal Carcinoma.</div></div>
+</div>
+  </div>
+</div>
+
+<script>
+  let currentSlide = 0;
+  const slides = Array.from(document.querySelectorAll('.slide-card'));
+  const totalSlides = slides.length;
+
+  function renderMathInSlide() {
+    if (window.renderMathInElement) {
+      renderMathInElement(document.body, {
+        delimiters: [
+          { left: '$$', right: '$$', display: true },
+          { left: '\\(', right: '\\)', display: false }
+        ],
+        throwOnError: false
+      });
+    }
+  }
+
+  function showSlide(idx) {
+    currentSlide = Math.max(0, Math.min(totalSlides - 1, idx));
+    slides.forEach((s, i) => s.classList.toggle('active', i === currentSlide));
+    document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${totalSlides}`;
+    document.getElementById('progressFill').style.width = `${((currentSlide + 1) / totalSlides) * 100}%`;
+    const noteHtml = slides[currentSlide].getAttribute('data-notes') || 'Sin notas.';
+    document.getElementById('notesContent').innerHTML =
+      `<div class="text-teal-300 font-bold mb-1">Slide ${currentSlide + 1}: ${slides[currentSlide].getAttribute('data-title')}</div><p>${noteHtml}</p>`;
+  }
+
+  function nextSlide() { showSlide(currentSlide + 1); }
+  function prevSlide() { showSlide(currentSlide - 1); }
+  function toggleNotes() { document.getElementById('notesDrawer').classList.toggle('open'); }
+  function toggleGuide() {
+    document.getElementById('gridModal').classList.remove('open');
+    document.getElementById('guideModal').classList.toggle('open');
+  }
+
+  function toggleGrid() {
+    document.getElementById('guideModal').classList.remove('open');
+    const gm = document.getElementById('gridModal');
+    const container = document.getElementById('gridCards');
+    if (!gm.classList.contains('open')) {
+      container.innerHTML = slides.map((s, i) => {
+        const activeCls = i === currentSlide ? 'ring-2 ring-teal-400 bg-slate-800' : 'bg-slate-900 hover:bg-slate-800';
+        return `<button onclick="showSlide(${i}); toggleGrid();" class="${activeCls} text-left p-3.5 rounded-xl border border-slate-700 text-white transition">
+          <div class="text-xs font-mono text-teal-400 font-bold mb-1">Slide ${i + 1}</div>
+          <div class="text-xs font-bold leading-snug">${s.getAttribute('data-title')}</div>
+        </button>`;
+      }).join('');
+    }
+    gm.classList.toggle('open');
+  }
+
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen().catch(() => {});
+    }
+  }
+
+  function openLightbox(src, alt) {
+    document.getElementById('lightboxImg').src = src;
+    document.getElementById('lightboxCap').textContent = alt || '';
+    document.getElementById('lightboxModal').classList.add('open');
+  }
+
+  function closeLightbox() { document.getElementById('lightboxModal').classList.remove('open'); }
+
+  document.querySelectorAll('img.zoomable').forEach(img => {
+    img.addEventListener('click', () => openLightbox(img.src, img.alt));
+  });
+
+  document.addEventListener('keydown', (e) => {
+    const lbOpen = document.getElementById('lightboxModal').classList.contains('open');
+    const anyModal = lbOpen || document.getElementById('gridModal').classList.contains('open') || document.getElementById('guideModal').classList.contains('open');
+    if (e.key === 'ArrowRight' || e.key === ' ') {
+      if (anyModal) return;
+      e.preventDefault(); nextSlide();
+    } else if (e.key === 'ArrowLeft') {
+      if (anyModal) return;
+      e.preventDefault(); prevSlide();
+    } else if (e.key.toLowerCase() === 'n') {
+      toggleNotes();
+    } else if (e.key.toLowerCase() === 'g') {
+      toggleGrid();
+    } else if (e.key.toLowerCase() === 'i') {
+      toggleGuide();
+    } else if (e.key.toLowerCase() === 'f') {
+      toggleFullscreen();
+    } else if (e.key === 'Escape') {
+      closeLightbox();
+      document.getElementById('gridModal').classList.remove('open');
+      document.getElementById('guideModal').classList.remove('open');
+    } else if (e.key === 'Home') {
+      if (!anyModal) showSlide(0);
+    } else if (e.key === 'End') {
+      if (!anyModal) showSlide(totalSlides - 1);
+    }
+  });
+
+  
+  function setBreaKMode(mode) {
+    const panel = document.getElementById('bkSplitPanel');
+    const verdict = document.getElementById('bkVerdict');
+    const btnL = document.getElementById('btnLeak');
+    const btnC = document.getElementById('btnClean');
+    if (mode === 'leak') {
+      btnL.className = 'px-2.5 py-1 rounded text-xs font-bold bg-rose-600 text-white';
+      btnC.className = 'px-2.5 py-1 rounded text-xs font-bold bg-slate-200 text-slate-800';
+      panel.innerHTML = `
+        <div class="p-3 rounded-lg bg-rose-50 border border-rose-200">
+          <div class="font-bold text-rose-900">Grupo Train (70%) — INCLUYE al paciente 14-13412</div>
+          <div class="text-slate-700 mt-1">Recibe <strong>SOB_M_DC_14-13412</strong> (40x, 100x, 200x) + parches aleatorios de otros pacientes.</div>
+        </div>
+        <div class="p-3 rounded-lg bg-amber-50 border border-amber-300">
+          <div class="font-bold text-amber-900">Grupo Test (30%) — TAMBIÉN CONTIENE a 14-13412</div>
+          <div class="text-slate-700 mt-1">Evaluamos sobre <strong>SOB_M_LC_14-13412</strong> (400x) del <strong>MISMO paciente y biopsia</strong>. Además con el bug anterior (<code class="bg-white px-1">'14'</code>), 79 de 81 pacientes quedaban en un solo ID gigante!</div>
+        </div>`;
+      verdict.className = 'mt-3 p-3 rounded-lg border border-rose-300 bg-rose-100 text-rose-900 text-xs font-semibold';
+      verdict.innerHTML = 'DATA LEAKAGE CRÍTICO: Accuracy ficticio ~94%, pero el modelo memorizó la tinción/fondo del paciente 14-13412 y falla al llegar a clínica real.';
+    } else {
+      btnL.className = 'px-2.5 py-1 rounded text-xs font-bold bg-slate-200 text-slate-800';
+      btnC.className = 'px-2.5 py-1 rounded text-xs font-bold bg-emerald-600 text-white';
+      panel.innerHTML = `
+        <div class="p-3 rounded-lg bg-emerald-50 border border-emerald-200">
+          <div class="font-bold text-emerald-900">Train + Val (65 pacientes únicos &mdash; 4 folds)</div>
+          <div class="text-slate-700 mt-1">Todas las imágenes de cada ID <code class="bg-white px-1">14-XXXXX</code> (ej. las 246 fotos DC+LC de <code class="bg-white px-1">14-13412</code>) permanecen juntas en el mismo bloque.</div>
+        </div>
+        <div class="p-3 rounded-lg bg-teal-50 border border-teal-200">
+          <div class="font-bold text-teal-900">Test Ciego (16 pacientes totalmente inéditos &mdash; 1 fold)</div>
+          <div class="text-slate-700 mt-1">Ninguna magnificación ni subtipo de esos 16 pacientes fue vista nunca durante el entrenamiento.</div>
+        </div>`;
+      verdict.className = 'mt-3 p-3 rounded-lg border border-emerald-300 bg-emerald-100 text-emerald-900 text-xs font-semibold';
+      verdict.innerHTML = 'EVALUACIÓN LIMPIA (GroupKFold): Cumple protocolo Spanhol (2016) y Seminario 25 Sep sin contaminación cruzada.';
+    }
+  }
+
+  function updateBkPipe() {
+    const val = document.getElementById('bkPipeSel').value;
+    const met = document.getElementById('bkPipeMetrics');
+    const desc = document.getElementById('bkPipeDesc');
+    const map = {
+      patch_sil: {
+        c1: ['~100–1000', 'Pases CNN / img'],
+        c2: ['100% Capa L', 'Sesgo objetos Nat.'],
+        c3: ['Alta', 'Redundancia FLOPs'],
+        txt: 'Método tradicional: recorta decenas o cientos de parches 64x64 / 224x224 en espacio de píxeles y pasa cada uno por toda la CNN hasta el final. Caro en cómputo y colapsa textura fina en el vector global.'
+      },
+      inter_mid: {
+        c1: ['1 Solo Pase', 'Imagen 700x460'],
+        c2: ['14%–33% CNN', 'Capas Tempranas'],
+        c3: ['-59% Tiempo', 'Zambrano (2022)'],
+        txt: 'Propuesta del Seminario I (25 Sep): inyecta los 700x460 px enteros UNA vez hasta una capa intermedia (ej. res3b_branch2c). Divide ese tensor [H_f, W_f, C] en K sub-regiones espaciales e introduce Gated Attention MIL encima.'
+      },
+      patient_bag: {
+        c1: ['81 Bolsas', '~97.6 imgs / bolsa'],
+        c2: ['Gated ABMIL', 'Ilse et al. (2018)'],
+        c3: ['ROC-AUC', 'F1 + Bootstrap 95%'],
+        txt: 'Formulación clínica por paciente: cada paciente (81 bolsas reales) agrupa sus múltiples campos y aumentos. La compuerta sigmoide filtra áreas benignas transicionales y genera mapas de atención explicables.'
+      }
+    };
+    const d = map[val];
+    met.innerHTML = [d.c1, d.c2, d.c3].map(x =>
+      `<div class="bg-slate-800 rounded-lg p-2.5 border border-slate-700"><div class="text-sm font-black text-teal-300">${x[0]}</div><div class="text-[11px] text-slate-400 mt-0.5">${x[1]}</div></div>`
+    ).join('');
+    desc.textContent = d.txt;
+  }
+
+  function initDatasetLab() {
+    setBreaKMode('leak');
+    updateBkPipe();
+  }
+
+
+  window.addEventListener('DOMContentLoaded', () => {
+    if (window.lucide) lucide.createIcons();
+    if (typeof initDatasetLab === 'function') initDatasetLab();
+    showSlide(0);
+    setTimeout(renderMathInSlide, 250);
+  });
+</script>
+</body>
+</html>

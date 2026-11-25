@@ -128,22 +128,29 @@
 <div class="deck-shell">
   <!-- TOP NAVIGATION -->
   <header class="topbar">
-    <div class="flex items-center gap-3">
-      <div class="w-8 h-8 rounded-lg bg-teal-600 flex items-center justify-center font-black text-white text-xs">UDP</div>
-      <div>
-        <div class="text-sm font-bold text-white leading-tight">Magíster en Ciencias de la Computación — Histopatología MIL</div>
-        <div class="text-[11px] text-slate-400">Lucas Vicuña &bull; Prof. Guía: Dr. Jorge Eduardo Zambrano Ibujés</div>
+    <div class="flex items-center gap-2.5 min-w-0">
+      <a href="../index.html" class="w-8 h-8 rounded-lg bg-teal-600 hover:bg-teal-500 flex items-center justify-center font-black text-white text-xs shrink-0" title="Ir al Portal Hub">UDP</a>
+      <div class="hidden xl:block truncate">
+        <div class="text-xs font-bold text-white leading-tight truncate">Magíster en Ciencias de la Computación &mdash; Histopatología MIL</div>
+        <div class="text-[10px] text-slate-400 truncate">Lucas Vicuña &bull; Prof. Guía: Dr. Jorge Eduardo Zambrano Ibujés</div>
+      </div>
+      <div class="hidden lg:flex items-center gap-1 ml-2 pl-2 border-l border-slate-700 text-[11px]">
+        <a href="datasets/01_breakhis.html" class="px-2 py-1 rounded bg-slate-800 hover:bg-rose-700 text-rose-200 font-semibold transition" title="PPT Dedicada BreaKHis">01 BreaKHis</a>
+        <a href="datasets/02_pcam.html" class="px-2 py-1 rounded bg-slate-800 hover:bg-teal-700 text-teal-200 font-semibold transition" title="PPT Dedicada PCam">02 PCam</a>
+        <a href="datasets/03_nct_crc.html" class="px-2 py-1 rounded bg-slate-800 hover:bg-indigo-700 text-indigo-200 font-semibold transition" title="PPT Dedicada NCT-CRC">03 NCT-CRC</a>
+        <a href="datasets/04_mhist.html" class="px-2 py-1 rounded bg-slate-800 hover:bg-amber-700 text-amber-200 font-semibold transition" title="PPT Dedicada MHIST">04 MHIST</a>
+        <a href="datasets/05_camelyon16.html" class="px-2 py-1 rounded bg-slate-800 hover:bg-rose-700 text-rose-200 font-semibold transition" title="PPT Dedicada CAMELYON16">05 CAM16</a>
       </div>
     </div>
-    <div class="flex items-center gap-2">
+    <div class="flex items-center gap-2 shrink-0">
       <button onclick="prevSlide()" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold flex items-center gap-1" title="Anterior (←)">
         <i data-lucide="chevron-left" class="w-4 h-4"></i> Ant
       </button>
-      <span id="slideCounter" class="text-xs font-mono bg-slate-800 px-3 py-1.5 rounded-lg text-teal-300 font-bold">1 / 17</span>
+      <span id="slideCounter" class="text-xs font-mono bg-slate-800 px-3 py-1.5 rounded-lg text-teal-300 font-bold">1 / 19</span>
       <button onclick="nextSlide()" class="px-2.5 py-1.5 rounded-lg bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold flex items-center gap-1" title="Siguiente (→ / Espacio)">
         Sig <i data-lucide="chevron-right" class="w-4 h-4"></i>
       </button>
-      <button onclick="toggleGrid()" class="ml-2 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold flex items-center gap-1" title="Índice Visual (G)">
+      <button onclick="toggleGrid()" class="ml-1 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold flex items-center gap-1" title="Índice Visual (G)">
         <i data-lucide="layout-grid" class="w-4 h-4"></i> Índice
       </button>
       <button onclick="toggleNotes()" id="btnNotes" class="px-2.5 py-1.5 rounded-lg bg-amber-600/90 hover:bg-amber-500 text-white text-xs font-semibold flex items-center gap-1" title="Notas / Teleprompter (N)">
@@ -196,11 +203,91 @@
           </div>
         </div>
 
-        <div class="flex flex-wrap items-center justify-between pt-5 border-t border-white/15 text-sm text-slate-300">
+        <div class="mt-4 bg-white/5 border border-white/15 rounded-xl p-3 flex flex-wrap items-center justify-between gap-2 text-xs">
+          <span class="font-bold text-amber-300 uppercase tracking-wider">PPTs Dedicadas + Informes Guía:</span>
+          <div class="flex flex-wrap gap-1.5">
+            <a href="datasets/01_breakhis.html" class="px-2.5 py-1 rounded-lg bg-rose-600/90 hover:bg-rose-500 text-white font-bold">01 BreaKHis</a>
+            <a href="datasets/02_pcam.html" class="px-2.5 py-1 rounded-lg bg-teal-600/90 hover:bg-teal-500 text-white font-bold">02 PCam</a>
+            <a href="datasets/03_nct_crc.html" class="px-2.5 py-1 rounded-lg bg-indigo-600/90 hover:bg-indigo-500 text-white font-bold">03 NCT-CRC</a>
+            <a href="datasets/04_mhist.html" class="px-2.5 py-1 rounded-lg bg-amber-600/90 hover:bg-amber-500 text-white font-bold">04 MHIST</a>
+            <a href="datasets/05_camelyon16.html" class="px-2.5 py-1 rounded-lg bg-rose-700/90 hover:bg-rose-600 text-white font-bold">05 CAMELYON16</a>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-between pt-4 border-t border-white/15 text-sm text-slate-300">
           <div><strong>Estudiante:</strong> Lucas Vicuña (<span class="font-mono text-teal-300">Petucode</span>)</div>
           <div><strong>Profesor Guía:</strong> Dr. Jorge Eduardo Zambrano Ibujés</div>
           <div class="text-xs text-slate-400">Teclas: &larr; / &rarr; Navegar &bull; Clic en gráficos para Zoom &bull; <strong>N</strong> Guion Orador</div>
         </div>
+      </div>
+    </section>
+
+    <!-- ==================== SLIDE 2: HILO CONDUCTOR REUNIONES ==================== -->
+    <section class="slide-card" data-title="Hilo Conductor (4 Reuniones)" data-notes="<strong>Contextualización con lo visto en reuniones anteriores:</strong> Profesor, antes de mostrar los números de cada dataset, esta lámina conecta exactamente todo lo que hemos construido juntos desde septiembre: el 25 de septiembre definimos su idea metodológica de capas intermedias sin reentrenar (Zambrano 2022) usando BreaKHis; el 8 de octubre formalizamos la matemática MIL y por qué el espacio de features evita el colapso de VRAM; el 9 de noviembre resolvimos la agregación con Gated Attention (Ilse 2018); y hoy 20 de noviembre consolidamos las 5 bases de datos reales y auditadas.">
+      <div class="slide-header">
+        <div>
+          <span class="tag-pill bg-teal-100 text-teal-800">Continuidad del Magíster &bull; Sep &ndash; Nov 2026</span>
+          <h2 class="text-2xl font-black text-slate-900 mt-1">¿Cómo se Conectan las Bases de Datos con las Reuniones Anteriores?</h2>
+        </div>
+        <span class="text-xs font-mono text-slate-500">Slide 2 / 19</span>
+      </div>
+      <div class="slide-body flex flex-col justify-between gap-4">
+        <div class="analogy-box">
+          <div class="font-bold text-amber-900 text-sm">Una Sola Historia Coherente: De la Hipótesis Teórica al Ecosistema Empírico</div>
+          <p class="text-xs text-amber-950 mt-1 leading-relaxed">
+            Cada reunión aportó una pieza del rompecabezas: <strong>qué mirar en la red</strong> (25 Sep), <strong>cómo cabe en memoria</strong> (08 Oct), <strong>cómo ponderar instancias sin ruido</strong> (09 Nov) y <strong>con qué datos auditados validarlo</strong> (20 Nov).
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-3.5 flex-1 items-stretch text-xs">
+          <div class="border-2 border-rose-200 bg-rose-50/50 rounded-xl p-3.5 flex flex-col justify-between">
+            <div>
+              <span class="tag-pill bg-rose-200 text-rose-900 mb-2">25 Septiembre</span>
+              <h3 class="font-black text-rose-950 text-sm mb-1.5">Seminario I: Capas Intermedias</h3>
+              <p class="text-slate-700 leading-relaxed">
+                Hipótesis basada en <strong>Zambrano et al. (2022)</strong>: extraer tensores de las primeras <strong>&le;33% capas CNN congeladas</strong> en pase único y partirlos en <em>K</em> sub-regiones vs parches de <em>Sudharshan (2019)</em>.
+              </p>
+            </div>
+            <div class="pt-2 border-t border-rose-200 font-bold text-rose-800">&rarr; Base natural: <a href="datasets/01_breakhis.html" class="underline">BreaKHis</a> y <a href="datasets/02_pcam.html" class="underline">PCam</a></div>
+          </div>
+
+          <div class="border-2 border-indigo-200 bg-indigo-50/50 rounded-xl p-3.5 flex flex-col justify-between">
+            <div>
+              <span class="tag-pill bg-indigo-200 text-indigo-900 mb-2">08 Octubre</span>
+              <h3 class="font-black text-indigo-950 text-sm mb-1.5">Marco WSL y Muro de VRAM</h3>
+              <p class="text-slate-700 leading-relaxed">
+                Formalización desde <em>Dietterich (1997)</em>, heterogeneidad intra-paciente, fracaso de Mean/Max pooling, y curva cuadrática \(O(K^2)\) en VRAM que obliga a trabajar en <strong>Feature Space offline</strong>.
+              </p>
+            </div>
+            <div class="pt-2 border-t border-indigo-200 font-bold text-indigo-800">&rarr; Escalado: <a href="datasets/05_camelyon16.html" class="underline">CAMELYON16 (UNI)</a></div>
+          </div>
+
+          <div class="border-2 border-amber-200 bg-amber-50/50 rounded-xl p-3.5 flex flex-col justify-between">
+            <div>
+              <span class="tag-pill bg-amber-200 text-amber-900 mb-2">09 Noviembre</span>
+              <h3 class="font-black text-amber-950 text-sm mb-1.5">Ilse (2018): Gated Attention</h3>
+              <p class="text-slate-700 leading-relaxed">
+                Instancia vs Embedding (<em>Ilse 2018</em>): la linealidad de \(\tanh\) en \([-1,1]\) exige compuerta Hadamard \(\sigma(Uh_k^\top)\), probada con la <strong>caja de Peras y Manzanas</strong> (\(O(K)\)).
+              </p>
+            </div>
+            <div class="pt-2 border-t border-amber-200 font-bold text-amber-900">&rarr; Filtro confusores: <a href="datasets/03_nct_crc.html" class="underline">NCT-CRC</a> &amp; <a href="datasets/04_mhist.html" class="underline">MHIST</a></div>
+          </div>
+
+          <div class="border-2 border-teal-400 bg-teal-50/70 rounded-xl p-3.5 flex flex-col justify-between">
+            <div>
+              <span class="tag-pill bg-teal-200 text-teal-900 mb-2">20 Noviembre (Hoy)</span>
+              <h3 class="font-black text-teal-950 text-sm mb-1.5">5 Bases Auditadas + SOTA</h3>
+              <p class="text-slate-800 leading-relaxed">
+                De 82 carpetas &rarr; <strong>81 IDs reales</strong> en BreaKHis (<code class="bg-white px-1 rounded">14-13412</code>), <strong>32.7k PCam</strong>, <strong>107k NCT-CRC</strong> (shift Macenko &minus;30.8), MHIST purgado y <strong>399 WSIs + 25k .npy + 111 XML</strong> en CAM16.
+              </p>
+            </div>
+            <div class="pt-2 border-t border-teal-300 font-bold text-teal-900">&rarr; + Confianza espacial (PLOS 2025)</div>
+          </div>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span>Documentos base analizados: Seminario I (25 Sep), Informe_MIL_08_OCT.pdf, Magister_9NOV.pdf y carpeta Referencias/.</span>
+        <span>Hilo unificado Sep &rarr; Nov 2026</span>
       </div>
     </section>
 
@@ -578,8 +665,11 @@
         </div>
       </div>
       <div class="slide-footer">
-        <span>Uso en Tesis: Baseline inmediato de MIL agrupando en 81 bolsas por paciente sin fuga de datos.</span>
-        <span>Fuente: breakhis_bags_pacientes.xlsx &amp; 01_BreaKHis_EDA.ipynb</span>
+        <span>Uso en Tesis: Baseline MIL en 81 bolsas-paciente + prueba de capas intermedias (25 Sep / Sudharshan 2019).</span>
+        <span class="flex items-center gap-2">
+          <a href="datasets/01_breakhis.html" class="px-2 py-0.5 rounded bg-rose-600 text-white font-bold hover:bg-rose-500">Abrir PPT BreaKHis &rarr;</a>
+          <a href="guias/01_informe_breakhis.md" class="px-2 py-0.5 rounded bg-slate-200 text-slate-800 font-bold hover:bg-slate-300">Informe .md</a>
+        </span>
       </div>
     </section>
 
@@ -624,8 +714,11 @@
         </div>
       </div>
       <div class="slide-footer">
-        <span>Rol MIL: Entrenamiento veloz de encoders de parches y creación de Pseudo-Bags controladas.</span>
-        <span>Fuente: pcam_estadisticas_reales.xlsx &amp; 02_PCam_EDA.ipynb</span>
+        <span>Rol MIL: Validación veloz de capas intermedias/SSL (Kang CVPR 2023) y Pseudo-Bags desde CAMELYON16.</span>
+        <span class="flex items-center gap-2">
+          <a href="datasets/02_pcam.html" class="px-2 py-0.5 rounded bg-teal-600 text-white font-bold hover:bg-teal-500">Abrir PPT PCam &rarr;</a>
+          <a href="guias/02_informe_pcam.md" class="px-2 py-0.5 rounded bg-slate-200 text-slate-800 font-bold hover:bg-slate-300">Informe .md</a>
+        </span>
       </div>
     </section>
 
@@ -662,8 +755,11 @@
         </div>
       </div>
       <div class="slide-footer">
-        <span>Rol MIL: Entrenar representaciones multiclase y filtros contra artefactos (BACK / DEB / MUC).</span>
-        <span>Kather et al. (2018) &bull; Zenodo 1214456</span>
+        <span>Rol MIL: Entrenar filtros contra confusores (LYM / BACK / DEB) y medir normalización Macenko / RandStainNA.</span>
+        <span class="flex items-center gap-2">
+          <a href="datasets/03_nct_crc.html" class="px-2 py-0.5 rounded bg-indigo-600 text-white font-bold hover:bg-indigo-500">Abrir PPT NCT-CRC &rarr;</a>
+          <a href="guias/03_informe_nct_crc.md" class="px-2 py-0.5 rounded bg-slate-200 text-slate-800 font-bold hover:bg-slate-300">Informe .md</a>
+        </span>
       </div>
     </section>
 
@@ -703,8 +799,11 @@
         </div>
       </div>
       <div class="slide-footer">
-        <span>Lección metodológica: Nunca aceptar silenciosamente fallbacks sintéticos en datos clínicos.</span>
-        <span>Wei et al. (AIME 2021, arXiv:2101.12355)</span>
+        <span>Lección metodológica: Nunca aceptar fallbacks sintéticos; consenso 7 patólogos útil para incertidumbre (4/7 vs 7/7).</span>
+        <span class="flex items-center gap-2">
+          <a href="datasets/04_mhist.html" class="px-2 py-0.5 rounded bg-amber-600 text-white font-bold hover:bg-amber-500">Abrir PPT MHIST &rarr;</a>
+          <a href="guias/04_informe_mhist.md" class="px-2 py-0.5 rounded bg-slate-200 text-slate-800 font-bold hover:bg-slate-300">Informe .md</a>
+        </span>
       </div>
     </section>
 
@@ -742,8 +841,11 @@
         </div>
       </div>
       <div class="slide-footer">
-        <span>Subsets .npy auditados: classifier/train (10,997), classifier/val (1,647), test L3 (2,585), unet (10,006).</span>
-        <span>camelyon16_patches_inventario.xlsx</span>
+        <span>Subsets .npy auditados (10.68 GB) + 111 XMLs ASAP listos para comparar contra CLAM, TransMIL y PLOS One (2025).</span>
+        <span class="flex items-center gap-2">
+          <a href="datasets/05_camelyon16.html" class="px-2 py-0.5 rounded bg-rose-600 text-white font-bold hover:bg-rose-500">Abrir PPT CAMELYON16 &rarr;</a>
+          <a href="guias/05_informe_camelyon16.md" class="px-2 py-0.5 rounded bg-slate-200 text-slate-800 font-bold hover:bg-slate-300">Informe .md</a>
+        </span>
       </div>
     </section>
 
@@ -876,6 +978,71 @@
       <div class="slide-footer">
         <span>Backbones candidatos: UNI (MahmoodLab, ViT-L/16, 1024-d) e iBOT ViT-Base (Kaggle CAMELYON16, 768-d).</span>
         <span>05_CAMELYON16_WSI.ipynb &amp; 06_Comparativa_Final.ipynb</span>
+      </div>
+    </section>
+
+    <!-- ==================== SLIDE 14: LITERATURA SOTA Y PAPERS ==================== -->
+    <section class="slide-card" data-title="Puente SOTA: Papers de Referencias/" data-notes="<strong>Síntesis directa de los papers guardados en otras reuniones/Referencias/:</strong> Aquí conectamos nuestros 5 datasets directamente con los resultados verificados de la literatura del profesor y el estado del arte. Destaque dos convergencias impresionantes: (1) Lu et al. (CLAM) también trunca ResNet50 en el bloque intermedio 3 (1024-d) coincidiendo con Zambrano (2022), y (2) Keshvarikhojasteh et al. (PLOS One 2025) demuestra que Max-Pool saca 0.80 AUC en CAMELYON16 mirando parches SANOS (MI=0.00), haciendo indispensable nuestra evaluación con las 111 máscaras XML y 25,235 .npy locales!">
+      <div class="slide-header">
+        <div>
+          <span class="tag-pill bg-purple-100 text-purple-800">Marco Bibliográfico Real &bull; <code class="lowercase">Referencias/</code></span>
+          <h2 class="text-2xl font-black text-slate-900 mt-1">¿Cómo Conversan Nuestros Datasets con los Papers Clave del Magíster?</h2>
+        </div>
+        <span class="text-xs font-mono text-slate-500">Slide 14 / 19</span>
+      </div>
+      <div class="slide-body flex flex-col justify-between gap-3">
+        <div class="overflow-hidden rounded-xl border border-slate-200 shadow-sm">
+          <table class="w-full text-[11.5px] text-left">
+            <thead class="bg-slate-900 text-white">
+              <tr>
+                <th class="p-2.5">Paper Verificado en <code class="text-teal-300">Referencias/</code></th>
+                <th class="p-2.5">Datasets Involucrados</th>
+                <th class="p-2.5">Hallazgo Cuantitativo / Arquitectónico Exacto</th>
+                <th class="p-2.5">Acción Concreta en Nuestra Tesis</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200">
+              <tr class="bg-rose-50/40">
+                <td class="p-2 font-bold">Zambrano et al. (2022)<br><span class="font-normal text-slate-500">IEEE Access (Prof. Guía)</span></td>
+                <td class="p-2 font-semibold">BreaKHis &amp; PCam</td>
+                <td class="p-2">Capas &le;33% (<code class="bg-white px-1">DenseNet201 14%</code>, <code class="bg-white px-1">ResNet50 res3b 33%</code>) capturan textura fina sin fine-tuning y ahorran hasta <strong>59.33%</strong> de tiempo.</td>
+                <td class="p-2">Pase único truncado sobre BreaKHis (700&times;460) y comparación contra parches <em>Sudharshan (2019)</em>.</td>
+              </tr>
+              <tr class="bg-white">
+                <td class="p-2 font-bold">Spanhol (2016) &amp; Sudharshan (2019)</td>
+                <td class="p-2 font-semibold">BreaKHis (81 IDs)</td>
+                <td class="p-2">PFTAS+SVM 85.1% (@200x, 30% errores en Fibroadenoma); Non-param MIL alcanza <strong>92.1%</strong> @40x (Patient-bag &gt; Image-bag, p=0.0029).</td>
+                <td class="p-2">Usar <code class="bg-slate-100 px-1">GroupKFold</code> estricto sobre 81 pacientes reales (<code class="bg-slate-100 px-1">14-13412</code> unificado).</td>
+              </tr>
+              <tr class="bg-indigo-50/40">
+                <td class="p-2 font-bold">Kang et al. (CVPR 2023)<br><span class="font-normal text-slate-500">SSL Benchmark Patología</span></td>
+                <td class="p-2 font-semibold">PCam, NCT-CRC, MHIST, BACH</td>
+                <td class="p-2">TCGA SSL aplasta a ImageNet: <strong>PCam 80.79%&rarr;90.12%</strong> (DINO), <strong>CRC 90.93%&rarr;95.78%</strong> (SwAV), <strong>MHIST 78.92%&rarr;85.88%</strong> + <em>RandStainNA</em>.</td>
+                <td class="p-2">Explica shift de brillo &minus;30.77 en NCT-CRC y valida usar backbones SSL / UNI congelados.</td>
+              </tr>
+              <tr class="bg-white">
+                <td class="p-2 font-bold">Lu et al. (CLAM 2021) &amp; Shao (TransMIL 2021)</td>
+                <td class="p-2 font-semibold">CAMELYON16 (399)</td>
+                <td class="p-2"><strong>CLAM también trunca ResNet50 en Bloque 3 (1024-d!)</strong> &rarr; 0.953 AUC; <strong>TransMIL</strong> 0.9309 AUC con PPEG + Nyström.</td>
+                <td class="p-2">Conecta capas intermedias (25 Sep) con WSI en 2 Etapas (08 Oct) + Gated Attention (09 Nov).</td>
+              </tr>
+              <tr class="bg-amber-50/60">
+                <td class="p-2 font-bold text-amber-950">Keshvarikhojasteh (2025)<br><span class="font-normal text-amber-900">PLOS One (Reliability MIL)</span></td>
+                <td class="p-2 font-semibold">CAMELYON16 (399)</td>
+                <td class="p-2"><strong>Max-Pool</strong> saca AUC 0.80 con <strong>MI=0.00 / AUPRC=0.23</strong> (foco en linfocitos sanos!). ABMIL/CLAM/ACMIL suben AUPRC a <strong>0.59–0.62</strong>.</td>
+                <td class="p-2 font-semibold">Justifica evaluar \(\alpha_k\) vs nuestros <strong>111 XML + 25,235 .npy</strong> con IoU/Dice!</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="bg-slate-900 text-white rounded-xl px-4 py-2.5 text-xs flex flex-wrap items-center justify-between">
+          <span><strong class="text-teal-300">Reseña Gadermayr &amp; Tschuchnig (2024):</strong> Refuerza la tendencia hacia Atención + combinación Instancia/Embedding + Stain Normalization (Macenko).</span>
+          <a href="datasets/05_camelyon16.html" class="text-amber-300 underline font-bold">Ver detalle CAMELYON16 &rarr;</a>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span>Todas las cifras citadas verificadas directamente en los PDFs de otras reuniones/Referencias/.</span>
+        <span>Convergencia Metodológica 2016&ndash;2025</span>
       </div>
     </section>
 
@@ -1084,11 +1251,11 @@
           <div>&#128193; <span class="text-white font-bold">scripts/</span> &larr; Scripts auditados y rutas portables</div>
           <div>&#128193; <span class="text-white font-bold">figures/ (00_Resumen..06_Comparativa)</span> &larr; PNGs limpios sin glifos</div>
           <div>&#128193; <span class="text-white font-bold">tablas/*.xlsx</span> &larr; Tablas reproducibles generadas por notebooks</div>
-          <div>&#128193; <span class="text-white font-bold">informe/</span> &larr; Esta presentación interactiva</div>
+          <div>&#128193; <span class="text-white font-bold">informe/</span> &larr; PPT Central + <code class="text-teal-300">datasets/*.html</code> + <code class="text-teal-300">guias/*.md</code></div>
           <div class="pt-2 mt-2 border-t border-slate-700 text-rose-300">
             &#128274; Excluidos por <code class="text-amber-300">.gitignore</code>:<br>
             &nbsp;&nbsp;&bull; <span class="text-slate-400">data_samples/ (27.4 GB *.tif, *.h5, *.npy, *.xml)</span><br>
-            &nbsp;&nbsp;&bull; <span class="text-slate-400">Materia Util/ (5.16 GB + kaggle.json)</span>
+            &nbsp;&nbsp;&bull; <span class="text-slate-400">Materia Util/ (5.16 GB + kaggle.json) &amp; otras reuniones/ (1.22 GB)</span>
           </div>
         </div>
 
@@ -1181,8 +1348,15 @@
           </div>
         </div>
 
-        <div class="bg-slate-900 text-white rounded-xl px-5 py-3 flex flex-wrap items-center justify-between text-xs">
-          <span class="font-bold text-teal-300">Todo el código, notebooks re-ejecutados, figuras auditadas y documentación disponibles en el repositorio GitHub del proyecto.</span>
+        <div class="bg-slate-900 text-white rounded-xl px-5 py-3 flex flex-wrap items-center justify-between gap-2 text-xs">
+          <span class="font-bold text-teal-300">Profundizar por dataset:</span>
+          <div class="flex flex-wrap gap-1.5">
+            <a href="datasets/01_breakhis.html" class="px-2.5 py-1 rounded bg-rose-700 hover:bg-rose-600 font-bold">01 BreaKHis</a>
+            <a href="datasets/02_pcam.html" class="px-2.5 py-1 rounded bg-teal-700 hover:bg-teal-600 font-bold">02 PCam</a>
+            <a href="datasets/03_nct_crc.html" class="px-2.5 py-1 rounded bg-indigo-700 hover:bg-indigo-600 font-bold">03 NCT-CRC</a>
+            <a href="datasets/04_mhist.html" class="px-2.5 py-1 rounded bg-amber-700 hover:bg-amber-600 font-bold">04 MHIST</a>
+            <a href="datasets/05_camelyon16.html" class="px-2.5 py-1 rounded bg-rose-800 hover:bg-rose-700 font-bold">05 CAM16</a>
+          </div>
           <span class="font-mono text-slate-300">¿Preguntas o comentarios, Profesor?</span>
         </div>
       </div>
@@ -1217,7 +1391,7 @@
 <div id="gridModal">
   <div class="max-w-6xl mx-auto">
     <div class="flex items-center justify-between mb-6 text-white">
-      <h2 class="text-xl font-black">Índice Completo de Diapositivas (17)</h2>
+      <h2 id="gridModalTitle" class="text-xl font-black">Índice Completo de Diapositivas (19)</h2>
       <button onclick="toggleGrid()" class="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-xs font-bold">Cerrar (G / ESC)</button>
     </div>
     <div id="gridCards" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
@@ -1454,6 +1628,12 @@
 
   // Init
   window.addEventListener('DOMContentLoaded', () => {
+    slides.forEach((s, i) => {
+      const badge = s.querySelector('.slide-header span.font-mono');
+      if (badge) badge.textContent = `Slide ${i + 1} / ${totalSlides}`;
+    });
+    const gTitle = document.getElementById('gridModalTitle');
+    if (gTitle) gTitle.textContent = `Índice Completo de Diapositivas (${totalSlides})`;
     if (window.lucide) lucide.createIcons();
     setBagScenario('micro');
     recalcStorage();

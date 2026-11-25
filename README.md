@@ -15,8 +15,28 @@
 
 Este repositorio consolida el **análisis exploratorio (EDA)**, la **auditoría técnica completa de código y datos**, y la **hoja de ruta experimental** para diagnosticar cáncer en láminas histopatológicas digitales (**Whole Slide Images — WSI**, hasta ~100,000 &times; 100,000 px) mediante **Multiple Instance Learning (MIL)** y **Gated Attention** bajo una restricción estricta de almacenamiento (**&lt; 10 GB por dataset adicional**).
 
-- **Presentación interactiva para la reunión ("con peras y manzanas"):** [informe/presentacion_reunion_20_noviembre.html](informe/presentacion_reunion_20_noviembre.html) (17 diapositivas con simuladores interactivos de *Caja MIL*, *Presupuesto de Disco* y *Compuerta Hadamard*, zoom en imágenes y Teleprompter de orador).
+- **Portal Web Interactivo (GitHub Pages):** [https://petucode.github.io/magister-histopatologia-mil/](https://petucode.github.io/magister-histopatologia-mil/)
+- **Presentación central de la reunión ("con peras y manzanas"):** [informe/presentacion_reunion_20_noviembre.html](informe/presentacion_reunion_20_noviembre.html) (conecta las reuniones del 25 Sep, 08 Oct y 09 Nov con las 5 bases de datos auditadas, simuladores interactivos y Teleprompter de orador).
 - **Informe técnico exhaustivo post-auditoría:** [docs/ANALISIS_PROFUNDO.md](docs/ANALISIS_PROFUNDO.md).
+
+### Hub de Presentaciones Dedicadas e Informes Guía por Dataset
+
+| Dataset &amp; Notebook Auditado | Presentación HTML ("Peras y Manzanas") | Informe Guía de Exposición | Eje Metodológico y Literatura |
+| :--- | :--- | :--- | :--- |
+| **01 BreaKHis v1** ([`01_BreaKHis_EDA.ipynb`](notebooks/01_BreaKHis_EDA.ipynb)) | [01_breakhis.html](informe/datasets/01_breakhis.html) | [01_informe_breakhis.md](informe/guias/01_informe_breakhis.md) | 81 pacientes en 82 carpetas (`14-13412`), `GroupKFold`, *Spanhol 2016*, *Sudharshan 2019* &amp; capas intermedias (*Zambrano 2022*) |
+| **02 PatchCamelyon** ([`02_PCam_EDA.ipynb`](notebooks/02_PCam_EDA.ipynb)) | [02_pcam.html](informe/datasets/02_pcam.html) | [02_informe_pcam.md](informe/guias/02_informe_pcam.md) | Regla centro `32×32` en `96×96` HDF5, señal verde `-0.100` H&amp;E y SSL (*Kang et al. CVPR 2023*) |
+| **03 NCT-CRC-HE** ([`03_NCT_CRC_EDA.ipynb`](notebooks/03_NCT_CRC_EDA.ipynb)) | [03_nct_crc.html](informe/datasets/03_nct_crc.html) | [03_informe_nct_crc.md](informe/guias/03_informe_nct_crc.md) | 9 tejidos (`107,180` TIF), *domain shift* Macenko (`-30.77` brillo `BACK`), *RandStainNA* (*Kang 2023*, *Gadermayr 2024*) |
+| **04 MHIST** ([`04_MHIST_EDA.ipynb`](notebooks/04_MHIST_EDA.ipynb)) | [04_mhist.html](informe/datasets/04_mhist.html) | [04_informe_mhist.md](informe/guias/04_informe_mhist.md) | Consenso 7 patólogos (`HP/SSA`), purga CSV falso, DUA BMIRDS &amp; transferencia bajo datos escasos |
+| **05 CAMELYON16** ([`05_CAMELYON16_WSI.ipynb`](notebooks/05_CAMELYON16_WSI.ipynb)) | [05_camelyon16.html](informe/datasets/05_camelyon16.html) | [05_informe_camelyon16.md](informe/guias/05_informe_camelyon16.md) | 399 WSIs (`3.17M` coords), `111 XML`, `25,235 .npy`, *CLAM (2021)*, *TransMIL (2021)* y confiabilidad *PLOS One (2025)* |
+
+### Continuidad Metodológica Entre Reuniones (25 Sep &rarr; 08 Oct &rarr; 09 Nov &rarr; 20 Nov)
+
+| Reunión | Documento / Enfoque | Conexión Directa con las Bases de Datos Hoy |
+| :--- | :--- | :--- |
+| **25 Sep** | Seminario I: Capas intermedias CNN (`≤33%`, *Zambrano 2022*) vs parches (*Sudharshan 2019*) | **BreaKHis (`700×460`)** y **PCam (`96×96`)** permiten pase único sin reentrenamiento; *CLAM* también trunca ResNet50 tras el 3er bloque (`1024-d`). |
+| **08 Oct** | Informe MIL: WSL (*Dietterich 1997*), dilución por promedio y muro de VRAM $O(K^2)$ | **CAMELYON16 (`123–35,766` parches/WSI)** hace obligatoria la extracción offline (UNI/iBOT) para entrenar en espacio de características. |
+| **09 Nov** | *Ilse et al. (2018)*: Compuerta Hadamard $\tanh(Vh)\odot\sigma(Uh)$ y simulación *Peras y Manzanas* | Filtra tejido sano (`LYM`, `ADI`, `BACK` de **NCT-CRC**; ganglio sano de **CAMELYON16**), calibrada ante duda médica (**MHIST 4/7**). |
+| **20 Nov** | Auditoría empírica de `31.4 GB` locales + validación espacial SOTA | Descubrimiento de `81 IDs`, `normal_map + 111 XML + 25,235 .npy` para medir confiabilidad *MI/AUPRC* (*Keshvarikhojasteh 2025*). |
 
 ---
 

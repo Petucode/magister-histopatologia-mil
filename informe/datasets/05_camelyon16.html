@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dataset 05: CAMELYON16 — Magíster UDP (Con Peras y Manzanas)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0; height: 100%; overflow: hidden;
+      font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #0b1120; color: #0f172a;
+    }
+    .deck-shell {
+      display: flex; flex-direction: column; height: 100vh; width: 100vw;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    }
+    .topbar {
+      height: 54px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      padding: 0 16px; background: rgba(15, 23, 42, 0.95);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+      color: #e2e8f0;
+    }
+    .stage {
+      flex: 1; display: flex; align-items: center; justify-content: center;
+      padding: 12px 18px; overflow: hidden; position: relative;
+    }
+    .slide-card {
+      width: 100%; max-width: 1360px; height: 100%; max-height: 790px;
+      background: #ffffff; border-radius: 18px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+      display: none; flex-direction: column; overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      animation: fadeSlide 0.22s ease-out;
+    }
+    .slide-card.active { display: flex; }
+    @keyframes fadeSlide {
+      from { opacity: 0; transform: translateY(8px) scale(0.992); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .slide-header {
+      padding: 14px 26px 10px;
+      border-bottom: 2px solid #e2e8f0;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      background: linear-gradient(90deg, #f8fafc 0%, #ffffff 100%);
+      flex-shrink: 0;
+    }
+    .slide-body {
+      flex: 1; padding: 16px 26px; overflow-y: auto; background: #ffffff;
+    }
+    .slide-footer {
+      height: 34px; flex-shrink: 0; padding: 0 26px; background: #f8fafc;
+      border-top: 1px solid #e2e8f0;
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 11.5px; color: #64748b;
+    }
+    .analogy-box {
+      background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+      border-left: 5px solid #d97706;
+      border-radius: 10px; padding: 12px 15px;
+    }
+    .zoomable {
+      cursor: zoom-in; transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+    .zoomable:hover {
+      transform: scale(1.014); box-shadow: 0 10px 25px rgba(15, 23, 42, 0.16);
+    }
+    .tag-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 700;
+      letter-spacing: 0.03em; text-transform: uppercase;
+    }
+    .progress-bar-track { height: 4px; width: 100%; background: rgba(255, 255, 255, 0.12); }
+    .progress-bar-fill {
+      height: 100%; background: linear-gradient(90deg, #14b8a6, #f59e0b, #e11d48);
+      transition: width 0.25s ease;
+    }
+    #lightboxModal {
+      display: none; position: fixed; inset: 0; z-index: 70;
+      background: rgba(2, 6, 23, 0.93); backdrop-filter: blur(6px);
+      align-items: center; justify-content: center; flex-direction: column; padding: 24px;
+    }
+    #lightboxModal.open { display: flex; }
+    #notesDrawer {
+      display: none; position: fixed; right: 20px; bottom: 56px; z-index: 50;
+      width: 450px; max-width: calc(100vw - 40px); max-height: 60vh;
+      background: #0f172a; color: #f1f5f9; border-radius: 14px;
+      border: 1px solid #334155; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+      flex-direction: column; overflow: hidden;
+    }
+    #notesDrawer.open { display: flex; }
+    #gridModal, #guideModal {
+      display: none; position: fixed; inset: 0; z-index: 60;
+      background: rgba(15, 23, 42, 0.95); padding: 26px; overflow-y: auto;
+    }
+    #gridModal.open, #guideModal.open { display: block; }
+    
+  </style>
+</head>
+<body>
+<div class="deck-shell">
+  <header class="topbar">
+    <div class="flex items-center gap-2.5 min-w-0">
+      <a href="../presentacion_reunion_20_noviembre.html" class="w-8 h-8 rounded-lg bg-teal-600 hover:bg-teal-500 flex items-center justify-center font-black text-white text-xs shrink-0" title="Volver a Presentación Central">UDP</a>
+      <div class="hidden xl:block truncate">
+        <div class="text-xs font-bold text-white leading-tight truncate">Dataset 05: CAMELYON16 — Gold Standard Gigapíxel, 399 WSIs &amp; 25,235 Máscaras .npy</div>
+        <div class="text-[10px] text-slate-400 truncate">Lucas Vicuña &bull; Prof. Guía: Dr. Jorge Eduardo Zambrano Ibujés</div>
+      </div>
+      <div class="hidden lg:flex items-center gap-1 ml-2 pl-2 border-l border-slate-700">
+        <a href="../presentacion_reunion_20_noviembre.html" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-semibold transition">Hub Central</a><a href="01_breakhis.html" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-semibold transition">01 BreaKHis</a><a href="02_pcam.html" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-semibold transition">02 PCam</a><a href="03_nct_crc.html" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-semibold transition">03 NCT-CRC</a><a href="04_mhist.html" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-semibold transition">04 MHIST</a><span class="px-2 py-1 rounded bg-teal-600 text-white text-[11px] font-bold">05 CAMELYON16</span>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-1.5 shrink-0">
+      <button onclick="prevSlide()" class="px-2 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold flex items-center gap-1" title="Anterior (←)">
+        <i data-lucide="chevron-left" class="w-4 h-4"></i> Ant
+      </button>
+      <span id="slideCounter" class="text-xs font-mono bg-slate-800 px-2.5 py-1.5 rounded-lg text-teal-300 font-bold">1 / 9</span>
+      <button onclick="nextSlide()" class="px-2 py-1.5 rounded-lg bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold flex items-center gap-1" title="Siguiente (→ / Espacio)">
+        Sig <i data-lucide="chevron-right" class="w-4 h-4"></i>
+      </button>
+      <button onclick="toggleGuide()" class="ml-1 px-2.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center gap-1" title="Informe Guía Completo (I)">
+        <i data-lucide="book-open" class="w-4 h-4"></i> Informe
+      </button>
+      <button onclick="toggleGrid()" class="px-2 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold flex items-center gap-1" title="Índice Visual (G)">
+        <i data-lucide="layout-grid" class="w-4 h-4"></i>
+      </button>
+      <button onclick="toggleNotes()" class="px-2.5 py-1.5 rounded-lg bg-amber-600/90 hover:bg-amber-500 text-white text-xs font-semibold flex items-center gap-1" title="Guion Orador (N)">
+        <i data-lucide="mic" class="w-4 h-4"></i> Guion
+      </button>
+      <button onclick="toggleFullscreen()" class="px-2 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold" title="Pantalla Completa (F)">
+        <i data-lucide="maximize-2" class="w-4 h-4"></i>
+      </button>
+    </div>
+  </header>
+  <div class="progress-bar-track"><div id="progressFill" class="progress-bar-fill" style="width: 11.11%"></div></div>
+
+  <main class="stage">
+    <!-- SLIDE 1: Portada: CAMELYON16 (Gold Standard MIL) -->
+    <section class="slide-card active" data-title="Portada: CAMELYON16 (Gold Standard MIL)" data-notes="&lt;strong&gt;Cómo abrir la joya de la corona:&lt;/strong&gt; Profesor, CAMELYON16 es el examen final obligatorio en toda la literatura mundial de MIL (Ilse 2018, CLAM 2021, TransMIL 2021, Reliability 2025). En nuestro disco descubrimos muchísimo más que listas vacías: tenemos las coordenadas exactas de las 399 WSIs (3.17M parches), las 111 máscaras XML poligonales, Y rescatamos 25,235 parches .npy con máscaras binarias pixel-a-pixel para validar si la red atiende al tumor real!">
+
+      <div class="h-full flex flex-col justify-between p-9 bg-gradient-to-br from-slate-900 via-rose-950 to-slate-950 text-white">
+        <div class="flex items-center justify-between">
+          <span class="tag-pill bg-rose-500/20 text-rose-300 border border-rose-400/30">Dataset Auditado #5 &bull; Etapa 2 Benchmark Internacional SOTA</span>
+          <span class="text-xs font-mono text-slate-300">05_CAMELYON16_WSI.ipynb &bull; Slide 1 / 9</span>
+        </div>
+        <div class="max-w-4xl my-auto">
+          <div class="text-rose-300 font-bold text-xs uppercase tracking-widest mb-2">Metástasis en Ganglio Centinela &bull; Bejnordi et al. (JAMA 2017) / Litjens (2018)</div>
+          <h1 class="text-4xl md:text-5xl font-black tracking-tight leading-tight mb-4">
+            CAMELYON16: <span class="text-amber-300">3.17 Millones</span> de Coordenadas, Mapas 2D Reales y <span class="text-teal-300">25,235</span> Máscaras
+          </h1>
+          <p class="text-base text-slate-200 leading-relaxed mb-6">
+            El <em>Gold Standard</em> mundial de <strong>Ilse (2018), CLAM (2021), TransMIL (2021) y Confiabilidad MIL (2025)</strong>: cómo pasamos de <strong>~700 GB</strong> intratables a bolsas de <strong>123 a 35,766 instancias</strong> en <strong>10.77 GB locales</strong> (+1.50 GB UNI embeddings).
+          </p>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3.5">
+            <div class="bg-white/10 backdrop-blur rounded-xl p-3.5 border border-white/15">
+              <div class="text-2xl font-black text-teal-300">399 WSIs</div>
+              <div class="text-xs text-slate-300 mt-0.5">159 Norm + 110 Tum Train<br>+ 130 Test Oficial (3.17M ptos)</div>
+            </div>
+            <div class="bg-white/10 backdrop-blur rounded-xl p-3.5 border border-white/15">
+              <div class="text-2xl font-black text-amber-300">123–35,766</div>
+              <div class="text-xs text-slate-300 mt-0.5">Parches por bolsa WSI<br>(Mediana 6,813 / Media 7,963)</div>
+            </div>
+            <div class="bg-white/10 backdrop-blur rounded-xl p-3.5 border border-white/15">
+              <div class="text-2xl font-black text-rose-300">25,235 .npy</div>
+              <div class="text-xs text-slate-300 mt-0.5">10.68 GB rescatados hoy!<br>Parche 256&times;256 + Máscara px</div>
+            </div>
+            <div class="bg-white/10 backdrop-blur rounded-xl p-3.5 border border-white/15">
+              <div class="text-2xl font-black text-emerald-300">111 XMLs</div>
+              <div class="text-xs text-slate-300 mt-0.5">55.84 MB polígonos ASAP<br>+ normal_map.xlsx (160)</div>
+            </div>
+          </div>
+        </div>
+        <div class="flex flex-wrap items-center justify-between pt-4 border-t border-white/15 text-xs text-slate-300">
+          <span><strong>Conexión:</strong> Reuniones 08 Oct (VRAM O(K²)) + 09 Nov (Gated Attention) + PLOS One 2025 (MI / AUPRC)</span>
+          <span>Clic en cualquier gráfica para Zoom &bull; Tecla <strong>I</strong> abre Informe Guía completo</span>
+        </div>
+      </div>
+    </section>
+    <!-- SLIDE 2: Con Peras y Manzanas: El Estadio y la Aguja en el Pajar -->
+    <section class="slide-card" data-title="Con Peras y Manzanas: El Estadio y la Aguja en el Pajar" data-notes="&lt;strong&gt;Concepto crucial que diferencia CAMELYON16 de TCGA:&lt;/strong&gt; En cáncer de pulmón (TCGA-NSCLC), &gt;80% de la lámina suele ser tumor; hasta pooling simples aciertan. En CAMELYON16 muchas metástasis son agujas en un pajar (&lt;10% o hasta 1% del ganglio linfático!). Por eso Mean Pooling se desploma a AUC 0.4647 (azar!) en TransMIL Tabla 1.">
+      <div class="slide-header">
+        <div>
+          <span class="tag-pill bg-amber-100 text-amber-800">Analogía Central &bull; Supervisión Débil Extrema</span>
+          <h2 class="text-xl md:text-2xl font-black text-slate-900 mt-1">¿Por qué CAMELYON16 es la Prueba Más Dura Para Todo Modelo MIL?</h2>
+        </div>
+        <span class="text-xs font-mono text-slate-500 shrink-0">Slide 2 / 9</span>
+      </div>
+      <div class="slide-body">
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center h-full">
+        <div class="lg:col-span-6 space-y-3">
+          <div class="analogy-box">
+            <div class="font-bold text-amber-900 text-sm mb-1">Analogía del Pajar de 35,766 Agujas</div>
+            <p class="text-xs text-amber-950 leading-relaxed">
+              Imagina revisar un edificio gigante de <strong>hasta 35,766 piezas</strong> (<code class="bg-white px-1 rounded">tumor_092.tif</code>) donde <strong>el 95%–99% de las habitaciones son normales</strong> y apenas unas cuantas esconden micrometástasis.<br><br>
+              &bull; Si sacas el promedio simple de todas las piezas (<em>Mean Pooling</em>), ese 5% tumoral desaparece bajo el ruido del 95% normal.<br>
+              &bull; ¡En <strong>TransMIL Tabla 1 (2021)</strong>, Mean-pooling obtiene apenas <strong>0.4647 AUC</strong> en CAMELYON16 (peor que lanzar una moneda!), mientras Gated Attention / CLAM / TransMIL escalan a <strong>0.876–0.931</strong> (o <strong>0.953</strong> en CLAM)!
+            </p>
+          </div>
+          <div class="bg-slate-900 text-white rounded-xl p-4 text-xs space-y-1.5">
+            <div class="font-bold text-teal-300 uppercase">¿Cómo Encabeza Nuestro Hardware Local (&lt;10 GB)?</div>
+            <p class="text-slate-300 leading-relaxed">
+              Las WSIs crudas pesan <strong>~700 GB</strong>. Gracias al enfoque de <strong>Espacio de Características (Reunión 08 Oct)</strong>, usando los embeddings <strong>UNI (1.50 GB)</strong> sobre nuestras <strong>399 coordenadas locales</strong> entrenamos el agregador MIL en segundos en lugar de días!
+            </p>
+          </div>
+        </div>
+        <div class="lg:col-span-6 overflow-hidden rounded-xl border border-slate-200 shadow-sm">
+          <table class="w-full text-xs text-left">
+            <thead class="bg-slate-900 text-white">
+              <tr><th class="p-2.5">Cohorte Auditada en Disco</th><th class="p-2.5 text-right">N WSIs</th><th class="p-2.5 text-right">Total Parches</th><th class="p-2.5 text-right">Min–Max / WSI</th></tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200 font-mono">
+              <tr class="bg-emerald-50/50"><td class="p-2.5 font-sans font-bold text-emerald-900">Normal Train</td><td class="p-2.5 text-right font-bold">159</td><td class="p-2.5 text-right">1,126,118</td><td class="p-2.5 text-right">123 – 26,297</td></tr>
+              <tr class="bg-rose-50/50"><td class="p-2.5 font-sans font-bold text-rose-900">Tumor Train</td><td class="p-2.5 text-right font-bold">110</td><td class="p-2.5 text-right">1,015,190</td><td class="p-2.5 text-right">1,723 – 35,766</td></tr>
+              <tr class="bg-sky-50/50"><td class="p-2.5 font-sans font-bold text-sky-900">Test Oficial</td><td class="p-2.5 text-right font-bold">130</td><td class="p-2.5 text-right">1,035,959</td><td class="p-2.5 text-right">968 – 32,233</td></tr>
+              <tr class="bg-slate-900 text-white font-bold"><td class="p-2.5 font-sans">TOTAL REPOSITORY</td><td class="p-2.5 text-right">399</td><td class="p-2.5 text-right text-amber-300">3,177,267</td><td class="p-2.5 text-right text-teal-300">Mediana 6,813</td></tr>
+            </tbody>
+          </table>
+          <div class="p-3 bg-slate-50 border-t border-slate-200 text-[11px] text-slate-600">
+            Nota clínica: <em>Normal Train</em> tiene 159 directorios coords locales y 160 filas en <code class="bg-white px-1 rounded">normal_map.xlsx</code> (Normal_086 ausente de coords locales). Todas las cifras reales en <code class="bg-white px-1 rounded">camelyon16_coords_por_wsi.xlsx</code>.
+          </div>
+        </div>
+      </div>
+      </div>
+      <div class="slide-footer">
+        <span>TransMIL (§4.1): el área tumoral promedio por slide positiva de CAMELYON16 es <10% del tejido total!</span>
+        <span>Lu et al. (CLAM 2021) &bull; Shao et al. (TransMIL 2021)</span>
+      </div>
+    </section>
+    <!-- SLIDE 3: Los 2 Bugs Graves Resueltos en Notebook 05 & Scripts -->
+    <section class="slide-card" data-title="Los 2 Bugs Graves Resueltos en Notebook 05 &amp; Scripts" data-notes="&lt;strong&gt;Explicación visual de ambos rescates:&lt;/strong&gt; Primero, en los coords.npy cada fila es [level, x, y] donde level es siempre 17! El script antiguo graficaba columna 0 vs columna 1, produciendo puras líneas verticales rectas en X=17 en vez de ganglios! Segundo, nadie había indexado la subcarpeta patches/data/ con 25,235 .npy (~10.68 GB) que contienen parches 256x256 con su máscara pixel exacta en rojo!">
+      <div class="slide-header">
+        <div>
+          <span class="tag-pill bg-rose-100 text-rose-800">Auditoría Técnica &bull; Bugs #2 y #4</span>
+          <h2 class="text-xl md:text-2xl font-black text-slate-900 mt-1">Antes vs Después: Coordenadas Invertidas (`nivel=17`) y 10.68 GB Ocultos</h2>
+        </div>
+        <span class="text-xs font-mono text-slate-500 shrink-0">Slide 3 / 9</span>
+      </div>
+      <div class="slide-body">
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center h-full">
+        <div class="lg:col-span-5 space-y-2.5 text-xs">
+          <div class="p-3.5 rounded-xl border-2 border-rose-300 bg-rose-50/70">
+            <div class="font-black text-rose-900 mb-1">Bug #2: Eje X Era Nivel Piramidal Constante (=17)</div>
+            <p class="text-slate-700 leading-relaxed">
+              &bull; Antes: <code class="bg-white px-1 rounded">coords[:, 0]</code> (level=17 constante), además fusionaba <code class="bg-white px-1 rounded">Test (130)</code> dentro de Normal e imprimía texto roto literal <code class="bg-white px-1 rounded">'%,.0f'</code>!<br>
+              &bull; <strong>Corregido:</strong> <code class="bg-emerald-50 px-1 rounded font-bold text-emerald-800">coords[:, 1:3]</code> reconstruye la morfología real de <code class="bg-white px-1 rounded">Normal_076</code> (26,297 parches) y <code class="bg-white px-1 rounded">tumor_092</code> (35,766 parches) + separa los 3 cohortes reales (<strong>159 / 110 / 130</strong>).
+            </p>
+          </div>
+          <div class="p-3.5 rounded-xl border-2 border-amber-300 bg-amber-50/70">
+            <div class="font-black text-amber-900 mb-1">Hallazgo #4: 25,235 Parches .npy (10.68 GB) Rescatados!</div>
+            <p class="text-slate-700 leading-relaxed">
+              Indexamos por fin <code class="bg-white px-1 rounded">patches/data/</code> en <code class="bg-white px-1 rounded">camelyon16_patches_inventario.xlsx</code>:<br>
+              &bull; <code class="bg-white px-1 rounded">classifier/train</code>: <strong>10,997</strong> (4,140 Norm / 6,857 Tum)<br>
+              &bull; <code class="bg-white px-1 rounded">classifier/val</code>: <strong>1,647</strong> (493 / 1,154) &bull; <code class="bg-white px-1 rounded">test L3</code>: <strong>2,585</strong> (100% Tum) &bull; <code class="bg-white px-1 rounded">unet</code>: <strong>10,006</strong> (2,445 / 7,561).<br>
+              &bull; Además corregimos la tarjeta de mínimo: era <strong>123</strong> (<code class="bg-white px-1 rounded">Normal_067</code> aprox/mínimo real) y no 624.
+            </p>
+          </div>
+        </div>
+        <div class="lg:col-span-7 flex flex-col items-center bg-slate-50 border border-slate-200 rounded-xl p-2.5">
+          <img src="../../figures/05_CAMELYON16/camelyon16_mapa_coords.png" alt="Mapa espacial 2D corregido de Normal_076 y tumor_092" class="zoomable rounded-lg max-h-[380px] w-full object-contain" />
+          <div class="text-[11px] text-slate-600 mt-1.5 text-center">Anatomía 2D real reconstruida: <code class="bg-white px-1 rounded">Normal_076</code> [X: 2–215, Y: 21–484] vs <code class="bg-white px-1 rounded">tumor_092</code> [X: 22–477, Y: 12–193]</div>
+        </div>
+      </div>
+      </div>
+      <div class="slide-footer">
+        <span>Corregido en scripts/analizar_camelyon16_coords.py y notebooks/05_CAMELYON16_WSI.ipynb.</span>
+        <span>Visualización espacial 2D 100% restaurada</span>
+      </div>
+    </section>
+    <!-- SLIDE 4: Muestras .npy Reales + Distribución de Parches -->
+    <section class="slide-card" data-title="Muestras .npy Reales + Distribución de Parches" data-notes="&lt;strong&gt;Por qué esto pone nuestra tesis por encima de un paper básico:&lt;/strong&gt; Casi todo trabajo inicial de MIL reporta solo AUC global a nivel de lámina. Gracias a que rescatamos estas 25,235 máscaras .npy y los 111 XMLs ASAP locales (además de su módulo funciones.py con Dice e IoU de Procesamiento de Imágenes), podemos demostrar cuantitativamente SI la atención apunta al tumor real!">
+      <div class="slide-header">
+        <div>
+          <span class="tag-pill bg-teal-100 text-teal-800">Oro Empírico Local &bull; Ground Truth Píxel</span>
+          <h2 class="text-xl md:text-2xl font-black text-slate-900 mt-1">25,235 Diccionarios {'image', 'mask'} y Distribución de Las 399 Bolsas</h2>
+        </div>
+        <span class="text-xs font-mono text-slate-500 shrink-0">Slide 4 / 9</span>
+      </div>
+      <div class="slide-body">
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center h-full">
+        <div class="lg:col-span-6 flex flex-col items-center bg-slate-50 p-2 rounded-xl border border-slate-200">
+          <img src="../../figures/05_CAMELYON16/camelyon16_patches_muestras.png" alt="4 parches reales .npy con máscara roja Ground Truth" class="zoomable rounded-lg max-h-[250px] w-full object-contain" />
+          <div class="text-[11px] text-slate-600 mt-1">Parches reales 256&times;256 H&amp;E con contorno tumoral (0% a 39.7% px+)</div>
+        </div>
+        <div class="lg:col-span-6 flex flex-col items-center bg-slate-50 p-2 rounded-xl border border-slate-200">
+          <img src="../../figures/05_CAMELYON16/camelyon16_distribucion_parches.png" alt="Distribución de longitudes K de bolsa por cohorte en 399 WSIs" class="zoomable rounded-lg max-h-[250px] w-full object-contain" />
+          <div class="text-[11px] text-slate-600 mt-1">Distribución elástica: <code class="bg-white px-1">K</code> oscila 290&times; entre min=123 y max=35,766</div>
+        </div>
+        <div class="lg:col-span-12 bg-slate-900 text-white rounded-xl p-3 flex flex-wrap items-center justify-between text-xs">
+          <div><strong class="text-teal-300">Regla de Uso Científico:</strong> Las <strong>111 máscaras XML + 25,235 .npy</strong> se usan como <em>Ground Truth</em> <strong>ÚNICAMENTE en evaluación espacial (IoU / Dice / AUPRC)</strong> &mdash; ¡el modelo MIL entrena por supervisión débil (solo Y=0/1)!</div>
+          <span class="font-mono text-amber-300">camelyon16_patches_inventario.xlsx</span>
+        </div>
+      </div>
+      </div>
+      <div class="slide-footer">
+        <span>Fuente: camelyon16_patches_muestras.png, camelyon16_distribucion_parches.png y camelyon_wsi_mil_pipeline.png</span>
+        <span>Clic en cualquier panel para ampliar</span>
+      </div>
+    </section>
+    <!-- SLIDE 5: Pipeline Desacoplado en 2 Etapas (UNI + Otsu) -->
+    <section class="slide-card" data-title="Pipeline Desacoplado en 2 Etapas (UNI + Otsu)" data-notes="&lt;strong&gt;Conexión textual con Informe_MIL_08_OCT.pdf (Fig. 5 y 6):&lt;/strong&gt; El 8 de octubre explicamos teóricamente por qué operar en espacio de píxeles end-to-end colapsa GPU VRAM de 24 GB a los ~8,000 parches (O(K^2)), mientras que congelar un extractor offline reduce el consumo a pocos MB (~O(K) en ABMIL). En Notebook 05 esto toma forma concreta con UNI (+1.50 GB, ViT-L/16, 1024-d) o iBOT (~4.3 GB, 768-d).">
+      <div class="slide-header">
+        <div>
+          <span class="tag-pill bg-purple-100 text-purple-800">Arquitectura Operativa &bull; Notebook 05</span>
+          <h2 class="text-xl md:text-2xl font-black text-slate-900 mt-1">Del Porte de 700 GB al Entrenamiento Local en Segundos (UNI / iBOT)</h2>
+        </div>
+        <span class="text-xs font-mono text-slate-500 shrink-0">Slide 5 / 9</span>
+      </div>
+      <div class="slide-body">
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center h-full">
+        <div class="lg:col-span-7 flex flex-col items-center bg-slate-50 border border-slate-200 rounded-xl p-2">
+          <img src="../../figures/05_CAMELYON16/camelyon_wsi_mil_pipeline.png" alt="Pipeline completo de 6 etapas en CAMELYON16" class="zoomable rounded-lg max-h-[470px] w-full object-contain" />
+        </div>
+        <div class="lg:col-span-5 space-y-2.5 text-xs">
+          <div class="bg-slate-900 text-white rounded-xl p-4 space-y-2">
+            <div class="font-bold text-teal-300 uppercase">Compresión Matemática Real (<code class="text-amber-300">camelyon16_pipeline_mil</code>)</div>
+            <div>1. <strong>WSI Cruda:</strong> 399 archivos ~100k&times;100k px &rarr; <strong>~700 GB</strong></div>
+            <div>2. <strong>Otsu + Tiling:</strong> Descarta ~80% vidrio &rarr; <strong>3.17M coordenadas (36.4 MB)</strong></div>
+            <div>3. <strong>Extractor Congelado UNI:</strong> 224&times;224&times;3 (150,528) &rarr; Vector <strong>1,024-d</strong> &rarr; <strong>1.50 GB total!</strong></div>
+            <div>4. <strong>Agregador Local (Etapa B):</strong> Tensor <code class="text-amber-300">[K, 1024]</code> &rarr; ABMIL / CLAM / TransMIL</div>
+          </div>
+          <div class="p-3.5 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-950">
+            <strong>Sinergia Materia Util (Procesamiento de Imágenes):</strong> Tus funciones propias <code class="bg-white px-1 rounded">otsu</code>, <code class="bg-white px-1 rounded">closing</code> y métricas <code class="bg-white px-1 rounded">Dice / IoU</code> se reutilizan aquí para validar la segmentación tisular y los mapas \(\alpha_k\)!
+          </div>
+        </div>
+      </div>
+      </div>
+      <div class="slide-footer">
+        <span>Fuente: camelyon16_pipeline_mil.xlsx y camelyon_wsi_mil_pipeline.png</span>
+        <span>Directo con Reunión 08 Oct (Espacio de Características)</span>
+      </div>
+    </section>
+    <!-- SLIDE 6: Simulador: Bolsa Elástica y Trampa de Max-Pooling (2025) -->
+    <section class="slide-card" data-title="Simulador: Bolsa Elástica y Trampa de Max-Pooling (2025)" data-notes="&lt;strong&gt;¡Ojo con este hallazgo clave de Keshvarikhojasteh et al. (PLOS One Dec 2025, presente en Referencias/)!&lt;/strong&gt; Elija &#x27;MAX-POOL&#x27; en el simulador: logra 0.80 de AUC (y 0.857 en TransMIL), ¡PERO obtiene 0.00 de Información Mutua, 0.00 de Spearman y 0.23 AUPRC! En la Fig. 2 del paper, Max-Pool clasifica bien la lámina mirando parches linfáticos SANOS (falsa razón correcta!). Por eso necesitamos Gated Attention + nuestras 25,235 máscaras!">
+      <div class="slide-header">
+        <div>
+          <span class="tag-pill bg-teal-100 text-teal-800">Laboratorio Interactivo &bull; Confiabilidad vs AUC</span>
+          <h2 class="text-xl md:text-2xl font-black text-slate-900 mt-1">Simulador: Selector de WSIs Reales & Confiabilidad Espacial (PLOS One 2025)</h2>
+        </div>
+        <span class="text-xs font-mono text-slate-500 shrink-0">Slide 6 / 9</span>
+      </div>
+      <div class="slide-body">
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+        <div class="lg:col-span-6 bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3 text-xs">
+          <div>
+            <label class="font-black text-slate-900 block mb-1">1. Elige una Lámina Auditada Real de Nuestro Excel:</label>
+            <select id="c16WsiSel" onchange="updateC16Sim()" class="w-full p-2 rounded-lg border border-slate-300 bg-white font-mono text-xs">
+              <option value="n016">Normal_016.tif &mdash; K = 253 parches (Bolsa chica)</option>
+              <option value="n001">Normal_001.tif &mdash; K = 2,032 parches</option>
+              <option value="n076">Normal_076.tif &mdash; K = 26,297 parches (Extremo Normal)</option>
+              <option value="t092" selected>tumor_092.tif &mdash; K = 35,766 parches (Extremo Tumor)</option>
+            </select>
+          </div>
+          <div>
+            <label class="font-black text-slate-900 block mb-1">2. Compara el Agregador MIL (Keshvarikhojasteh 2025 / TransMIL 2021):</label>
+            <select id="c16AggSel" onchange="updateC16Sim()" class="w-full p-2 rounded-lg border border-slate-300 bg-white font-semibold text-xs">
+              <option value="mean">Mean-Pooling (Naive) &mdash; Dilución severa (&lt;10% tumor)</option>
+              <option value="max">Max-Pooling &mdash; ¡Trampa: AUC alto mirando tejido SANO!</option>
+              <option value="abmil" selected>Gated Attention (ABMIL, Ilse 2018) &mdash; Equilibrio O(K)</option>
+              <option value="clam">CLAM-SB (Lu et al. 2021) &mdash; Atención + Clustering Smooth SVM</option>
+              <option value="transmil">TransMIL (Shao et al. 2021) &mdash; Nystrom + PPEG espacial</option>
+            </select>
+          </div>
+          <div id="c16MemBox" class="p-3 rounded-lg bg-white border border-slate-200 space-y-1 font-mono text-[11px]"></div>
+        </div>
+
+        <div class="lg:col-span-6 bg-slate-900 text-white rounded-xl p-5 flex flex-col justify-between text-xs">
+          <div>
+            <div class="font-bold text-amber-300 uppercase mb-2">Métricas Reales Reportadas en CAMELYON16</div>
+            <div id="c16PerfGrid" class="grid grid-cols-2 gap-3 my-2 text-center"></div>
+            <p id="c16AggNote" class="mt-3 p-3 rounded-lg bg-slate-800 border border-slate-700 text-slate-200 leading-relaxed"></p>
+          </div>
+          <div class="text-[11px] text-teal-300 font-semibold mt-2">
+            ¡Por eso combinamos UNI/ABMIL con evaluación espacial sobre las <strong>111 XMLs y 25,235 .npy locales</strong> usando IoU/AUPRC!
+          </div>
+        </div>
+      </div>
+      </div>
+      <div class="slide-footer">
+        <span>Cifras exactas de agregadores reportadas en Keshvarikhojasteh et al. (PLOS One 2025, Tabla 1) y Shao et al. (TransMIL 2021).</span>
+        <span>El gran argumento de confiabilidad clínica</span>
+      </div>
+    </section>
+    <!-- SLIDE 7: Estado del Arte Comparado en Referencias/ -->
+    <section class="slide-card" data-title="Estado del Arte Comparado en Referencias/" data-notes="&lt;strong&gt;Cómo leer esta tabla frente al profesor:&lt;/strong&gt; Tenemos los números reales tanto de desempeño global (AUC) como de confiabilidad espacial (MI / Spearman / AUPRC) de los artículos guardados en Referencias/. Note también que CLAM extrae de ResNet50 bloque 3 (intermedio 1024-d, exactamente alineado a nuestra hipótesis del 25 Sep!), mientras TransMIL alcanza 0.9309 AUC con PPEG y CLAM logra 0.953 en C16+C17.">
+      <div class="slide-header">
+        <div>
+          <span class="tag-pill bg-slate-200 text-slate-800">Literatura SOTA &bull; Ilse + CLAM + TransMIL + 2025</span>
+          <h2 class="text-xl md:text-2xl font-black text-slate-900 mt-1">Benchmark Exacto en CAMELYON16 Según Papers del Repositorio</h2>
+        </div>
+        <span class="text-xs font-mono text-slate-500 shrink-0">Slide 7 / 9</span>
+      </div>
+      <div class="slide-body">
+
+      <div class="overflow-hidden rounded-xl border border-slate-200 shadow-sm">
+        <table class="w-full text-[11.5px] text-left">
+          <thead class="bg-slate-900 text-white">
+            <tr>
+              <th class="p-2.5">Paper / Arquitectura</th>
+              <th class="p-2.5">Extractor &amp; Agregación</th>
+              <th class="p-2.5">AUC en CAMELYON16</th>
+              <th class="p-2.5">Confiabilidad Espacial (PLOS 2025)</th>
+              <th class="p-2.5">Aporte Clave a Tu Tesis</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200">
+            <tr class="bg-rose-50/50">
+              <td class="p-2 font-bold">Baselines Ingénuos<br><span class="font-normal text-slate-500">Mean / Max Pool (Tabla 1)</span></td>
+              <td class="p-2">ResNet50 bloque-3 congelado + Mean o Max fijo</td>
+              <td class="p-2 font-mono">Mean: 0.465&ndash;0.58<br>Max: 0.80&ndash;0.857</td>
+              <td class="p-2 font-mono text-rose-700 font-bold">Max: MI=0.00, r=0.00,<br>AUPRC=0.23 (!)</td>
+              <td class="p-2">Demuestra el peligro de medir solo AUC sin validar dónde mira el modelo.</td>
+            </tr>
+            <tr class="bg-white">
+              <td class="p-2 font-bold">ABMIL (Ilse et al., 2018)<br><span class="font-normal text-slate-500">ICML &bull; Reunión 09 Nov</span></td>
+              <td class="p-2">Gated Attention \(\tanh(Vh)\odot\sigma(Uh)\), complejidad lineal \(O(K)\)</td>
+              <td class="p-2 font-mono">0.85&ndash;0.876 (ResNet)<br><strong>&gt;0.95 con UNI!</strong></td>
+              <td class="p-2 font-mono text-teal-800">MI=0.12, r=0.29,<br>AUPRC=0.59 (ADD: 0.62)</td>
+              <td class="p-2">Nuestro baseline central de Etapa 1 y 2 (lineal en tiempo y VRAM).</td>
+            </tr>
+            <tr class="bg-teal-50/40">
+              <td class="p-2 font-bold text-teal-900">CLAM (Lu et al., 2021)<br><span class="font-normal text-slate-500">Nature Biomed. Eng.</span></td>
+              <td class="p-2"><strong>ResNet50 bloque 3 (1024-d!)</strong> + Atención + Smooth SVM sobre Top/Bottom-B</td>
+              <td class="p-2 font-mono"><strong>0.953</strong> (C16+C17)<br><strong>0.934</strong> cohorte ext.</td>
+              <td class="p-2 font-mono text-teal-800">MI=0.12, r=0.29,<br>AUPRC=0.59 (ADD: 0.60)</td>
+              <td class="p-2">¡Valida truncar ResNet50 en bloque intermedio 3 y restringir clústers sin máscaras!</td>
+            </tr>
+            <tr class="bg-white">
+              <td class="p-2 font-bold">TransMIL (Shao et al., 2021)<br><span class="font-normal text-slate-500">NeurIPS &bull; Correlated MIL</span></td>
+              <td class="p-2">MSA con aprox. <strong>Nyström</strong> \(O(n)\) + <strong>PPEG</strong> conv 3&times;3/5&times;5/7&times;7</td>
+              <td class="p-2 font-mono font-bold text-indigo-800">0.9309 (Test C16)<br>Acc 0.8837</td>
+              <td class="p-2 font-mono">DTFD/ACMIL 2025:<br>ACMIL MI=0.16, r=0.34</td>
+              <td class="p-2">Rompe suposición i.i.d. entre parches vecinos + converge 2–3&times; más rápido.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      </div>
+      <div class="slide-footer">
+        <span>Fuentes exactas: Shao et al. (NeurIPS 2021 Tab. 1), Lu et al. (CLAM 2021) y Keshvarikhojasteh et al. (PLOS One 2025 Tab. 1).</span>
+        <span>Base directa para la Etapa 2 de la Tesis</span>
+      </div>
+    </section>
+    <!-- SLIDE 8: Cómo Culmina las 4 Reuniones (25 Sep -> 20 Nov) -->
+    <section class="slide-card" data-title="Cómo Culmina las 4 Reuniones (25 Sep -&gt; 20 Nov)" data-notes="&lt;strong&gt;Momento de síntesis para cerrar ante el Prof. Zambrano:&lt;/strong&gt; En Sep propusimos ahorrar cómputo con mapas intermedios; en Oct mostramos el muro O(K^2) de VRAM en WSI; en Nov demostramos matemáticamente Gated Attention; hoy en CAMELYON16 comprobamos que incluso CLAM usa capas intermedias (ResNet50 bloque 3) en 2 etapas, y que además nosotros ya tenemos 111 XMLs + 25,235 .npy para auditar la confiabilidad espacial que exige el paper de 2025!">
+      <div class="slide-header">
+        <div>
+          <span class="tag-pill bg-teal-100 text-teal-800">Síntesis del Magíster &bull; Hilo Conductor</span>
+          <h2 class="text-xl md:text-2xl font-black text-slate-900 mt-1">CAMELYON16 Une Toda la Historia Teórica de Tu Tesis</h2>
+        </div>
+        <span class="text-xs font-mono text-slate-500 shrink-0">Slide 8 / 9</span>
+      </div>
+      <div class="slide-body">
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch text-xs">
+        <div class="p-4 rounded-xl bg-rose-50 border border-rose-200">
+          <div class="font-black text-rose-900 text-sm mb-1">25 Sep (Zambrano 2022) &harr; CLAM Block-3</div>
+          <p class="text-slate-700 leading-relaxed">El Seminario I propuso detener la CNN en capas intermedias para capturar texturas sin fine-tuning. En CAMELYON16, <strong>Lu et al. (CLAM, Online Methods p.24)</strong> hacen exactamente eso: truncan ResNet50 tras el <strong>3er bloque residual (1024 dims)</strong> porque las capas profundas pierden detalle celular!</p>
+        </div>
+        <div class="p-4 rounded-xl bg-indigo-50 border border-indigo-200">
+          <div class="font-black text-indigo-900 text-sm mb-1">08 Oct (VRAM Wall) &harr; 399 Coords + UNI</div>
+          <p class="text-slate-700 leading-relaxed">El informe del 08 de Octubre demostró que >8,000 parches colapsan 24 GB de VRAM en entrenamiento end-to-end. Aquí medimos bolsas reales hasta <strong>35,766 parches</strong>, probando empíricamente la necesidad obligatoria del flujo offline de 2 etapas.</p>
+        </div>
+        <div class="p-4 rounded-xl bg-amber-50 border border-amber-200">
+          <div class="font-black text-amber-900 text-sm mb-1">09 Nov (Ilse 2018) &harr; Aguja en el Pajar</div>
+          <p class="text-slate-700 leading-relaxed">Justificó por qué la compuerta sigmoide silencia el ruido manteniendo costo lineal \(O(K)\). En CAMELYON16 el tumor cubre &lt;10% de la WSI; la compuerta apaga las decenas de miles de parches linfáticos sanos que hunden a Mean Pooling.</p>
+        </div>
+        <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200">
+          <div class="font-black text-emerald-900 text-sm mb-1">20 Nov + PLOS One 2025 &harr; Evaluar Confiabilidad</div>
+          <p class="text-slate-700 leading-relaxed">Con nuestros <strong>111 XMLs ASAP + 25,235 .npy con máscara</strong> más el código <code class="bg-white px-1 rounded">Dice/IoU</code> de Procesamiento de Imágenes, no solo optimizaremos ROC-AUC global, sino <strong>dónde mira realmente la red (IoU / AUPRC)</strong>!</p>
+        </div>
+      </div>
+      </div>
+      <div class="slide-footer">
+        <span>La teoría de Septiembre–Noviembre aterriza aquí sobre 3.17 millones de coordenadas reales.</span>
+        <span>Evolución continua 2026</span>
+      </div>
+    </section>
+    <!-- SLIDE 9: Plan Etapa 2 & Cierre del Suite -->
+    <section class="slide-card" data-title="Plan Etapa 2 &amp; Cierre del Suite" data-notes="&lt;strong&gt;Cierre limpio:&lt;/strong&gt; Preguntar al profesor si aprueba la descarga de los embeddings UNI (+1.50 GB) esta semana para lanzar la comparación ABMIL vs CLAM vs TransMIL sobre las 130 láminas oficiales de Test + evaluación de IoU contra nuestras máscaras.">
+      <div class="slide-header">
+        <div>
+          <span class="tag-pill bg-emerald-100 text-emerald-800">Conclusión &bull; Hoja de Ruta Etapa 2</span>
+          <h2 class="text-xl md:text-2xl font-black text-slate-900 mt-1">Siguientes Pasos Concretos en CAMELYON16 (Con +1.50 GB UNI)</h2>
+        </div>
+        <span class="text-xs font-mono text-slate-500 shrink-0">Slide 9 / 9</span>
+      </div>
+      <div class="slide-body">
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5 items-center h-full">
+        <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-xs space-y-2">
+          <div class="font-black text-emerald-900 text-sm">Agenda Experimental Etapa 2 en CAMELYON16</div>
+          <ol class="list-decimal pl-4 space-y-1.5 text-slate-700 leading-relaxed">
+            <li><strong>Adquisición Ultra-Ligera:</strong> Bajar embeddings <strong>UNI (1.50 GB)</strong> emparejados con nuestras <strong>399 carpetas de coordenadas reales</strong>.</li>
+            <li><strong>Benchmark de Clasificación (130 Test WSIs):</strong> Evaluar Mean-Pool vs Max-Pool vs <strong>Gated ABMIL (Ilse)</strong> vs <strong>CLAM-SB</strong> vs <strong>TransMIL (Nyström + PPEG)</strong>.</li>
+            <li><strong>Auditoría de Confiabilidad Espacial:</strong> Proyectar los pesos \(\alpha_k\) sobre los <strong>111 XMLs</strong> y validar correspondencia contra los <strong>25,235 parches .npy</strong> usando Dice/IoU y AUPRC (siguiendo a Keshvarikhojasteh 2025).</li>
+          </ol>
+        </div>
+        <div class="bg-slate-900 text-white rounded-xl p-5 space-y-2.5 text-xs">
+          <div class="font-bold text-teal-300 uppercase">Explorar Toda la Suite</div>
+          <button onclick="toggleGuide()" class="w-full py-2.5 px-4 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold flex items-center justify-between"><span>Abrir Informe Guía Completo CAMELYON16</span><span>Tecla I</span></button>
+          <a href="01_breakhis.html" class="w-full py-2.5 px-4 rounded-lg bg-teal-700 hover:bg-teal-600 text-white font-bold flex items-center justify-between"><span>Ir al Primer Dataset: 01 BreaKHis</span><span>&rarr;</span></a>
+          <a href="../presentacion_reunion_20_noviembre.html" class="w-full py-2.5 px-4 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold flex items-center justify-between border border-slate-700"><span>Volver a la Presentación Central (20 Nov)</span><span>Hub</span></a>
+        </div>
+      </div>
+      </div>
+      <div class="slide-footer">
+        <span>Tecla I abre el Informe Guía completo de CAMELYON16 con todos los comandos y Q&A.</span>
+        <span>05_CAMELYON16 &bull; Fin Serie Datasets</span>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="lightboxModal" onclick="closeLightbox()">
+  <button onclick="closeLightbox()" class="self-end mb-2 px-3 py-1 rounded bg-white/15 hover:bg-white/25 text-white text-xs font-bold">Cerrar (ESC)</button>
+  <img id="lightboxImg" src="" alt="" class="max-h-[84vh] max-w-[92vw] rounded-xl shadow-2xl border border-white/20 bg-white" onclick="event.stopPropagation()" />
+  <div id="lightboxCap" class="text-slate-200 text-sm mt-3 text-center max-w-3xl"></div>
+</div>
+
+<aside id="notesDrawer">
+  <div class="px-4 py-3 bg-slate-800 border-b border-slate-700 flex items-center justify-between">
+    <div class="flex items-center gap-2 text-xs font-bold text-amber-300">
+      <i data-lucide="mic" class="w-4 h-4"></i> Teleprompter &mdash; Guion de Exposición
+    </div>
+    <button onclick="toggleNotes()" class="text-slate-400 hover:text-white text-xs">Cerrar (N)</button>
+  </div>
+  <div id="notesContent" class="p-4 text-xs leading-relaxed text-slate-200 overflow-y-auto space-y-2"></div>
+</aside>
+
+<div id="gridModal">
+  <div class="max-w-5xl mx-auto">
+    <div class="flex items-center justify-between mb-5 text-white">
+      <h2 class="text-xl font-black">Índice Visual (9 Diapositivas) &mdash; CAMELYON16 (WSI)</h2>
+      <button onclick="toggleGrid()" class="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-xs font-bold">Cerrar (G / ESC)</button>
+    </div>
+    <div id="gridCards" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5"></div>
+  </div>
+</div>
+
+<div id="guideModal">
+  <div class="max-w-4xl mx-auto text-slate-100">
+    <div class="flex flex-wrap items-center justify-between gap-2 mb-5 pb-3 border-b border-slate-700">
+      <div>
+        <span class="text-[11px] font-mono uppercase text-teal-300 font-bold">Documento Complementario de Exposición</span>
+        <h2 class="text-xl font-black text-white">Informe Guía de Exposición — Dataset 05: CAMELYON16 (Gold Standard MIL)</h2>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="../guias/05_informe_camelyon16.md" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-teal-300 text-xs font-bold border border-slate-600">Descargar / Ver .md</a>
+        <button onclick="toggleGuide()" class="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-xs font-bold">Cerrar (I / ESC)</button>
+      </div>
+    </div>
+    <div class="bg-slate-800/80 border border-slate-700 rounded-xl p-4 mb-4">
+<div class="text-xs font-bold uppercase tracking-wider text-teal-300">Ficha de Exposición</div>
+<div class="text-lg font-black text-white mt-1">Informe Guía de Exposición — Dataset 05: CAMELYON16 (Gold Standard MIL)</div>
+<div class="text-xs text-slate-300 mt-1">399 WSIs (3,177,267 coords), 111 XML ASAP, 25,235 .npy con máscara (10.68 GB) + vínculo directo con Ilse (2018), CLAM (2021), TransMIL (2021) y Confiabilidad PLOS One (2025).</div>
+<div class="mt-3 flex flex-wrap gap-2 text-[11px]"><a href="../guias/05_informe_camelyon16.md" class="px-2.5 py-1 rounded bg-teal-600 hover:bg-teal-500 text-white font-bold">Abrir archivo Markdown (.md)</a><a href="../../notebooks/05_CAMELYON16_WSI.ipynb" class="px-2.5 py-1 rounded bg-slate-700 hover:bg-slate-600 text-slate-200 font-semibold">Notebook fuente (05_CAMELYON16_WSI.ipynb)</a></div></div>
+<div class="mb-5 bg-slate-800/50 border border-slate-700/80 rounded-xl p-4">
+<h3 class="text-sm font-black text-amber-300 mb-2">1. Papel Central de CAMELYON16 en la Tesis (<code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">05_CAMELYON16_WSI.ipynb</code>)</h3>
+<p class="text-xs text-slate-200 leading-relaxed mb-2"><strong class="text-white">CAMELYON16</strong> (Bejnordi et al., JAMA 2017; Litjens et al., GigaScience 2018) es el benchmark estándar internacional para detección de metástasis ganglionar en cáncer de mama sobre <strong class="text-white">Whole Slide Images (WSI)</strong> gigapíxel (~100,000 × 100,000 px). Mientras las 399 láminas TIFF crudas pesarían <strong class="text-white">~700 GB</strong>, nuestro repositorio conserva localmente <strong class="text-white">10.77 GB de activos auditados de altísimo valor</strong>.</p>
+<ul class="list-disc pl-5 space-y-1.5 text-xs text-slate-300 leading-relaxed">
+<li><strong class="text-white">399 directorios de coordenadas (<code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">36.41 MB</code> / <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">3,177,267</code> parches <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">224×224</code>):</strong> <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">159 Normal Train</code> (<code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">1,126,118</code> parches), <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">110 Tumor Train</code> (<code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">1,015,190</code>), <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">130 Test Oficial</code> (<code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">1,035,959</code>).</li>
+<li><strong class="text-white">Elasticidad extrema de bolsa:</strong> De <strong class="text-white"><code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">min = 123</code></strong> parches a <strong class="text-white"><code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">max = 35,766</code></strong> parches (<code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">tumor_092.tif</code>), con <strong class="text-white"><code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">mediana = 6,813</code></strong> y <strong class="text-white"><code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">media = 7,963</code></strong> parches/WSI.</li>
+<li><strong class="text-white">111 anotaciones poligonales XML ASAP (<code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">55.84 MB</code>):</strong> Delimitaciones exactas de metástasis por patólogos + <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">normal_map.xlsx</code> (<code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">160</code> filas).</li>
+<li><strong class="text-white">25,235 parches <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">.npy</code> rescatados (<code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">10.68 GB</code>):</strong> Subconjuntos <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">classifier/train</code> (10,997), <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">classifier/val</code> (1,647), <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">test</code> Nivel 3 (2,585) y <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">unet</code> (10,006), donde cada archivo contiene <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">{'image': (256,256,3) uint8, 'mask': (256,256)}</code>.</li>
+</ul>
+</div>
+<div class="mb-5 bg-slate-800/50 border border-slate-700/80 rounded-xl p-4">
+<h3 class="text-sm font-black text-amber-300 mb-2">2. Bugs Auditados y Resueltos en Código y Gráficas</h3>
+<div class="overflow-x-auto mt-3"><table class="w-full text-[11px] text-left border border-slate-700 rounded-lg overflow-hidden">
+<thead class="bg-slate-900 text-teal-300"><tr><th class="p-2">Archivo Corregido</th><th class="p-2">Problema Detectado Antes</th><th class="p-2">Corrección Verificada Después</th></tr></thead>
+<tbody class="divide-y divide-slate-700/70">
+<tr class="bg-slate-800/40"><td class="p-2 text-slate-200"><code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">scripts/analizar_camelyon16_coords.py</code></td><td class="p-2 text-slate-200">Graficaba <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">coords[:, 0]</code> (<code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">level=17</code> constante -> rayas verticales), incluía Test en Normal e imprimía <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">'%,.0f'</code> literal.</td><td class="p-2 text-slate-200">Corregido a <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">coords[:, 1:3]</code> reconstruyendo anatomía real de <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">Normal_076</code> y <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">tumor_092</code>, separando <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">159 / 110 / 130</code>.</td></tr>
+<tr class="bg-slate-800/40"><td class="p-2 text-slate-200"><code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">notebooks/05_CAMELYON16_WSI.ipynb</code></td><td class="p-2 text-slate-200">Dejaba indocumentados <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">25,235</code> parches <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">.npy</code> (<code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">10.68 GB</code>) y <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">normal_map.xlsx</code>; tarjeta mínima decía 624 en vez de 123.</td><td class="p-2 text-slate-200">Genera <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">camelyon16_patches_inventario.xlsx</code>, galería <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">camelyon16_patches_muestras.png</code> con máscaras en rojo y mínimo dinámico <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">123</code>.</td></tr>
+</tbody></table></div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+<div class="bg-slate-900/80 border border-slate-700 rounded-lg p-2 text-center"><img src="../../figures/05_CAMELYON16/camelyon16_mapa_coords.png" alt="Mapa espacial 2D corregido de Normal_076 y tumor_092" class="rounded max-h-40 mx-auto object-contain bg-white" /><div class="text-[10.5px] text-slate-300 mt-1.5">Mapa espacial 2D corregido de Normal_076 y tumor_092</div></div>
+<div class="bg-slate-900/80 border border-slate-700 rounded-lg p-2 text-center"><img src="../../figures/05_CAMELYON16/camelyon16_patches_muestras.png" alt="Galería de parches .npy reales con máscara tumoral" class="rounded max-h-40 mx-auto object-contain bg-white" /><div class="text-[10.5px] text-slate-300 mt-1.5">Galería de parches .npy reales con máscara tumoral</div></div>
+<div class="bg-slate-900/80 border border-slate-700 rounded-lg p-2 text-center"><img src="../../figures/05_CAMELYON16/camelyon16_distribucion_parches.png" alt="Distribución de tamaños de bolsa K en las 399 WSIs" class="rounded max-h-40 mx-auto object-contain bg-white" /><div class="text-[10.5px] text-slate-300 mt-1.5">Distribución de tamaños de bolsa K en las 399 WSIs</div></div>
+<div class="bg-slate-900/80 border border-slate-700 rounded-lg p-2 text-center"><img src="../../figures/05_CAMELYON16/camelyon_wsi_mil_pipeline.png" alt="Pipeline desacoplado de 2 etapas en CAMELYON16" class="rounded max-h-40 mx-auto object-contain bg-white" /><div class="text-[10.5px] text-slate-300 mt-1.5">Pipeline desacoplado de 2 etapas en CAMELYON16</div></div>
+</div>
+</div>
+<div class="mb-5 bg-slate-800/50 border border-slate-700/80 rounded-xl p-4">
+<h3 class="text-sm font-black text-amber-300 mb-2">3. Ejemplos Numéricos Concretos de Nuestras Tablas (<code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">tablas/</code>)</h3>
+<ul class="list-disc pl-5 space-y-1.5 text-xs text-slate-300 leading-relaxed">
+<li><strong class="text-white">Extremos espaciales (<code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">camelyon16_coordenadas_extremos.xlsx</code>):</strong> <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">Normal_076.tif</code> (<code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">26,297</code> parches, <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">X in [2, 215]</code>, <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">Y in [21, 484]</code>) y <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">tumor_092.tif</code> (<code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">35,766</code> parches, <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">X in [22, 477]</code>, <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">Y in [12, 193]</code>).</li>
+<li><strong class="text-white">Muestra <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">Normal_001.tif</code> (<code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">camelyon16_coords_por_wsi.xlsx</code>):</strong> 2,032 parches a nivel 17 (<code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">X: 65..166</code>, <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">Y: 181..487</code>). Con UNI (1024-d float32), esa bolsa completa ocupa apenas <strong class="text-white"><code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">~8.3 MB</code></strong> en RAM frente a <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">>30 GB</code> en espacio de píxeles!</li>
+<li><strong class="text-white">Inventario <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">.npy</code> por origen (<code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">camelyon16_patches_inventario.xlsx</code>):</strong> Ej. en <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">classifier/train</code>, <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">Tumor_Level_2_training_77</code> aporta 1,305 parches, <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">training_40</code> 910, <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">training_96</code> 855, permitiendo validar localización fina a nivel de celda.</li>
+</ul>
+</div>
+<div class="mb-5 bg-slate-800/50 border border-slate-700/80 rounded-xl p-4">
+<h3 class="text-sm font-black text-amber-300 mb-2">4. Conexión Directa con Papers SOTA y Todas las Reuniones</h3>
+<ul class="list-disc pl-5 space-y-1.5 text-xs text-slate-300 leading-relaxed">
+<li><strong class="text-white">Puente con 25 Sep (Zambrano 2022) & CLAM (Lu et al. 2021):</strong> Sorprendentemente, en <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">CLAM</code> (pág. 24 Online Methods), Lu et al. NO usan la última capa 2048-d de ResNet50: realizan <em>adaptive mean-spatial pooling</em> <strong class="text-white">después del 3er bloque residual</strong> para obtener embeddings <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">1024-d</code> (<code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">K×1024</code>)! Confirma exactamente la intuición metodológica de Prof. Zambrano.</li>
+<li><strong class="text-white">Reunión 08 Oct (VRAM Wall \(O(K^2)\)):</strong> Mostramos en <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">06_tendencias_modernas.tex</code> que más de <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">8,000</code> parches desbordan una GPU de 24 GB end-to-end. En CAMELYON16, el promedio es <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">7,963</code> y sube hasta <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">35,766</code>, probando matemáticamente que la Etapa A offline (UNI/iBOT) es obligatoria.</li>
+<li><strong class="text-white">Reunión 09 Nov (Ilse 2018) & TransMIL (Shao 2021):</strong> En TransMIL Tabla 1 sobre CAMELYON16, <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">Mean-pooling</code> obtiene <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">0.4647 AUC</code>, <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">Max-pooling</code> <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">0.8569</code>, <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">ABMIL</code> <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">0.8760</code>, <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">CLAM-SB</code> <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">0.8809</code> y <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">TransMIL</code> <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">0.9309</code> (con PPEG + aproximación Nyström de \(O(n^2) \to O(n)\)).</li>
+<li><strong class="text-white">Keshvarikhojasteh et al. (PLOS One, Dic 2025 — <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">Reducing Variability of MIL...</code>):</strong> Evalúa en CAMELYON16 (399 WSIs) tanto AUC/F1 como 3 métricas de <strong class="text-white">confiabilidad espacial</strong> (<code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">MI</code>, <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">Spearman r</code>, <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">AUPRC</code>). Demuestra un peligro brutal: <strong class="text-white">Max-Pooling obtiene <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">0.80 ± 0.01 AUC</code> pero <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">0.00 ± 0.00 MI</code> y <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">0.23 AUPRC</code></strong>, porque clasifica la lámina tumoral fijándose en tejido linfático normal! Con ABMIL/CLAM/ACMIL la confiabilidad espacial sube ~2.6&times; (<code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">AUPRC 0.59–0.62</code>, <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">MI 0.12–0.17</code>). Nosotros tenemos los <strong class="text-white">111 XMLs + 25,235 <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">.npy</code></strong> en disco para replicar esta misma validación espacial con <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">IoU/Dice</code>!</li>
+</ul>
+</div>
+<div class="mb-4 bg-slate-800/50 border border-slate-700/80 rounded-xl p-4">
+<h3 class="text-sm font-black text-rose-300 mb-2">Preguntas Probables del Prof. Zambrano (Defensa Oral)</h3>
+<div class="mb-2.5 text-xs"><div class="font-bold text-white">1. ¿Por qué no descargamos las 399 láminas TIFF completas de CAMELYON16?</div><div class="text-slate-300 mt-0.5 pl-3 border-l-2 border-teal-500">Pesarían ~700 GB (70× nuestro presupuesto de 10 GB/dataset) y ya poseemos las coordenadas exactas de los 3.17 millones de parches, las 111 máscaras XML y 25,235 parches <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">.npy</code> con tejido real en disco. Sumando +1.50 GB de embeddings pre-calculados UNI obtenemos la matriz exacta <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">[K, 1024]</code> de todas las láminas en calidad Foundation Model.</div></div>
+<div class="mb-2.5 text-xs"><div class="font-bold text-white">2. Si ya tenemos las 111 máscaras XML y los 25,235 .npy, ¿por qué entrenar con MIL y no segmentación supervisada directa?</div><div class="text-slate-300 mt-0.5 pl-3 border-l-2 border-teal-500">En clínica real del mundo exterior los hospitales NO entregan máscaras poligonales de una hora por paciente, solo el diagnóstico global de lámina (<code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">Y=0/1</code>). Por eso el entrenamiento de nuestra red debe ser 100% débilmente supervisado (solo <code class="bg-slate-900 text-teal-300 px-1 py-0.5 rounded font-mono text-[11px]">Y</code>), usando nuestras máscaras locales ÚNICAMENTE como auditor de interpretabilidad y confiabilidad (Siguiendo a Keshvarikhojasteh 2025).</div></div>
+</div>
+  </div>
+</div>
+
+<script>
+  let currentSlide = 0;
+  const slides = Array.from(document.querySelectorAll('.slide-card'));
+  const totalSlides = slides.length;
+
+  function renderMathInSlide() {
+    if (window.renderMathInElement) {
+      renderMathInElement(document.body, {
+        delimiters: [
+          { left: '$$', right: '$$', display: true },
+          { left: '\\(', right: '\\)', display: false }
+        ],
+        throwOnError: false
+      });
+    }
+  }
+
+  function showSlide(idx) {
+    currentSlide = Math.max(0, Math.min(totalSlides - 1, idx));
+    slides.forEach((s, i) => s.classList.toggle('active', i === currentSlide));
+    document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${totalSlides}`;
+    document.getElementById('progressFill').style.width = `${((currentSlide + 1) / totalSlides) * 100}%`;
+    const noteHtml = slides[currentSlide].getAttribute('data-notes') || 'Sin notas.';
+    document.getElementById('notesContent').innerHTML =
+      `<div class="text-teal-300 font-bold mb-1">Slide ${currentSlide + 1}: ${slides[currentSlide].getAttribute('data-title')}</div><p>${noteHtml}</p>`;
+  }
+
+  function nextSlide() { showSlide(currentSlide + 1); }
+  function prevSlide() { showSlide(currentSlide - 1); }
+  function toggleNotes() { document.getElementById('notesDrawer').classList.toggle('open'); }
+  function toggleGuide() {
+    document.getElementById('gridModal').classList.remove('open');
+    document.getElementById('guideModal').classList.toggle('open');
+  }
+
+  function toggleGrid() {
+    document.getElementById('guideModal').classList.remove('open');
+    const gm = document.getElementById('gridModal');
+    const container = document.getElementById('gridCards');
+    if (!gm.classList.contains('open')) {
+      container.innerHTML = slides.map((s, i) => {
+        const activeCls = i === currentSlide ? 'ring-2 ring-teal-400 bg-slate-800' : 'bg-slate-900 hover:bg-slate-800';
+        return `<button onclick="showSlide(${i}); toggleGrid();" class="${activeCls} text-left p-3.5 rounded-xl border border-slate-700 text-white transition">
+          <div class="text-xs font-mono text-teal-400 font-bold mb-1">Slide ${i + 1}</div>
+          <div class="text-xs font-bold leading-snug">${s.getAttribute('data-title')}</div>
+        </button>`;
+      }).join('');
+    }
+    gm.classList.toggle('open');
+  }
+
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen().catch(() => {});
+    }
+  }
+
+  function openLightbox(src, alt) {
+    document.getElementById('lightboxImg').src = src;
+    document.getElementById('lightboxCap').textContent = alt || '';
+    document.getElementById('lightboxModal').classList.add('open');
+  }
+
+  function closeLightbox() { document.getElementById('lightboxModal').classList.remove('open'); }
+
+  document.querySelectorAll('img.zoomable').forEach(img => {
+    img.addEventListener('click', () => openLightbox(img.src, img.alt));
+  });
+
+  document.addEventListener('keydown', (e) => {
+    const lbOpen = document.getElementById('lightboxModal').classList.contains('open');
+    const anyModal = lbOpen || document.getElementById('gridModal').classList.contains('open') || document.getElementById('guideModal').classList.contains('open');
+    if (e.key === 'ArrowRight' || e.key === ' ') {
+      if (anyModal) return;
+      e.preventDefault(); nextSlide();
+    } else if (e.key === 'ArrowLeft') {
+      if (anyModal) return;
+      e.preventDefault(); prevSlide();
+    } else if (e.key.toLowerCase() === 'n') {
+      toggleNotes();
+    } else if (e.key.toLowerCase() === 'g') {
+      toggleGrid();
+    } else if (e.key.toLowerCase() === 'i') {
+      toggleGuide();
+    } else if (e.key.toLowerCase() === 'f') {
+      toggleFullscreen();
+    } else if (e.key === 'Escape') {
+      closeLightbox();
+      document.getElementById('gridModal').classList.remove('open');
+      document.getElementById('guideModal').classList.remove('open');
+    } else if (e.key === 'Home') {
+      if (!anyModal) showSlide(0);
+    } else if (e.key === 'End') {
+      if (!anyModal) showSlide(totalSlides - 1);
+    }
+  });
+
+  
+  function updateC16Sim() {
+    const wsi = document.getElementById('c16WsiSel').value;
+    const agg = document.getElementById('c16AggSel').value;
+    const kMap = { n016: 253, n001: 2032, n076: 26297, t092: 35766 };
+    const lblMap = { n016: 'Normal_016 (Normal)', n001: 'Normal_001 (Normal)', n076: 'Normal_076 (Extremo Normal)', t092: 'tumor_092 (Extremo Tumor)' };
+    const k = kMap[wsi];
+    const mbUni = (k * 1024 * 4 / (1024 * 1024)).toFixed(1);
+    const estEndToEndGb = (0.004 * k + 0.00000035 * k * k).toFixed(1);
+    document.getElementById('c16MemBox').innerHTML = `
+      <div><strong>Slide:</strong> ${lblMap[wsi]}</div>
+      <div><strong>Bolsa K:</strong> ${k.toLocaleString('es-CL')} parches (224&times;224 @ 20x)</div>
+      <div class="text-rose-700"><strong>End-to-End Píxeles (O(K&sup2;)):</strong> ~${estEndToEndGb} GB VRAM (OOM &gt;8k!)</div>
+      <div class="text-emerald-700"><strong>2-Etapas UNI [K, 1024]:</strong> solo <strong>${mbUni} MB</strong> en RAM/GPU!</div>`;
+
+    const perfMap = {
+      mean: { auc: '0.465 – 0.58', f1: '0.59', rel: 'N/A (sin pesos α_k)', comp: 'O(K) • 63 M FLOPs', cls: 'text-rose-400', note: 'Fracasa severamente cuando las metástasis ocupan <10% de la WSI (TransMIL Tab. 1: 0.4647 AUC, peor que azar).' },
+      max:  { auc: '0.800 – 0.857', f1: '0.79', rel: 'MI=0.00 • AUPRC=0.23', comp: 'O(K) • 63 M FLOPs', cls: 'text-amber-300', note: 'ALERTA (PLOS One 2025 Fig. 2): Alcanza AUC 0.80 engañoso, pero sus mapas miran parches linfáticos SANOS en lugar del foco tumoral!' },
+      abmil:{ auc: '0.85 – 0.876*', f1: '0.84', rel: 'MI=0.12 • AUPRC=0.59', comp: 'O(K) • 94 M FLOPs', cls: 'text-teal-300', note: 'Baseline lineal de Ilse et al. (2018): con UNI Foundation Model escala >0.95 AUC y localiza micrometástasis con confiabilidad 2.5x superior a Max-Pool.' },
+      clam: { auc: '0.88 – 0.953*', f1: '0.85', rel: 'MI=0.12 • AUPRC=0.59', comp: 'O(K) • ResNet Bloque-3', cls: 'text-teal-300', note: 'Lu et al. (2021): extrae características desde el 3er bloque residual intermedio (1024-d) + clustering Top/Bottom-B. Logra 0.953 AUC en C16+C17.' },
+      transmil:{ auc: '0.9309', f1: 'Acc 0.884', rel: 'PPEG + Nyström', comp: 'O(K) aprox • 2.67M p', cls: 'text-indigo-300', note: 'Shao et al. (2021): modela correlación espacial entre parches vecinos rompiendo el supuesto i.i.d. y converge 2–3x más rápido.' }
+    };
+    const p = perfMap[agg];
+    document.getElementById('c16PerfGrid').innerHTML = `
+      <div class="p-2.5 bg-slate-800 rounded-lg border border-slate-700"><div class="text-slate-400">ROC-AUC (Lit.)</div><div class="text-base font-black ${p.cls} font-mono mt-0.5">${p.auc}</div></div>
+      <div class="p-2.5 bg-slate-800 rounded-lg border border-slate-700"><div class="text-slate-400">Confiabilidad (2025)</div><div class="text-sm font-black text-amber-300 font-mono mt-0.5">${p.rel}</div></div>
+      <div class="p-2.5 bg-slate-800 rounded-lg border border-slate-700"><div class="text-slate-400">F1 / Exactitud</div><div class="text-sm font-black text-white font-mono mt-0.5">${p.f1}</div></div>
+      <div class="p-2.5 bg-slate-800 rounded-lg border border-slate-700"><div class="text-slate-400">Complejidad</div><div class="text-xs font-bold text-teal-300 font-mono mt-0.5">${p.comp}</div></div>`;
+    document.getElementById('c16AggNote').textContent = p.note;
+  }
+  function initDatasetLab() { updateC16Sim(); }
+
+
+  window.addEventListener('DOMContentLoaded', () => {
+    if (window.lucide) lucide.createIcons();
+    if (typeof initDatasetLab === 'function') initDatasetLab();
+    showSlide(0);
+    setTimeout(renderMathInSlide, 250);
+  });
+</script>
+</body>
+</html>
