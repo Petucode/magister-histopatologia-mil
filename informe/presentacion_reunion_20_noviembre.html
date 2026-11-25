@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presentación Magíster - Análisis Integral Datasets Histopatología y Arquitectura MIL</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- KaTeX for LaTeX Math Rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0b1120;
+            color: #f8fafc;
+            overflow: hidden;
+        }
+
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .slide-container {
+            height: calc(100vh - 68px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .with-notes .slide-container {
+            height: calc(100vh - 224px);
+        }
+
+        .glass-card {
+            background: rgba(15, 23, 42, 0.80);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(148, 163, 184, 0.16);
+        }
+
+        .forensic-badge {
+            background: linear-gradient(135deg, rgba(20, 184, 166, 0.18), rgba(30, 58, 138, 0.35));
+            border: 1px solid rgba(45, 212, 191, 0.35);
+        }
+
+        .zoomable-img {
+            cursor: zoom-in;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+        .zoomable-img:hover {
+            transform: scale(1.01);
+            border-color: rgba(45, 212, 191, 0.7);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(71, 85, 105, 0.8);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(20, 184, 166, 0.8);
+        }
+
+        @keyframes pulseAlert {
+            0%, 100% { box-shadow: 0 0 10px rgba(239, 68, 68, 0.45); }
+            50% { box-shadow: 0 0 22px rgba(239, 68, 68, 0.85); }
+        }
+        .alert-glow {
+            animation: pulseAlert 2.4s infinite;
+        }
+
+        @media print {
+            body {
+                overflow: visible !important;
+                background: #0f172a !important;
+            }
+            #top-nav, #speaker-drawer, #progress-wrapper, #lightbox-modal {
+                display: none !important;
+            }
+            .slide-container {
+                height: auto !important;
+                overflow: visible !important;
+            }
+        }
+    </style>
+</head>
+<body class="with-notes select-none">
+
+    <!-- BARRA SUPERIOR INSTITUCIONAL Y NAVEGACIÓN -->
+    <header id="top-nav" class="h-16 bg-slate-950/90 border-b border-slate-800 px-6 flex items-center justify-between z-30">
+        <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2 bg-red-600/15 border border-red-500/40 px-3 py-1 rounded-md">
+                <span class="font-extrabold tracking-tight text-red-500 text-lg">udp</span>
+                <span class="text-xs text-slate-300 font-medium border-l border-slate-700 pl-2">Facultad de Ingeniería y Ciencias</span>
+            </div>
+            <div class="hidden md:block">
+                <h1 class="text-xs font-semibold uppercase tracking-wider text-teal-400">Magíster en Ciencias de la Computación • Reunión 20 Noviembre 2026</h1>
+                <p class="text-[11px] text-slate-400">Estudiante: Lucas Vicuña • Profesor Guía: Dr. Jorge Eduardo Zambrano Ibujés</p>
+            </div>
+        </div>
+
+        <!-- Selector de Diapositivas y Controles -->
+        <div class="flex items-center gap-3">
+            <select id="slide-jump" onchange="goToSlide(parseInt(this.value))" class="bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-lg px-3 py-1.5 max-w-[260px] focus:outline-none focus:border-teal-500">
+            </select>
+
+            <div class="flex items-center bg-slate-900 border border-slate-800 rounded-lg p-0.5">
+                <button onclick="prevSlide()" class="p-1.5 hover:bg-slate-800 rounded-md text-slate-300 hover:text-white transition" title="Anterior (←)">
+                    <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                </button>
+                <span id="slide-counter" class="px-3 text-xs font-mono font-semibold text-teal-400">01 / 14</span>
+                <button onclick="nextSlide()" class="p-1.5 hover:bg-slate-800 rounded-md text-slate-300 hover:text-white transition" title="Siguiente (→)">
+                    <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <button onclick="toggleNotes()" id="btn-notes" class="flex items-center gap-1.5 text-xs bg-teal-500/20 border border-teal-500/50 text-teal-300 px-3 py-1.5 rounded-lg hover:bg-teal-500/30 transition" title="Mostrar/Ocultar Guion del Orador">
+                <i data-lucide="mic" class="w-3.5 h-3.5"></i>
+                <span class="hidden sm:inline">Guion Orador</span>
+            </button>
+
+            <button onclick="toggleFullScreen()" class="p-2 bg-slate-900 border border-slate-700 rounded-lg text-slate-300 hover:text-white hover:border-slate-500 transition" title="Pantalla Completa">
+                <i data-lucide="maximize" class="w-4 h-4"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- BARRA DE PROGRESO -->
+    <div id="progress-wrapper" class="w-full h-1 bg-slate-900">
+        <div id="progress-bar" class="h-full bg-gradient-to-r from-blue-500 via-teal-400 to-amber-400 transition-all duration-300" style="width: 7.14%;"></div>
+    </div>
+
+    <!-- ÁREA PRINCIPAL DE DIAPOSITIVAS -->
+    <main id="slides-viewport" class="slide-container overflow-y-auto px-6 py-5 md:px-12 md:py-6 flex items-center justify-center relative">
+        <div id="slide-content" class="w-full max-w-7xl mx-auto my-auto">
+        </div>
+    </main>
+
+    <!-- TELEPROMPTER / GUION DEL ORADOR -->
+    <footer id="speaker-drawer" class="fixed bottom-0 left-0 right-0 h-[156px] bg-slate-950/95 border-t border-teal-500/30 px-6 py-3 z-30 transition-transform duration-300">
+        <div class="max-w-7xl mx-auto h-full flex flex-col">
+            <div class="flex items-center justify-between mb-1.5">
+                <div class="flex items-center gap-2">
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                        <i data-lucide="radio" class="w-3 h-3"></i> Teleprompter / Speech Técnico del Orador
+                    </span>
+                    <span id="notes-slide-title" class="text-xs text-slate-400 font-medium truncate"></span>
+                </div>
+                <span class="text-[11px] text-slate-500">Usa <kbd class="px-1.5 py-0.5 bg-slate-800 rounded text-slate-300">←</kbd> <kbd class="px-1.5 py-0.5 bg-slate-800 rounded text-slate-300">→</kbd> para navegar • Clic en figuras para ampliar</span>
+            </div>
+            <div id="speaker-notes-text" class="text-sm text-slate-200 leading-relaxed overflow-y-auto pr-2 font-normal">
+            </div>
+        </div>
+    </footer>
+
+    <!-- LIGHTBOX MODAL PARA AMPLIAR FIGURAS -->
+    <div id="lightbox-modal" onclick="closeLightbox()" class="hidden fixed inset-0 bg-slate-950/92 backdrop-blur-md z-50 flex items-center justify-center p-6 cursor-zoom-out">
+        <div class="max-w-6xl max-h-[90vh] flex flex-col items-center gap-3" onclick="event.stopPropagation()">
+            <img id="lightbox-img" src="" alt="Figura ampliada" class="max-h-[82vh] rounded-xl border border-slate-700 shadow-2xl bg-white">
+            <div class="flex items-center gap-4">
+                <p id="lightbox-caption" class="text-xs text-slate-300 font-medium"></p>
+                <button onclick="closeLightbox()" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-xs text-white rounded-lg border border-slate-600">Cerrar (ESC)</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const slidesData = [
+            // =========================================================================
+            // DIAPOSITIVA 1: PORTADA
+            // =========================================================================
+            {
+                id: 1,
+                badge: "REUNIÓN 20 NOVIEMBRE 2026 • BASES DE DATOS, AUDITORÍA Y PIPELINE MIL",
+                title: "Análisis Profundo de Datasets de Histopatología Digital, Pipeline MIL y Sinergia Curricular",
+                subtitle: "Evaluación empírica de 27.4 GB en disco, auditoría de integridad de datos y arquitectura Two-Stage para hardware local",
+                html: `
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center mt-2">
+                        <div class="lg:col-span-7 space-y-5">
+                            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full forensic-badge text-teal-300 text-xs font-semibold">
+                                <i data-lucide="microscope" class="w-4 h-4"></i>
+                                Proyecto Magíster: Multiple Instance Learning (MIL) en Histopatología
+                            </div>
+                            <h2 class="text-3xl md:text-4xl font-extrabold leading-tight text-white">
+                                De los Datos Crudos al <span class="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-blue-400">Espacio Latente MIL</span>: Auditoría y Hoja de Ruta
+                            </h2>
+                            <p class="text-slate-300 text-base leading-relaxed">
+                                Revisión técnica integral de los <strong>7 notebooks</strong>, <strong>7 scripts</strong>, <strong>40 tablas Excel</strong>, <strong>106 figuras</strong> y <strong>27.4 GB de muestras</strong> locales, conectando la teoría de <em>Gated Attention (Ilse et al., 2018)</em> con las herramientas de cuatro ramos del Magíster.
+                            </p>
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
+                                <div class="glass-card p-3 rounded-xl border-t-2 border-t-teal-400 text-center">
+                                    <p class="text-xl font-extrabold text-teal-300 mono">27.4 GB</p>
+                                    <p class="text-[11px] text-slate-400">En data_samples/</p>
+                                </div>
+                                <div class="glass-card p-3 rounded-xl border-t-2 border-t-blue-400 text-center">
+                                    <p class="text-xl font-extrabold text-blue-300 mono">165k+</p>
+                                    <p class="text-[11px] text-slate-400">Parches + 3.17M coords</p>
+                                </div>
+                                <div class="glass-card p-3 rounded-xl border-t-2 border-t-amber-400 text-center">
+                                    <p class="text-xl font-extrabold text-amber-300 mono">40 / 106</p>
+                                    <p class="text-[11px] text-slate-400">Tablas .xlsx / Figuras</p>
+                                </div>
+                                <div class="glass-card p-3 rounded-xl border-t-2 border-t-rose-400 text-center">
+                                    <p class="text-xl font-extrabold text-rose-300 mono">5</p>
+                                    <p class="text-[11px] text-slate-400">Hallazgos de Auditoría</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="lg:col-span-5 space-y-3.5">
+                            <div class="glass-card p-4 rounded-xl border border-blue-500/30 hover:border-blue-400/60 transition">
+                                <div class="flex items-start gap-3">
+                                    <div class="p-2.5 rounded-lg bg-blue-500/20 text-blue-400 font-bold mono text-sm">01</div>
+                                    <div>
+                                        <h3 class="font-bold text-white text-sm">Inventario y EDA Multi-Cohorte</h3>
+                                        <p class="text-xs text-slate-300 mt-1">Análisis empírico de <strong>BreaKHis, PCam, NCT-CRC-HE, MHIST y CAMELYON16</strong> (+ BACH, BRACS, TCGA, DigestPath, CAMELYON17).</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="glass-card p-4 rounded-xl border border-rose-500/30 hover:border-rose-400/60 transition">
+                                <div class="flex items-start gap-3">
+                                    <div class="p-2.5 rounded-lg bg-rose-500/20 text-rose-400 font-bold mono text-sm">02</div>
+                                    <div>
+                                        <h3 class="font-bold text-white text-sm">Auditoría Forense del Pipeline</h3>
+                                        <p class="text-xs text-slate-300 mt-1">Detección de bugs críticos en agrupación de pacientes BreaKHis, CSV sintético de MHIST, ejes en CAMELYON16 y <strong>10.68 GB ocultos en patches/</strong>.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="glass-card p-4 rounded-xl border border-teal-500/30 hover:border-teal-400/60 transition">
+                                <div class="flex items-start gap-3">
+                                    <div class="p-2.5 rounded-lg bg-teal-500/20 text-teal-400 font-bold mono text-sm">03</div>
+                                    <div>
+                                        <h3 class="font-bold text-white text-sm">Sinergia Curricular y Hardware Local</h3>
+                                        <p class="text-xs text-slate-300 mt-1">Integración de código y métodos de <strong>PDI, Deep Learning, IA y Data Science</strong> bajo arquitectura desacoplada para <strong>AMD RX 9060 XT / CPU</strong>.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                notes: `"Buenas tardes, Profesor Zambrano. En esta reunión presentamos el análisis integral de la infraestructura de datos construida para nuestra tesis de Magíster en Multiple Instance Learning aplicado a histopatología digital. En lugar de quedarnos solo en la teoría, auditamos en profundidad cada archivo del workspace: 7 notebooks, 7 scripts Python, 40 tablas Excel, 106 figuras y 27.4 GB reales en disco. Además de consolidar los datasets y el pipeline Two-Stage con modelos fundacionales como UNI e iBOT, esta revisión permitió detectar 5 hallazgos críticos de datos y código que conviene corregir antes de entrenar nuestros primeros modelos, y mapear herramientas concretas de cuatro ramos del Magíster directamente sobre el flujo MIL."`
+            },
+
+            // =========================================================================
+            // DIAPOSITIVA 2: ARQUITECTURA DEL PROYECTO Y HARDWARE LOCAL
+            // =========================================================================
+            {
+                id: 2,
+                badge: "INGENIERÍA DEL REPOSITORIO • ESTRUCTURA, LINAJE Y HARDWARE",
+                title: "Arquitectura del Proyecto, Linaje de Artefactos y Restricción de Hardware",
+                subtitle: "Flujo desde fuentes científicas (Zenodo/Kaggle/Local) hacia notebooks, scripts y artefactos reproducibles",
+                html: `
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+                        <!-- Flujo Arquitectónico -->
+                        <div class="lg:col-span-8 glass-card p-5 rounded-xl border border-slate-700 space-y-4">
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-teal-400 flex items-center gap-2">
+                                <i data-lucide="git-branch" class="w-4 h-4"></i> Flujo End-to-End del Workspace (20 Noviembre Reunion/)
+                            </h3>
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
+                                <div class="p-3 bg-slate-950 rounded-xl border border-blue-500/30 space-y-1.5">
+                                    <span class="text-[10px] font-bold uppercase text-blue-400">1. Adquisición</span>
+                                    <p class="font-bold text-white">scripts/ (7 .py)</p>
+                                    <ul class="text-[11px] text-slate-300 space-y-1">
+                                        <li>• <span class="mono">download_val/train.py</span> (HTTP Range + unzip)</li>
+                                        <li>• <span class="mono">build_notebook.py</span> (genera NB03)</li>
+                                        <li>• <span class="mono">analyze_and_generate.py</span></li>
+                                    </ul>
+                                </div>
+                                <div class="p-3 bg-slate-950 rounded-xl border border-purple-500/30 space-y-1.5">
+                                    <span class="text-[10px] font-bold uppercase text-purple-400">2. Datos (~27.4 GB)</span>
+                                    <p class="font-bold text-white">data_samples/</p>
+                                    <ul class="text-[11px] text-slate-300 space-y-1">
+                                        <li>• <span class="mono">nct_crc/</span> (15.19 GB)</li>
+                                        <li>• <span class="mono">camelyon16/patches/</span> (10.68 GB)</li>
+                                        <li>• <span class="mono">pcam/</span> (864 MB .h5)</li>
+                                        <li>• <span class="mono">coords + masks</span> (92 MB)</li>
+                                    </ul>
+                                </div>
+                                <div class="p-3 bg-slate-950 rounded-xl border border-teal-500/30 space-y-1.5">
+                                    <span class="text-[10px] font-bold uppercase text-teal-400">3. Análisis EDA</span>
+                                    <p class="font-bold text-white">notebooks/ (00–06)</p>
+                                    <ul class="text-[11px] text-slate-300 space-y-1">
+                                        <li>• <span class="mono">00_Resumen</span> & <span class="mono">06_Comparativa</span></li>
+                                        <li>• <span class="mono">01_BreaKHis</span> (ruta externa)</li>
+                                        <li>• <span class="mono">02_PCam</span>, <span class="mono">03_NCT_CRC</span></li>
+                                        <li>• <span class="mono">04_MHIST</span>, <span class="mono">05_CAMELYON16</span></li>
+                                    </ul>
+                                </div>
+                                <div class="p-3 bg-slate-950 rounded-xl border border-amber-500/30 space-y-1.5">
+                                    <span class="text-[10px] font-bold uppercase text-amber-400">4. Salidas & Git</span>
+                                    <p class="font-bold text-white">Artefactos</p>
+                                    <ul class="text-[11px] text-slate-300 space-y-1">
+                                        <li>• <span class="mono">tablas/</span> (40 .xlsx | 0.67 MB)</li>
+                                        <li>• <span class="mono">figures/</span> (106 .png | 28.2 MB)</li>
+                                        <li>• <span class="mono">docs/</span> & <span class="mono">informe/</span></li>
+                                        <li>• GitHub safe (<span class="mono">~38 MB</span> sin datos)</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="p-3 rounded-lg bg-slate-900/90 border border-slate-800 text-xs text-slate-300">
+                                <strong>Regla de diseño modular en todos los notebooks:</strong> Cada figura multipanel ejecuta <span class="mono text-teal-300">guardar_subplots_individuales(fig, nombre, dir, dpi=150)</span> usando bounding boxes transformados, generando gráficos compuestos y paneles aislados listos para tesis y presentaciones.
+                            </div>
+                        </div>
+
+                        <!-- Hardware y Restricciones -->
+                        <div class="lg:col-span-4 space-y-4">
+                            <div class="glass-card p-5 rounded-xl border-l-4 border-l-amber-400 space-y-2.5">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-bold uppercase text-amber-300">Entorno Hardware Verificado</span>
+                                    <i data-lucide="cpu" class="w-4 h-4 text-amber-400"></i>
+                                </div>
+                                <p class="text-xs text-slate-300 leading-relaxed">
+                                    Auditado desde <span class="mono text-slate-200">DEEP LEARNING/Tareas/T2</span>:
+                                </p>
+                                <ul class="text-xs text-slate-200 space-y-1.5 font-mono bg-slate-950 p-3 rounded-lg border border-slate-800">
+                                    <li>• OS: Windows (AMD64)</li>
+                                    <li>• GPU: AMD Radeon RX 9060 XT</li>
+                                    <li>• PyTorch: 2.11.0+cpu</li>
+                                    <li class="text-rose-400">• CUDA disponible: False</li>
+                                </ul>
+                                <p class="text-xs text-slate-400">
+                                    Sin CUDA NVIDIA nativo, entrenar CNNs/ViTs end-to-end sobre miles de parches crudos es prohibitivo.
+                                </p>
+                            </div>
+
+                            <div class="glass-card p-4 rounded-xl border-l-4 border-l-teal-400">
+                                <h4 class="text-xs font-bold uppercase text-teal-300 mb-1">Solución Estratégica</h4>
+                                <p class="text-xs text-slate-300 leading-relaxed">
+                                    Usar <strong>embeddings precalculados</strong> (<span class="mono text-white">UNI</span> 1024-d o <span class="mono text-white">iBOT</span> 768-d) reduce 700 GB de WSIs a ~1.5–4.3 GB y permite entrenar <strong>Gated Attention ($\\mathcal{O}(K)$)</strong> en minutos incluso en CPU.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                notes: `"En esta segunda diapositiva observamos la arquitectura completa del repositorio y una restricción técnica fundamental que detectamos al cruzar el proyecto con el material de Deep Learning. El workspace organiza claramente la adquisición vía scripts Python, el almacenamiento en data_samples, el análisis exploratorio en 7 notebooks numerados del 00 al 06, y las salidas tabulares y gráficas en 40 archivos Excel y 106 PNGs a 150 DPI. Un punto clave descubierto en el ambiente local es que el equipo opera en Windows con una GPU AMD Radeon RX 9060 XT y PyTorch compilado para CPU sin soporte CUDA. Esto confirma que nuestra decisión de desacoplar la extracción de características mediante embeddings precalculados de UNI o iBOT no es solo elegante teóricamente, sino una necesidad práctica para iterar rápido en este hardware."`
+            },
+
+            // =========================================================================
+            // DIAPOSITIVA 3: PANORAMA COMPARATIVO DE DATASETS Y TIERS
+            // =========================================================================
+            {
+                id: 3,
+                badge: "NOTEBOOKS 00 Y 06 • EVALUACIÓN MULTICRITERIO",
+                title: "Panorama Comparativo de 10 Datasets Histopatológicos y Estrategia en Tiers",
+                subtitle: "Cruce entre volumen en disco, número de muestras, granularidad diagnóstica y compatibilidad MIL",
+                html: `
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
+                        <!-- Imagen Real -->
+                        <div class="lg:col-span-7 glass-card p-3.5 rounded-xl border border-slate-700">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs font-bold text-teal-300 uppercase">Figura Real: comparativa_final_completa.png (Notebook 06)</span>
+                                <span class="text-[10px] text-slate-400">Clic en imagen para ampliar</span>
+                            </div>
+                            <img src="../figures/06_Comparativa/comparativa_final_completa.png"
+                                 onclick="openLightbox(this.src, 'Notebook 06: Comparativa multidimensional de 10 datasets histopatológicos')"
+                                 alt="Comparativa Final Completa"
+                                 class="zoomable-img w-full max-h-[370px] object-contain rounded-lg bg-white border border-slate-700">
+                        </div>
+
+                        <!-- Tabla + Observación -->
+                        <div class="lg:col-span-5 space-y-3.5">
+                            <div class="glass-card rounded-xl overflow-hidden border border-slate-700">
+                                <table class="w-full text-left border-collapse text-[11px]">
+                                    <thead>
+                                        <tr class="bg-slate-900 border-b border-slate-700 text-teal-300">
+                                            <th class="p-2.5">Dataset</th>
+                                            <th class="p-2.5">Órgano</th>
+                                            <th class="p-2.5 text-center">Clases</th>
+                                            <th class="p-2.5 text-right">Real en Disco</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-800 text-slate-300">
+                                        <tr><td class="p-2 font-bold text-white">BreaKHis v1</td><td class="p-2">Mama</td><td class="p-2 text-center">2 / 8</td><td class="p-2 text-right font-mono text-emerald-300">~7.9 GB (ext)</td></tr>
+                                        <tr class="bg-slate-950/40"><td class="p-2 font-bold text-white">CAMELYON16</td><td class="p-2">Linfonodo</td><td class="p-2 text-center">2</td><td class="p-2 text-right font-mono text-amber-300">10.77 GB</td></tr>
+                                        <tr><td class="p-2 font-bold text-white">NCT-CRC-HE</td><td class="p-2">Colon</td><td class="p-2 text-center">9</td><td class="p-2 text-right font-mono text-amber-300">15.19 GB</td></tr>
+                                        <tr class="bg-slate-950/40"><td class="p-2 font-bold text-white">PCam (Valid)</td><td class="p-2">Linfonodo</td><td class="p-2 text-center">2</td><td class="p-2 text-right font-mono text-emerald-300">0.84 GB</td></tr>
+                                        <tr><td class="p-2 font-bold text-white">MHIST</td><td class="p-2">Colon</td><td class="p-2 text-center">2</td><td class="p-2 text-right font-mono text-rose-400">0.08 MB*</td></tr>
+                                        <tr class="bg-slate-950/40"><td class="p-2 text-slate-400">BACH / BRACS / TCGA / DigestPath / CAM17</td><td class="p-2 text-slate-400">Multi</td><td class="p-2 text-center text-slate-400">2–7</td><td class="p-2 text-right font-mono text-slate-500">Solo catálogo</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="p-3.5 rounded-xl bg-amber-950/30 border border-amber-500/40 text-xs text-slate-200 space-y-1">
+                                <p class="font-bold text-amber-300 flex items-center gap-1.5">
+                                    <i data-lucide="alert-circle" class="w-4 h-4"></i> Notas de Auditoría en 00 vs. 06:
+                                </p>
+                                <p>• <strong>Tiers divergentes:</strong> El Notebook 00 pone a <em>PCam</em> en Tier 1 y <em>NCT-CRC</em> en Tier 2; el Notebook 06 invierte esta prioridad poniendo a <em>NCT-CRC</em> y <em>MHIST</em> en Tier 1.</p>
+                                <p>• <strong>Detalle visual:</strong> En Matplotlib, los emojis de título renderizaron como cajas <span class="mono">□</span> por la fuente DejaVu Sans (fácilmente corregible).</p>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                notes: `"Pasando al panorama comparativo de los notebooks 00 y 06, se evaluaron 10 benchmarks internacionales según facilidad de acceso, tamaño bajo 10 GB, balance de clases, relevancia en citas y compatibilidad MIL. Como muestra la figura generada por el Notebook 06 y nuestra tabla auditada, actualmente contamos en disco con 4 datasets sustantivos más BreaKHis en ruta externa: NCT-CRC-HE completo con 15.19 GB, CAMELYON16 con 10.77 GB entre coordenadas, máscaras y parches, PCam validación con 864 MB, y MHIST con solo el CSV de anotaciones. Es importante notar dos detalles menores entre los notebooks 00 y 06: difieren en la asignación de Tiers entre PCam, NCT-CRC y MHIST, y los títulos con emojis en Matplotlib muestran glifos faltantes que podemos limpiar para publicación."`
+            },
+
+            // =========================================================================
+            // DIAPOSITIVA 4: BREAKHIS v1 + BUG DE PACIENTES
+            // =========================================================================
+            {
+                id: 4,
+                badge: "NOTEBOOK 01 • MAMA (7,909 PNGs) Y HALLAZGO DE BUG",
+                title: "BreaKHis v1: Análisis Multiescala y Bug Crítico en Construcción de Bolsas",
+                subtitle: "82 pacientes reales, 4 aumentos ópticos (40x–400x) y 8 subtipos tumorales con desbalance 31.4% / 68.6%",
+                html: `
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
+                        <div class="lg:col-span-7 glass-card p-3.5 rounded-xl border border-slate-700">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs font-bold text-teal-300 uppercase">Figura Real: breakhis_distribucion_clases.png</span>
+                                <span class="text-[10px] text-slate-400">7,909 imágenes (700×460 px)</span>
+                            </div>
+                            <img src="../figures/01_BreaKHis/breakhis_distribucion_clases.png"
+                                 onclick="openLightbox(this.src, 'BreaKHis v1: Distribución global, 8 subtipos, 4 aumentos y heatmap cruzado')"
+                                 alt="Distribución BreaKHis"
+                                 class="zoomable-img w-full max-h-[365px] object-contain rounded-lg bg-white border border-slate-700">
+                        </div>
+
+                        <div class="lg:col-span-5 space-y-3.5">
+                            <div class="glass-card p-4 rounded-xl border border-slate-700 space-y-2 text-xs">
+                                <h3 class="font-bold text-white uppercase text-xs text-teal-300">Estadísticas Reales Extraídas</h3>
+                                <ul class="text-slate-300 space-y-1">
+                                    <li>• <strong>Benigno (31.4%):</strong> 2,480 imgs (Adenosis 444, Fibroadenoma 1,014, Phyllodes 453, Tubular 569).</li>
+                                    <li>• <strong>Maligno (68.6%):</strong> 5,429 imgs — sesgo severo hacia <strong>Ductal Carcinoma (3,451)</strong>.</li>
+                                    <li>• <strong>Fotométrica RGB (n=200):</strong> <span class="mono">mean=[0.780, 0.635, 0.759]</span>, <span class="mono">std=[0.107, 0.137, 0.089]</span>.</li>
+                                </ul>
+                            </div>
+
+                            <div class="glass-card p-4 rounded-xl border-2 border-red-500/70 alert-glow space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-bold uppercase text-red-400 flex items-center gap-1.5">
+                                        <i data-lucide="bug" class="w-4 h-4"></i> Bug Detectado en Celda 5 y 15
+                                    </span>
+                                    <span class="px-2 py-0.5 bg-red-500/20 text-red-300 text-[10px] font-bold rounded">CRÍTICO</span>
+                                </div>
+                                <div class="bg-slate-950 p-2.5 rounded-lg border border-slate-800 font-mono text-[11px] text-slate-200">
+                                    <p class="text-slate-400"># Archivo: SOB_B_A-14-22549AB-100-001.png</p>
+                                    <p class="text-rose-400">❌ paciente = tokens[1]  <span class="text-slate-400"># Da '14' o '15'</span></p>
+                                    <p class="text-emerald-400">✓ paciente = f"{tokens[1]}-{tokens[2]}"</p>
+                                </div>
+                                <p class="text-xs text-slate-300 leading-relaxed">
+                                    Por este índice, <span class="mono text-amber-300">breakhis_bags_pacientes.xlsx</span> colapsó los <strong>82 pacientes reales en solo 2 bolsas</strong> (<span class="mono">14</span> con 7,844 imgs y <span class="mono">15</span> con 65 imgs). Corregirlo es obligatorio antes de particionar Train/Test sin <em>patient leakage</em>.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                notes: `"En el Notebook 01 analizamos BreaKHis v1, disponible localmente en la ruta externa con 7,909 imágenes PNG a cuatro magnificaciones: 40x, 100x, 200x y 400x. El EDA confirma un desbalance importante: 68.6% malignas frente a 31.4% benignas, dominado por carcinoma ductal con 3,451 muestras. Sin embargo, al auditar la tabla breakhis_bags_pacientes.xlsx descubrimos un bug crítico en la celda 5: el parser divide el nombre por guiones y toma tokens[1], que corresponde al año 14 o 15 de la biopsia, en lugar de concatenar tokens[1] y tokens[2] para formar el ID único como 14-22549AB. Como consecuencia, los 82 pacientes reales colapsaron en apenas 2 bolsas gigantes de 7,844 y 65 imágenes. Debemos parchear esa línea inmediatamente para evitar fuga de datos entre pacientes."`
+            },
+
+            // =========================================================================
+            // DIAPOSITIVA 5: PCam (PatchCamelyon)
+            // =========================================================================
+            {
+                id: 5,
+                badge: "NOTEBOOK 02 • PATCHCAMELYON (ZENODO HDF5)",
+                title: "PCam: Descarga Robusta en HDF5, ROI Central 32×32 px y Perfil Espectral H&E",
+                subtitle: "32,768 parches de validación reales (96×96×3 uint8, 864.1 MB) balanceados 50.05% / 49.95%",
+                html: `
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
+                        <div class="lg:col-span-7 glass-card p-3.5 rounded-xl border border-slate-700">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs font-bold text-teal-300 uppercase">Figura Real: pcam_muestras_reales.png (ROI Central 32×32 px)</span>
+                                <span class="text-[10px] text-slate-400">16 parches extraídos directo del HDF5</span>
+                            </div>
+                            <img src="../figures/02_PCam/pcam_muestras_reales.png"
+                                 onclick="openLightbox(this.src, 'PCam: 8 parches normales (arriba) vs 8 tumorales (abajo) con ventana diagnóstica 32×32 px')"
+                                 alt="Muestras Reales PCam"
+                                 class="zoomable-img w-full max-h-[340px] object-contain rounded-lg bg-white border border-slate-700">
+                        </div>
+
+                        <div class="lg:col-span-5 space-y-3.5">
+                            <div class="glass-card p-4 rounded-xl border-l-4 border-l-emerald-400 space-y-2 text-xs">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-bold text-emerald-300 uppercase">Ingeniería Limpia (Zenodo 2546921)</span>
+                                    <span class="px-2 py-0.5 bg-emerald-500/20 text-emerald-300 rounded font-bold text-[10px]">SIN ERRORES</span>
+                                </div>
+                                <p class="text-slate-300">
+                                    El notebook evita fallos de compatibilidad de HuggingFace/PyArrow descargando el archivo <span class="mono">.h5.gz</span> directo desde Zenodo y leyendo en bloques (<span class="mono">batch=2048</span>) con <span class="mono">h5py</span> en &lt;150 MB de RAM.
+                                </p>
+                            </div>
+
+                            <div class="glass-card p-4 rounded-xl border border-slate-700 space-y-2 text-xs">
+                                <h4 class="font-bold text-teal-300 uppercase">Estadísticas Exactas (N = 32,768 parches)</h4>
+                                <div class="grid grid-cols-2 gap-2 font-mono text-[11px]">
+                                    <div class="p-2.5 bg-slate-950 rounded border border-slate-800">
+                                        <p class="text-emerald-400 font-bold">Normal (0): 16,399</p>
+                                        <p class="text-slate-300">R: 0.7151 | G: 0.5849</p>
+                                        <p class="text-slate-300">B: 0.7061 (50.05%)</p>
+                                    </div>
+                                    <div class="p-2.5 bg-slate-950 rounded border border-slate-800">
+                                        <p class="text-rose-400 font-bold">Tumor (1): 16,369</p>
+                                        <p class="text-slate-300">R: 0.6798 | G: 0.4847</p>
+                                        <p class="text-slate-300">B: 0.6699 (49.95%)</p>
+                                    </div>
+                                </div>
+                                <p class="text-slate-300 pt-1">
+                                    <strong>Hallazgo H&E:</strong> El canal Verde cae un <span class="text-amber-300 font-bold">17.1%</span> en tejido tumoral (<span class="mono">0.5849 → 0.4847</span>) por mayor densidad de núcleos hipercrómicos teñidos con Hematoxilina.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                notes: `"El Notebook 02 de PatchCamelyon es uno de los más sólidos técnicamente del proyecto. Resolvió los problemas de dependencias de HuggingFace y PyArrow descargando los contenedores HDF5 directamente desde Zenodo y procesando los 32,768 parches de 96 por 96 píxeles en streaming por lotes con h5py. Como vemos en la figura real, la etiqueta depende exclusivamente de la ventana central de 32 por 32 píxeles mientras la periferia provee contexto tisular. Además, el cómputo exacto sobre los 32,768 parches reveló una firma espectral clara: en tejido tumoral la media del canal verde desciende de 0.5849 a 0.4847 debido a la alta densidad nuclear y absorción de hematoxilina."`
+            },
+
+            // =========================================================================
+            // DIAPOSITIVA 6: NCT-CRC-HE (100K + 7K)
+            // =========================================================================
+            {
+                id: 6,
+                badge: "NOTEBOOK 03 & SCRIPTS • MICROENTORNO COLORRECTAL",
+                title: "NCT-CRC-HE: 107,180 Parches en 9 Clases Tisulares (15.19 GB Reales)",
+                subtitle: "Dataset completo descargado en disco (Train 100K + Val 7K de 50 pacientes independientes)",
+                html: `
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
+                        <div class="lg:col-span-6 glass-card p-3 rounded-xl border border-slate-700">
+                            <p class="text-[11px] font-bold text-teal-300 uppercase mb-1.5">Muestras Reales de las 9 Clases (224×224 px @ 20x)</p>
+                            <img src="../figures/03_NCT_CRC/nct_muestras_por_clase.png"
+                                 onclick="openLightbox(this.src, 'NCT-CRC-HE: 9 clases tisulares del microentorno tumoral colorrectal')"
+                                 alt="Muestras NCT-CRC"
+                                 class="zoomable-img w-full max-h-[345px] object-contain rounded-lg bg-white border border-slate-700">
+                        </div>
+
+                        <div class="lg:col-span-6 space-y-3.5">
+                            <div class="glass-card p-3 rounded-xl border border-slate-700">
+                                <p class="text-[11px] font-bold text-blue-300 uppercase mb-1.5">Comparativa Train (100K) vs. Validación Externa (7,180)</p>
+                                <img src="../figures/03_NCT_CRC/nct_comparativa_val_vs_train.png"
+                                     onclick="openLightbox(this.src, 'Comparativa de proporciones y conteos entre CRC-VAL-HE-7K y NCT-CRC-HE-100K')"
+                                     alt="Comparativa Val vs Train NCT"
+                                     class="zoomable-img w-full max-h-[205px] object-contain rounded-lg bg-white border border-slate-700">
+                            </div>
+
+                            <div class="glass-card p-3.5 rounded-xl border-l-4 border-l-teal-400 text-xs text-slate-300 space-y-1.5">
+                                <p><strong>Cobertura Completa:</strong> Abarca tumor (<span class="mono text-rose-300">TUM</span>: 14,317 train / 1,233 val), estroma reactivo (<span class="mono">STR</span>), linfocitos (<span class="mono">LYM</span>), mucosa (<span class="mono">NORM/MUC</span>), músculo (<span class="mono">MUS</span>), adiposo (<span class="mono">ADI</span>), detritos (<span class="mono">DEB</span>) y fondo (<span class="mono">BACK</span>).</p>
+                                <p><strong>Nota de almacenamiento:</strong> Ambos conjuntos extraídos ocupan <strong>15.19 GB reales</strong> en <span class="mono">data_samples/nct_crc/</span> (superando el estimado de 8.5–11.7 GB de las tablas).</p>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                notes: `"En el Notebook 03, junto con los scripts automatizados de descarga y generación, se adquirió y analizó la totalidad de NCT-CRC-HE: 100,000 parches TIFF de entrenamiento y 7,180 parches independientes de 50 pacientes en validación, todos de 224 por 224 píxeles a 20x con normalización de tinción Macenko. Esta base es valiosísima para nuestra tesis porque separa explícitamente las 9 categorías del microentorno tumoral —incluyendo estroma asociado a cáncer, infiltrado linfocitario y detritos— lo que permitirá evaluar explicabilidad de atención y preentrenamiento. Como detalle operativo, en formato TIFF sin comprimir ocupa 15.19 GB reales en disco."`
+            },
+
+            // =========================================================================
+            // DIAPOSITIVA 7: MHIST Y ANOMALÍA CRÍTICA DE DATOS
+            // =========================================================================
+            {
+                id: 7,
+                badge: "NOTEBOOK 04 • MHIST Y ALERTA ROJA DE INTEGRIDAD",
+                title: "MHIST: Pseudo-Bolsas MIL y Detección de CSV Sintético Corrupto",
+                subtitle: "Inconsistencia grave entre el paper de Wei et al. (2021) y el archivo data_samples/mhist/annotations.csv en disco",
+                html: `
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
+                        <div class="lg:col-span-6 space-y-3">
+                            <div class="glass-card p-3 rounded-xl border border-slate-700">
+                                <p class="text-[11px] font-bold text-amber-300 uppercase mb-1">Evidencia Visual 1: Split Roto en mhist_distribucion.png</p>
+                                <img src="../figures/04_MHIST/mhist_distribucion.png"
+                                     onclick="openLightbox(this.src, 'MHIST: Panel central evidencia test=100% SSA y train=99.4% HP por fallback sintético')"
+                                     alt="Distribución MHIST"
+                                     class="zoomable-img w-full max-h-[165px] object-contain rounded-lg bg-white border border-slate-700">
+                            </div>
+                            <div class="glass-card p-3 rounded-xl border border-slate-700">
+                                <p class="text-[11px] font-bold text-amber-300 uppercase mb-1">Evidencia Visual 2: Votos Aleatorios Uniformes en Panel B</p>
+                                <img src="../figures/04_MHIST/mhist_muestras_hp_vs_ssa.png"
+                                     onclick="openLightbox(this.src, 'MHIST: Panel B muestra distribuciones de votos idénticas generadas por randint(1,8)')"
+                                     alt="Acuerdo MHIST"
+                                     class="zoomable-img w-full max-h-[165px] object-contain rounded-lg bg-white border border-slate-700">
+                            </div>
+                        </div>
+
+                        <div class="lg:col-span-6 space-y-3.5">
+                            <div class="glass-card p-4 rounded-xl border-2 border-red-500/80 alert-glow space-y-2.5 text-xs">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-bold text-red-400 uppercase flex items-center gap-1.5">
+                                        <i data-lucide="shield-alert" class="w-4 h-4"></i> Diagnóstico Forense de annotations.csv
+                                    </span>
+                                    <span class="px-2 py-0.5 bg-red-500/20 text-red-300 rounded font-bold text-[10px]">NO USAR SIN REEMPLAZAR</span>
+                                </div>
+                                <ul class="text-slate-200 space-y-1.5">
+                                    <li><strong>1. Nombres sintéticos:</strong> Van de <span class="mono text-amber-300">MHIST_A00.png</span> hasta <span class="mono text-amber-300">MHIST_\`51.png</span> (generados por la rama fallback <span class="mono">chr(65 + i//100)</span>).</li>
+                                    <li><strong>2. Split corrupto:</strong> <span class="mono">train</span> quedó con <strong>2,162 HP (99.4%) y 13 SSA (0.6%)</strong>; <span class="mono">test</span> quedó con <strong>0 HP y 977 SSA (100%)</strong> (vs. 1565/610 y 597/380 del paper).</li>
+                                    <li><strong>3. Votos inválidos:</strong> Ej. fila 1: <span class="mono">Label=HP</span> con votos <span class="mono">HP=3, SSA=6</span> (no suman 7 y contradicen la mayoría).</li>
+                                    <li><strong>4. Sin imágenes:</strong> Faltan los 3,152 PNGs (<span class="mono">images.zip</span>, 333 MB).</li>
+                                </ul>
+                            </div>
+
+                            <div class="glass-card p-3.5 rounded-xl border-l-4 border-l-teal-400 text-xs text-slate-300">
+                                <strong class="text-teal-300">Valor rescatable de NB04:</strong> La función <span class="mono">crear_bolsas_mhist(bag_size=20, positive_rate=0.5)</span> está lista para construir pseudo-bolsas MIL apenas descarguemos el CSV y el ZIP oficiales de <span class="mono">bmirds/mhist</span>.
+                            </div>
+                        </div>
+                    </div>
+                `,
+                notes: `"El hallazgo de auditoría más delicado apareció en MHIST. Aunque el markdown del Notebook 04 describe el split real del paper de Wei et al. (1,565 HP y 610 SSA en train; 597 HP y 380 SSA en test), el archivo annotations.csv guardado en disco fue generado en realidad por el bloque sintético fallback del notebook. Lo comprobamos directamente en tres pruebas: los nombres terminan en MHIST backtick-51 por un desbordamiento ASCII; en los gráficos vemos que test quedó con 100% SSA y train con 99.4% HP; y los votos de los 7 patólogos son números aleatorios que no suman 7 y contradicen la etiqueta mayoritaria. La función de pseudo-bolsas es excelente, pero antes de usar MHIST debemos bajar el CSV e imágenes oficiales."`
+            },
+
+            // =========================================================================
+            // DIAPOSITIVA 8: CAMELYON16 — BUG DE EJES Y TESORO OCULTO DE 10.68 GB
+            // =========================================================================
+            {
+                id: 8,
+                badge: "NOTEBOOK 05 • COORDENADAS (3.17M), MÁSCARAS XML Y PARCHES OCULTOS",
+                title: "CAMELYON16: Mapa 2D vs. Bug del Script y Descubrimiento de 25,235 Parches .npy",
+                subtitle: "399 coords.npy + 111 máscaras XML ASAP + 10.68 GB en patches/data/ no documentados",
+                html: `
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
+                        <!-- Comparación Visual Bug vs Real -->
+                        <div class="lg:col-span-6 space-y-3">
+                            <div class="glass-card p-3 rounded-xl border border-teal-500/40">
+                                <div class="flex justify-between items-center mb-1">
+                                    <span class="text-[11px] font-bold text-emerald-300 uppercase">✓ Mapa Correcto: notebooks/test_mapa_coords.png</span>
+                                    <span class="text-[10px] font-mono text-slate-400">coords[:,1] vs coords[:,2]</span>
+                                </div>
+                                <img src="../notebooks/test_mapa_coords.png"
+                                     onclick="openLightbox(this.src, 'Mapa espacial 2D real de Normal_076.tif (26,297 parches) y tumor_092.tif (35,766 parches)')"
+                                     alt="Mapa Correcto CAMELYON16"
+                                     class="zoomable-img w-full max-h-[165px] object-contain rounded-lg bg-white border border-slate-700">
+                            </div>
+                            <div class="glass-card p-3 rounded-xl border border-rose-500/40">
+                                <div class="flex justify-between items-center mb-1">
+                                    <span class="text-[11px] font-bold text-rose-400 uppercase">✗ Sobrescrito en figures/05_CAMELYON16/camelyon16_mapa_coords.png</span>
+                                    <span class="text-[10px] font-mono text-rose-300">Bug X=17.0</span>
+                                </div>
+                                <img src="../figures/05_CAMELYON16/camelyon16_mapa_coords.png"
+                                     onclick="openLightbox(this.src, 'Gráfico erróneo generado por analizar_camelyon16_coords.py al graficar nivel=17 como coordenada X')"
+                                     alt="Mapa Buggy CAMELYON16"
+                                     class="zoomable-img w-full max-h-[155px] object-contain rounded-lg bg-white border border-slate-700">
+                            </div>
+                        </div>
+
+                        <!-- Inventario Completo + Tesoro Oculto -->
+                        <div class="lg:col-span-6 space-y-3">
+                            <div class="glass-card p-4 rounded-xl border border-slate-700 text-xs space-y-2">
+                                <h4 class="font-bold text-teal-300 uppercase">Activos Auditados en data_samples/camelyon16/</h4>
+                                <ul class="text-slate-300 space-y-1">
+                                    <li>• <strong>coords/CAMELYON16_FULL:</strong> 399 láminas (<span class="mono">159 Normal</span> sin <span class="mono">Normal_144</span>, <span class="mono">110 Tumor</span>, <span class="mono">130 Test</span>) = <strong>3,177,267 parches</strong> <span class="mono">[level=17, x, y]</span>.</li>
+                                    <li>• <strong>masks/:</strong> 111 polígonos XML ASAP (<span class="mono">tumor_001..111.xml</span>, 55.8 MB) + <span class="mono">normal_map.xlsx</span> (160 filas sin usar).</li>
+                                    <li>• <strong>Desfase Notebook 05:</strong> 3 tablas citadas en salidas (<span class="mono">_extremos</span>, <span class="mono">_pipeline_mil</span>, <span class="mono">_estrategia_mil</span>) no existen en <span class="mono">tablas/</span>.</li>
+                                </ul>
+                            </div>
+
+                            <div class="glass-card p-4 rounded-xl border-2 border-amber-400/60 space-y-1.5 text-xs">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-bold text-amber-300 uppercase flex items-center gap-1.5">
+                                        <i data-lucide="package-search" class="w-4 h-4"></i> Tesoro Oculto Sin Documentar (10.68 GB)
+                                    </span>
+                                    <span class="mono text-[10px] bg-amber-500/20 text-amber-200 px-2 py-0.5 rounded">25,235 .npy</span>
+                                </div>
+                                <p class="text-slate-200">
+                                    En <span class="mono text-amber-200">patches/data/</span> residen 25,235 objetos pickled (<span class="mono">{'image': (256,256,3) uint8, 'mask': (256,256)}</span>):
+                                </p>
+                                <div class="grid grid-cols-2 gap-1.5 font-mono text-[11px] text-slate-300 pt-1">
+                                    <span>• classifier/train: 10,997</span>
+                                    <span>• classifier/val: 1,647</span>
+                                    <span>• test (Level 3): 2,585</span>
+                                    <span>• unet (segmentación): 10,006</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                notes: `"En CAMELYON16 encontramos tanto un problema de trazabilidad como un activo enorme sin documentar. Primero, los archivos coords.npy contienen columnas nivel, X e Y, donde la columna 0 vale siempre 17. El script analizar_camelyon16_coords.py graficó la columna 0 como X, sobrescribiendo figures/05_CAMELYON16 con dos líneas verticales en X=17, mientras que el mapa correcto reconstruyendo la forma del ganglio linfático quedó en notebooks/test_mapa_coords.png. Segundo, ninguna celda del Notebook 05 documenta ni indexa la carpeta patches/data/, donde hay 25,235 archivos .npy que suman 10.68 GB con pares imagen 256x256 y máscara ya listos para clasificador y U-Net."`
+            },
+
+            // =========================================================================
+            // DIAPOSITIVA 9: CONEXIÓN MIL TWO-STAGE (UNI/iBOT + GATED ATTENTION)
+            // =========================================================================
+            {
+                id: 9,
+                badge: "ARQUITECTURA MIL • CONEXIÓN CON ILSE ET AL. (2018)",
+                title: "Pipeline Two-Stage MIL: Foundation Models + Gated Attention, CLAM y TransMIL",
+                subtitle: "Cómo el flujo de datos auditado alimenta directamente la arquitectura neuronal de la tesis",
+                html: `
+                    <div class="space-y-4">
+                        <!-- Pipeline Visual SVG/HTML -->
+                        <div class="glass-card p-5 rounded-xl border border-teal-500/30">
+                            <div class="grid grid-cols-1 md:grid-cols-5 gap-3 items-center text-center text-xs">
+                                <div class="p-3 bg-slate-950 rounded-xl border border-slate-700">
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase">Paso 1: WSI / Coords</p>
+                                    <p class="font-bold text-white mt-1">399 Bolsas</p>
+                                    <p class="text-[11px] text-teal-300 font-mono">K ∈ [624, 35,766]</p>
+                                    <p class="text-[10px] text-slate-400 mt-1">Otsu HSV + Parches 224²</p>
+                                </div>
+
+                                <div class="p-3 bg-slate-950 rounded-xl border border-blue-500/40">
+                                    <p class="text-[10px] font-bold text-blue-400 uppercase">Paso 2: Encoder Congelado</p>
+                                    <p class="font-bold text-white mt-1">UNI / iBOT</p>
+                                    <p class="text-[11px] text-blue-300 font-mono">hₖ ∈ ℝ¹⁰²⁴ / ℝ⁷⁶⁸</p>
+                                    <p class="text-[10px] text-slate-400 mt-1">ViT-L/16 DINOv2 (1.5–4.3 GB)</p>
+                                </div>
+
+                                <div class="p-3 bg-teal-950/50 rounded-xl border-2 border-teal-400">
+                                    <p class="text-[10px] font-bold text-teal-300 uppercase">Paso 3: Gated Attention</p>
+                                    <div class="text-xs text-white py-1">$$\\tanh(\\mathbf{V}\\mathbf{h}_k^\\top) \\odot \\text{sigm}(\\mathbf{U}\\mathbf{h}_k^\\top)$$</div>
+                                    <p class="text-[10px] text-teal-200">Complejidad lineal $\\mathcal{O}(K)$</p>
+                                </div>
+
+                                <div class="p-3 bg-slate-950 rounded-xl border border-purple-500/40">
+                                    <p class="text-[10px] font-bold text-purple-300 uppercase">Paso 4: Bolsa z & g(z)</p>
+                                    <p class="font-bold text-white mt-1">$\\mathbf{z} = \\sum a_k \\mathbf{h}_k$</p>
+                                    <p class="text-[11px] text-purple-200 font-mono">P(Tumor | WSI)</p>
+                                    <p class="text-[10px] text-slate-400 mt-1">AUC objetivo &gt; 0.95</p>
+                                </div>
+
+                                <div class="p-3 bg-slate-950 rounded-xl border border-amber-500/40">
+                                    <p class="text-[10px] font-bold text-amber-300 uppercase">Paso 5: Validación Clínica</p>
+                                    <p class="font-bold text-white mt-1">Heatmaps aₖ vs XML</p>
+                                    <p class="text-[11px] text-amber-200 font-mono">111 ASAP Masks</p>
+                                    <p class="text-[10px] text-slate-400 mt-1">Localización sin sup. fuerte</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Comparativa de Modelos SOTA a Benchmarkear -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                            <div class="glass-card p-4 rounded-xl border-t-4 border-t-teal-400 space-y-1.5">
+                                <h4 class="font-bold text-white">1. ABMIL / Gated Attention (Ilse 2018)</h4>
+                                <p class="text-slate-300">Baseline estándar de oro. Supone instancias I.I.D. (matriz diagonal $P$). Ideal para BreaKHis (82 bolsas) y CAMELYON16 en CPU.</p>
+                            </div>
+                            <div class="glass-card p-4 rounded-xl border-t-4 border-t-blue-400 space-y-1.5">
+                                <h4 class="font-bold text-white">2. CLAM (Lu et al., 2021)</h4>
+                                <p class="text-slate-300">Múltiples ramas de Gated Attention por clase + <em>Smooth SVM Loss</em> sobre los top-$k$ parches de mayor/menor atención. Excelente para NCT-CRC (9 clases).</p>
+                            </div>
+                            <div class="glass-card p-4 rounded-xl border-t-4 border-t-purple-400 space-y-1.5">
+                                <h4 class="font-bold text-white">3. TransMIL (Shao et al., 2021)</h4>
+                                <p class="text-slate-300">Modela correlaciones espaciales no-I.I.D. usando <span class="mono">coords.npy</span> <span class="mono">[x, y]</span> con PPEG y atención Nyström $\\mathcal{O}(K)$.</p>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                notes: `"Aquí conectamos directamente nuestros datos auditados con la arquitectura teórica de la reunión previa. En el Notebook 06 ya se dejó preparado el código PyTorch/timm para extraer características congeladas con UNI (ViT-L/16 de 1,024 dimensiones) o bien usar embeddings precalculados iBOT de 768 dimensiones desde Kaggle. Al tener bolsas de entre 624 y 35,766 instancias ya vectorizadas, podemos entrenar en el hardware local la capa de Gated Attention de Ilse, extenderla a multiclase en NCT-CRC con CLAM, e incluso usar las 399 coordenadas espaciales reales [x, y] para alimentar TransMIL con codificación posicional 2D, validando los mapas de calor a_k directamente contra los 111 polígonos XML de CAMELYON16."`
+            },
+
+            // =========================================================================
+            // DIAPOSITIVA 10: SINERGIA CON RAMOS (PARTE 1: PDI + DEEP LEARNING)
+            // =========================================================================
+            {
+                id: 10,
+                badge: "MATERIA ÚTIL • PROCESAMIENTO DE IMÁGENES & DEEP LEARNING",
+                title: "Sinergia Curricular (Parte 1): Procesamiento de Imágenes y Deep Learning",
+                subtitle: "Código y fundamentos concretos disponibles en Materia Util/ transferibles hoy al proyecto MIL",
+                html: `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <!-- Procesamiento de Imágenes -->
+                        <div class="glass-card p-5 rounded-xl border-t-4 border-t-teal-400 space-y-3">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-sm font-bold text-teal-300 uppercase">Procesamiento de Imágenes (PDI)</h3>
+                                <span class="text-[11px] font-mono bg-teal-500/15 px-2 py-0.5 rounded text-teal-300">Clases 5–14 + Tarea 1</span>
+                            </div>
+                            <div class="space-y-2.5 text-xs text-slate-300">
+                                <div class="p-2.5 bg-slate-950 rounded-lg border border-slate-800">
+                                    <p class="font-bold text-white">1. Segmentación Tisular Otsu + Morfología</p>
+                                    <p class="mt-0.5"><span class="mono text-teal-300">Clase 6 (Espacios Color)</span> + <span class="mono text-teal-300">Clase 11 (Morfología)</span>: Conversión RGB→HSV, umbral Otsu en saturación S y apertura/cierre para eliminar artefactos de vidrio en WSI.</p>
+                                </div>
+                                <div class="p-2.5 bg-slate-950 rounded-lg border border-slate-800">
+                                    <p class="font-bold text-white">2. Realce Fotométrico en Canal de Luminancia</p>
+                                    <p class="mt-0.5"><span class="mono text-teal-300">Tarea 1/utils/funciones.py</span>: Implementa <span class="mono">ecualizacion_clahe(..., bgr=False)</span> y <span class="mono">gamma_transformation</span> sobre canal <strong>Y (YCrCb)</strong> sin alterar la relación cromática Hematoxilina/Eosina.</p>
+                                </div>
+                                <div class="p-2.5 bg-slate-950 rounded-lg border border-slate-800">
+                                    <p class="font-bold text-white">3. Bordes Nucleares y Descriptores</p>
+                                    <p class="mt-0.5"><span class="mono text-teal-300">Clases 8, 9 y 14</span>: Filtros pasa-altos, LoG y Canny útiles como rasgos morfológicos auxiliares o auditoría de enfoque/desenfoque en parches.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Deep Learning -->
+                        <div class="glass-card p-5 rounded-xl border-t-4 border-t-blue-400 space-y-3">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-sm font-bold text-blue-300 uppercase">Deep Learning (CIT3360)</h3>
+                                <span class="text-[11px] font-mono bg-blue-500/15 px-2 py-0.5 rounded text-blue-300">Clases 2–13 + T1/T2/T3</span>
+                            </div>
+                            <div class="space-y-2.5 text-xs text-slate-300">
+                                <div class="p-2.5 bg-slate-950 rounded-lg border border-slate-800">
+                                    <p class="font-bold text-white">1. Transfer Learning PyTorch & Hardware Profiling</p>
+                                    <p class="mt-0.5"><span class="mono text-blue-300">Tareas/T2/Tarea_2.ipynb</span>: Plantilla lista en PyTorch con <span class="mono">resnet50</span>, <span class="mono">mobilenet_v2</span> y <span class="mono">googlenet</span> + benchmark de CPU/GPU AMD RX 9060 XT.</p>
+                                </div>
+                                <div class="p-2.5 bg-slate-950 rounded-lg border border-slate-800">
+                                    <p class="font-bold text-white">2. Vectorización de Alto Rendimiento</p>
+                                    <p class="mt-0.5"><span class="mono text-blue-300">vectorizacion.py</span>: Metodología de benchmarking NumPy vs loops aplicable al cálculo por lotes sobre 32k parches PCam y 3.17M coords.</p>
+                                </div>
+                                <div class="p-2.5 bg-slate-950 rounded-lg border border-slate-800">
+                                    <p class="font-bold text-white">3. Gating Secuencial y AutoML</p>
+                                    <p class="mt-0.5"><span class="mono text-blue-300">Clases 10–13</span> (compuertas sigmoide/tanh en LSTM/GRU → base de Gated Attention) + <span class="mono text-blue-300">T1/automl_model.py</span> para tunear cabezales MLP sobre embeddings.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                notes: `"Analizando el material de ramos adjunto en Materia Util, encontramos piezas directamente reutilizables. En Procesamiento de Imágenes, las clases de espacios de color y operaciones morfológicas sustentan el pipeline Otsu en HSV, mientras que el módulo funciones.py de la Tarea 1 ya implementa CLAHE y corrección gamma selectiva en el canal de luminancia YCrCb, lo cual protege los colores diagnósticos de la tinción H&E. Por su parte, Deep Learning aporta el template PyTorch de Transfer Learning de la Tarea 2, el código de perfilamiento vectorizado, el fundamento de compuertas multiplicativas de redes secuenciales que inspira a Gated Attention, y la lógica de búsqueda de hiperparámetros para cabezales MLP."`
+            },
+
+            // =========================================================================
+            // DIAPOSITIVA 11: SINERGIA CON RAMOS (PARTE 2: IA + DATA SCIENCE)
+            // =========================================================================
+            {
+                id: 11,
+                badge: "MATERIA ÚTIL • INTELIGENCIA ARTIFICIAL & DATA SCIENCE",
+                title: "Sinergia Curricular (Parte 2): Inteligencia Artificial y Ciencia de Datos",
+                subtitle: "Soluciones formales para consenso de patólogos, cambio de dominio, desbalance y visualización",
+                html: `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <!-- Inteligencia Artificial -->
+                        <div class="glass-card p-5 rounded-xl border-t-4 border-t-purple-400 space-y-3">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-sm font-bold text-purple-300 uppercase">Inteligencia Artificial</h3>
+                                <span class="text-[11px] font-mono bg-purple-500/15 px-2 py-0.5 rounded text-purple-300">Clases 2–18 + T1/T2/T3</span>
+                            </div>
+                            <div class="space-y-2.5 text-xs text-slate-300">
+                                <div class="p-2.5 bg-slate-950 rounded-lg border border-slate-800">
+                                    <p class="font-bold text-white">1. Expectación-Maximización (EM) para Consenso MHIST</p>
+                                    <p class="mt-0.5"><span class="mono text-purple-300">Clases 7–8 (MLE & EM)</span>: En lugar de forzar voto mayoritario duro en casos 4-3 (14.1% de discordancia), EM permite estimar la etiqueta latente real y fiabilidad de los 7 patólogos.</p>
+                                </div>
+                                <div class="p-2.5 bg-slate-950 rounded-lg border border-slate-800">
+                                    <p class="font-bold text-white">2. SVM y Regularización → Pérdida CLAM</p>
+                                    <p class="mt-0.5"><span class="mono text-purple-300">Clases 14–15 (KNN-SVM, Regularización)</span>: Fundamenta la <em>Smooth Top-1 SVM Clustering Loss</em> que usa CLAM para separar parches positivos y negativos extremos.</p>
+                                </div>
+                                <div class="p-2.5 bg-slate-950 rounded-lg border border-slate-800">
+                                    <p class="font-bold text-white">3. Protocolo de Domain Shift (D1 / D2 → Test T)</p>
+                                    <p class="mt-0.5"><span class="mono text-purple-300">Tareas/Tarea_3/Tarea_3.ipynb</span>: Evalúa generalización entre distribuciones distintas — patrón idéntico para probar modelos entrenados en NCT-CRC-100K sobre CRC-VAL-7K o BreaKHis.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Data Science -->
+                        <div class="glass-card p-5 rounded-xl border-t-4 border-t-amber-400 space-y-3">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-sm font-bold text-amber-300 uppercase">Data Science</h3>
+                                <span class="text-[11px] font-mono bg-amber-500/15 px-2 py-0.5 rounded text-amber-300">Clases 4–23 + Proyecto</span>
+                            </div>
+                            <div class="space-y-2.5 text-xs text-slate-300">
+                                <div class="p-2.5 bg-slate-950 rounded-lg border border-slate-800">
+                                    <p class="font-bold text-white">1. Desbalance de Clases & Tuning Riguroso</p>
+                                    <p class="mt-0.5"><span class="mono text-amber-300">Clase 17 (Imbalance & Tuning)</span>: Esencial para BreaKHis (31.4% vs 68.6%) y bolsas de CAMELYON16 con &lt;1% de área tumoral mediante pesos de clase y Stratified Group K-Fold por paciente.</p>
+                                </div>
+                                <div class="p-2.5 bg-slate-950 rounded-lg border border-slate-800">
+                                    <p class="font-bold text-white">2. Reducción Dimensional & Anti-Overfitting</p>
+                                    <p class="mt-0.5"><span class="mono text-amber-300">Clases 14–16</span>: PCA/UMAP sobre embeddings UNI (1024-d) para diagnosticar separabilidad de tejidos y regularización L2/Dropout con pocas bolsas ($N=82$–$269$).</p>
+                                </div>
+                                <div class="p-2.5 bg-slate-950 rounded-lg border border-slate-800">
+                                    <p class="font-bold text-white">3. Interpretabilidad y Visor Interactivo</p>
+                                    <p class="mt-0.5"><span class="mono text-amber-300">Clase 19 + Clase 23 (Streamlit)</span>: Base para desplegar un visor web donde el patólogo inspeccione mapas de atención $a_k$ y métricas ROC/PR.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                notes: `"En la segunda dupla de ramos, Inteligencia Artificial y Data Science aportan el rigor experimental y estadístico. De IA rescatamos MLE y el algoritmo EM para modelar probabilísticamente los casos ambiguos con votación 4 a 3 en MHIST; el marco teórico de SVM que sostiene la función de pérdida de CLAM; y el diseño experimental de la Tarea 3 con dominios D1, D2 y T para medir domain shift entre hospitales. De Data Science tomamos el manejo de desbalance y validación estratificada agrupada por paciente, reducción dimensional UMAP/PCA sobre los embeddings de 1,024 dimensiones de UNI, control de overfitting en cohortes pequeñas y la guía de Streamlit para construir nuestro visor clínico."`
+            },
+
+            // =========================================================================
+            // DIAPOSITIVA 12: SIMULADOR INTERACTIVO DE PRESUPUESTO Y CÓMPUTO MIL
+            // =========================================================================
+            {
+                id: 12,
+                badge: "SIMULADOR INTERACTIVO • ALMACENAMIENTO, BOLSAS Y HARDWARE",
+                title: "Simulador Interactivo: Presupuesto de Disco (<10 GB) y Estrategia de Embeddings",
+                subtitle: "Explora el impacto real de trabajar con imágenes crudas vs. parches locales vs. embeddings UNI / iBOT",
+                html: `
+                    <div class="space-y-4">
+                        <div class="glass-card p-4 rounded-xl border border-teal-500/40 flex flex-wrap items-center justify-between gap-4">
+                            <div class="space-y-1">
+                                <span class="text-xs font-bold uppercase text-teal-300">Modo de Representación en Pipeline MIL:</span>
+                                <div class="flex flex-wrap gap-2 mt-1">
+                                    <button onclick="setSimMode('raw')" id="btn-mode-raw" class="px-3 py-1.5 rounded-lg text-xs font-semibold border border-slate-700 bg-slate-900 text-slate-300 hover:border-rose-400">WSI / Parches Crudos (Actual)</button>
+                                    <button onclick="setSimMode('ibot')" id="btn-mode-ibot" class="px-3 py-1.5 rounded-lg text-xs font-semibold border border-teal-500 bg-teal-500/20 text-teal-200">Embeddings iBOT (768-d)</button>
+                                    <button onclick="setSimMode('uni')" id="btn-mode-uni" class="px-3 py-1.5 rounded-lg text-xs font-semibold border border-slate-700 bg-slate-900 text-slate-300 hover:border-blue-400">Embeddings UNI (1024-d)</button>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-[11px] text-slate-400 block">Presupuesto Objetivo por Dataset: <strong class="text-amber-300">&lt; 10 GB</strong></span>
+                                <span id="sim-status-badge" class="inline-block mt-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"></span>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+                            <!-- Checkboxes Datasets -->
+                            <div class="lg:col-span-5 glass-card p-4 rounded-xl border border-slate-700 space-y-2.5 text-xs">
+                                <h4 class="font-bold text-white uppercase text-xs mb-2">Selecciona Cohortes Activas:</h4>
+                                <label class="flex items-center justify-between p-2 rounded bg-slate-950 border border-slate-800 cursor-pointer">
+                                    <span class="flex items-center gap-2"><input type="checkbox" checked onchange="updateSim()" class="sim-ds accent-teal-400" data-key="breakhis"> <strong>BreaKHis v1</strong> (82 bolsas reales)</span>
+                                    <span class="mono text-slate-400" id="sz-breakhis">7.90 GB</span>
+                                </label>
+                                <label class="flex items-center justify-between p-2 rounded bg-slate-950 border border-slate-800 cursor-pointer">
+                                    <span class="flex items-center gap-2"><input type="checkbox" checked onchange="updateSim()" class="sim-ds accent-teal-400" data-key="camelyon"> <strong>CAMELYON16</strong> (399 bolsas WSI)</span>
+                                    <span class="mono text-slate-400" id="sz-camelyon">4.30 GB</span>
+                                </label>
+                                <label class="flex items-center justify-between p-2 rounded bg-slate-950 border border-slate-800 cursor-pointer">
+                                    <span class="flex items-center gap-2"><input type="checkbox" checked onchange="updateSim()" class="sim-ds accent-teal-400" data-key="pcam"> <strong>PCam Valid</strong> (32,768 parches)</span>
+                                    <span class="mono text-slate-400" id="sz-pcam">0.84 GB</span>
+                                </label>
+                                <label class="flex items-center justify-between p-2 rounded bg-slate-950 border border-slate-800 cursor-pointer">
+                                    <span class="flex items-center gap-2"><input type="checkbox" onchange="updateSim()" class="sim-ds accent-teal-400" data-key="nct"> <strong>NCT-CRC-HE</strong> (107k / Val 7k)</span>
+                                    <span class="mono text-slate-400" id="sz-nct">0.80 GB</span>
+                                </label>
+                                <label class="flex items-center justify-between p-2 rounded bg-slate-950 border border-slate-800 cursor-pointer">
+                                    <span class="flex items-center gap-2"><input type="checkbox" onchange="updateSim()" class="sim-ds accent-teal-400" data-key="mhist"> <strong>MHIST Oficial</strong> (3,152 parches)</span>
+                                    <span class="mono text-slate-400" id="sz-mhist">0.33 GB</span>
+                                </label>
+                            </div>
+
+                            <!-- Resultados en Vivo -->
+                            <div class="lg:col-span-7 glass-card p-5 rounded-xl border border-slate-700 flex flex-col justify-between space-y-4">
+                                <div class="grid grid-cols-3 gap-3 text-center">
+                                    <div class="p-3 bg-slate-950 rounded-xl border border-slate-800">
+                                        <p class="text-[11px] text-slate-400 uppercase">Disco Total</p>
+                                        <p id="sim-total-gb" class="text-2xl font-extrabold text-teal-300 mono mt-1">0 GB</p>
+                                    </div>
+                                    <div class="p-3 bg-slate-950 rounded-xl border border-slate-800">
+                                        <p class="text-[11px] text-slate-400 uppercase">Bolsas / Instancias</p>
+                                        <p id="sim-instances" class="text-lg font-extrabold text-blue-300 mono mt-1">0</p>
+                                    </div>
+                                    <div class="p-3 bg-slate-950 rounded-xl border border-slate-800">
+                                        <p class="text-[11px] text-slate-400 uppercase">Viabilidad CPU/AMD</p>
+                                        <p id="sim-speed" class="text-lg font-extrabold text-amber-300 mono mt-1">Alta</p>
+                                    </div>
+                                </div>
+
+                                <!-- Barra Visual de Disco -->
+                                <div class="space-y-1.5">
+                                    <div class="flex justify-between text-xs">
+                                        <span class="text-slate-300">Uso estimado vs. Umbral Operacional de Seguridad (20 GB acumulados / 10 GB por dataset)</span>
+                                        <span id="sim-bar-pct" class="font-mono font-bold text-teal-300">0%</span>
+                                    </div>
+                                    <div class="w-full h-4 bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+                                        <div id="sim-bar-fill" class="h-full bg-gradient-to-r from-teal-500 to-blue-500 transition-all duration-300" style="width: 30%;"></div>
+                                    </div>
+                                </div>
+
+                                <div id="sim-recommendation" class="p-3 bg-slate-950 rounded-lg border border-slate-800 text-xs text-slate-300">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                notes: `"Para ilustrar de manera interactiva la decisión arquitectónica de almacenamiento y cómputo, construimos este simulador basado en las cifras reales de disco y los pesos de embeddings documentados en los notebooks 05 y 06. Si activamos el modo de imágenes crudas con NCT-CRC completo y los parches de CAMELYON16 superamos rápidamente los 27 GB en disco y la inferencia en CPU se vuelve lenta. En cambio, al cambiar al modo de embeddings precalculados iBOT de 768 dimensiones o UNI de 1,024 dimensiones, CAMELYON16 completo con sus 399 bolsas y 3.17 millones de instancias se comprime a 1.5 o 4.3 GB, volviendo viable entrenar Gated Attention en minutos."`
+            },
+
+            // =========================================================================
+            // DIAPOSITIVA 13: AUDITORÍA INTEGRAL Y SEMÁFORO DE ACCIONES
+            // =========================================================================
+            {
+                id: 13,
+                badge: "AUDITORÍA TÉCNICA COMPLETA • HALLAZGOS Y CORRECCIONES",
+                title: "Semáforo de Auditoría: 5 Hallazgos Detectados y Plan de Saneamiento",
+                subtitle: "Transparencia total sobre qué funciona hoy, qué requiere parche inmediato y qué activos estaban ocultos",
+                html: `
+                    <div class="glass-card rounded-xl overflow-hidden border border-slate-700">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead>
+                                <tr class="bg-slate-900 border-b border-slate-700 text-slate-200">
+                                    <th class="p-3 w-24">Prioridad</th>
+                                    <th class="p-3 w-48">Archivo / Activo</th>
+                                    <th class="p-3">Problema Real Auditado</th>
+                                    <th class="p-3 w-72">Solución Concreta Recomendada</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800 text-slate-300">
+                                <tr class="bg-rose-950/20">
+                                    <td class="p-3"><span class="px-2 py-0.5 rounded bg-red-500/20 text-red-300 font-bold text-[10px]">P0 • CRÍTICO</span></td>
+                                    <td class="p-3 font-mono text-white">data_samples/mhist/annotations.csv + NB04</td>
+                                    <td class="p-3">CSV sintético (<span class="mono">MHIST_A00..\`51</span>) con split roto (Test 100% SSA, Train 99.4% HP), votos aleatorios inconsistentes y 0 PNGs.</td>
+                                    <td class="p-3 text-emerald-300">Descargar <span class="mono">annotations.csv</span> oficial y <span class="mono">images.zip</span> (333 MB) desde <span class="mono">bmirds/mhist</span> y re-ejecutar NB04.</td>
+                                </tr>
+                                <tr class="bg-rose-950/20">
+                                    <td class="p-3"><span class="px-2 py-0.5 rounded bg-red-500/20 text-red-300 font-bold text-[10px]">P0 • CRÍTICO</span></td>
+                                    <td class="p-3 font-mono text-white">01_BreaKHis_EDA.ipynb (Celdas 5 y 15)</td>
+                                    <td class="p-3"><span class="mono">paciente = tokens[1]</span> agrupa por año (<span class="mono">14</span>, <span class="mono">15</span>), colapsando 82 pacientes en 2 bolsas dentro de <span class="mono">breakhis_bags_pacientes.xlsx</span>.</td>
+                                    <td class="p-3 text-emerald-300">Cambiar a <span class="mono">f"{tokens[1]}-{tokens[2]}"</span> y regenerar las 82 bolsas reales antes de cualquier split MIL.</td>
+                                </tr>
+                                <tr class="bg-amber-950/15">
+                                    <td class="p-3"><span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold text-[10px]">P1 • ALTO</span></td>
+                                    <td class="p-3 font-mono text-white">analizar_camelyon16_coords.py + NB05</td>
+                                    <td class="p-3">Script previo sobrescribió mapa y Excel con eje <span class="mono">X=17</span> (nivel piramidal); 3 tablas de salida de NB05 no están en <span class="mono">tablas/</span>.</td>
+                                    <td class="p-3 text-emerald-300">Re-ejecutar NB05 (<span class="mono">coords[:,1:3]</span>) para reemplazar la figura errónea en <span class="mono">05_CAMELYON16/</span> y guardar los 3 Excel.</td>
+                                </tr>
+                                <tr class="bg-amber-950/15">
+                                    <td class="p-3"><span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold text-[10px]">P1 • ACTIVO</span></td>
+                                    <td class="p-3 font-mono text-white">camelyon16/patches/ (10.68 GB) + normal_map.xlsx</td>
+                                    <td class="p-3">25,235 archivos <span class="mono">.npy</span> (<span class="mono">256×256</span> imagen + máscara) en disco sin indexar ni documentar en ningún notebook.</td>
+                                    <td class="p-3 text-emerald-300">Decidir en reunión si se usan para baseline supervisado / U-Net o se depuran al adoptar embeddings UNI/iBOT.</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3"><span class="px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 font-bold text-[10px]">P2 • LIMPIEZA</span></td>
+                                    <td class="p-3 font-mono text-white">NB00 vs NB06 + GitHub Seguridad</td>
+                                    <td class="p-3">Tiers/tamaños divergentes entre NB00 y NB06; emojis rotos en Matplotlib; tokens <span class="mono">kaggle.json</span> detectados en <span class="mono">Materia Util/</span>.</td>
+                                    <td class="p-3 text-emerald-300">Ya mitigado para Git con <span class="mono">.gitignore</span> seguro (<span class="mono">data_samples/</span>, <span class="mono">Materia Util/</span> y <span class="mono">kaggle.json</span> excluidos).</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                `,
+                notes: `"Esta matriz resume nuestra auditoría en cinco acciones concretas ordenadas por prioridad. En prioridad cero tenemos los dos problemas que invalidarían experimentos si no se corrigen: reemplazar el annotations.csv sintético de MHIST descargando el oficial junto con las imágenes, y corregir el índice del ID de paciente en BreaKHis para recuperar los 82 pacientes reales. En prioridad uno debemos re-ejecutar el Notebook 05 para limpiar el mapa erróneo de X=17 generado por el script previo y definir el rol de los 10.68 GB en parches .npy de CAMELYON16. Finalmente, en prioridad dos ya protegimos el repositorio con un archivo .gitignore que excluye los 27.4 GB de datos, el material de cursos y los archivos sensibles kaggle.json."`
+            },
+
+            // =========================================================================
+            // DIAPOSITIVA 14: HOJA DE RUTA Y CIERRE DE REUNIÓN
+            // =========================================================================
+            {
+                id: 14,
+                badge: "HOJA DE RUTA EXPERIMENTAL • ACUERDOS Y PRÓXIMOS PASOS",
+                title: "Hoja de Ruta Validada en 3 Etapas, Entregables Creados y Decisiones",
+                subtitle: "Todo documentado, versionable en GitHub y listo para iniciar el Notebook 07 de modelado MIL",
+                html: `
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
+                        <div class="lg:col-span-7 space-y-3">
+                            <div class="glass-card p-3 rounded-xl border border-slate-700">
+                                <p class="text-[11px] font-bold text-teal-300 uppercase mb-1">Hoja de Ruta Metodológica (Notebook 06)</p>
+                                <img src="../figures/06_Comparativa/hoja_de_ruta_datasets.png"
+                                     onclick="openLightbox(this.src, 'Hoja de ruta de 3 etapas: Prototipado -> Gold Standard -> Generalización')"
+                                     alt="Hoja de Ruta"
+                                     class="zoomable-img w-full max-h-[215px] object-contain rounded-lg bg-white border border-slate-700">
+                            </div>
+                            <div class="grid grid-cols-2 gap-3 text-xs">
+                                <div class="glass-card p-3 rounded-xl border-l-4 border-l-teal-400">
+                                    <p class="font-bold text-teal-300">Documentación & Git Listos</p>
+                                    <p class="text-slate-300 mt-1"><span class="mono">.gitignore</span> + <span class="mono">README.md</span> + <span class="mono">docs/ANALISIS_PROFUNDO.md</span> inicializados (~38 MB totales para GitHub).</p>
+                                </div>
+                                <div class="glass-card p-3 rounded-xl border-l-4 border-l-blue-400">
+                                    <p class="font-bold text-blue-300">Siguiente Hito: NB07 MIL</p>
+                                    <p class="text-slate-300 mt-1">Implementar <strong>ABMIL (Gated Attention)</strong> vs. Mean/Max y CLAM sobre BreaKHis (82 bolsas) y CAMELYON16.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="lg:col-span-5 glass-card p-5 rounded-xl border border-amber-500/40 space-y-3.5">
+                            <h3 class="text-sm font-bold text-amber-300 uppercase flex items-center gap-2">
+                                <i data-lucide="clipboard-check" class="w-4 h-4"></i> Decisiones Clave para Acordar Hoy
+                            </h3>
+                            <div class="space-y-2.5 text-xs text-slate-200">
+                                <div class="p-3 bg-slate-950 rounded-lg border border-slate-800">
+                                    <strong>1. Estrategia de Features en Hardware Local:</strong> ¿Confirmamos iniciar con embeddings pre-extraídos (<span class="mono text-teal-300">UNI 1024-d</span> / <span class="mono text-teal-300">iBOT 768-d</span>) dada la GPU AMD RX 9060 XT sin CUDA?
+                                </div>
+                                <div class="p-3 bg-slate-950 rounded-lg border border-slate-800">
+                                    <strong>2. Uso de Activos Pesados en Disco:</strong> ¿Conservamos los <strong>10.68 GB</strong> de <span class="mono">camelyon16/patches/</span> para un baseline U-Net/CNN o priorizamos liberar disco usando solo <span class="mono">coords</span> + <span class="mono">embeddings.h5</span>?
+                                </div>
+                                <div class="p-3 bg-slate-950 rounded-lg border border-slate-800">
+                                    <strong>3. Métricas y Validación:</strong> Confirmar <em>Stratified Group K-Fold</em> por paciente (BreaKHis), ROC-AUC + FROC / IoU contra XMLs (CAMELYON16) y evaluación de <em>domain shift</em> en NCT-CRC (100K → 7K).
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                notes: `"Para cerrar, en esta última lámina resumimos nuestra hoja de ruta en tres etapas: primero, prototipado rápido corrigiendo las 82 bolsas de BreaKHis y sanejando MHIST; segundo, benchmark Gold Standard sobre CAMELYON16 y NCT-CRC usando embeddings UNI o iBOT junto a modelos ABMIL, CLAM y TransMIL; y tercero, generalización multi-órgano hacia BACH y BRACS. Todo el análisis profundo, diagramas, README y configuración segura de Git ya quedaron preparados en el repositorio. Quedamos atentos a sus definiciones sobre: confirmar el uso de embeddings pre-extraídos dado nuestro hardware sin CUDA, qué hacer con los 10.68 GB de parches .npy ya descargados en CAMELYON16, y validar el protocolo de evaluación por paciente y mapas XML."`
+            }
+        ];
+
+        // =========================================================================
+        // ESTADO, NAVEGACIÓN, LIGHTBOX Y SIMULADOR
+        // =========================================================================
+        let currentSlideIndex = 0;
+        let showNotes = true;
+        let simMode = 'ibot';
+
+        const SIM_DATASETS = {
+            breakhis: { name: 'BreaKHis', bags: 82, instances: 7909, rawGB: 7.90, ibotGB: 0.04, uniGB: 0.06 },
+            camelyon: { name: 'CAMELYON16', bags: 399, instances: 3177267, rawGB: 10.77, ibotGB: 4.30, uniGB: 1.50 },
+            pcam:     { name: 'PCam Valid', bags: 32768, instances: 32768, rawGB: 0.84, ibotGB: 0.12, uniGB: 0.16 },
+            nct:      { name: 'NCT-CRC-HE', bags: 107180, instances: 107180, rawGB: 15.19, ibotGB: 0.45, uniGB: 0.60 },
+            mhist:    { name: 'MHIST', bags: 100, instances: 3152, rawGB: 0.33, ibotGB: 0.02, uniGB: 0.03 }
+        };
+
+        function initPresentation() {
+            const select = document.getElementById('slide-jump');
+            select.innerHTML = slidesData.map((s, idx) =>
+                `<option value="${idx}">${String(s.id).padStart(2, '0')} — ${s.title.substring(0, 48)}...</option>`
+            ).join('');
+            renderCurrentSlide();
+            lucide.createIcons();
+        }
+
+        function renderCurrentSlide() {
+            const slide = slidesData[currentSlideIndex];
+            const container = document.getElementById('slide-content');
+
+            container.innerHTML = `
+                <div class="space-y-4">
+                    <div class="border-b border-slate-800 pb-3 flex flex-col md:flex-row md:items-end justify-between gap-2">
+                        <div>
+                            <div class="inline-flex items-center gap-2 text-[11px] font-mono font-bold uppercase tracking-wider text-teal-400 mb-1">
+                                <span class="px-2 py-0.5 rounded bg-teal-500/15 border border-teal-500/30">DIAPOSITIVA ${String(slide.id).padStart(2, '0')} / ${slidesData.length}</span>
+                                <span>${slide.badge}</span>
+                            </div>
+                            <h2 class="text-xl md:text-2xl font-extrabold text-white tracking-tight">${slide.title}</h2>
+                        </div>
+                        <p class="text-xs text-slate-400 md:text-right max-w-md">${slide.subtitle}</p>
+                    </div>
+                    <div class="pt-1">${slide.html}</div>
+                </div>
+            `;
+
+            document.getElementById('slide-counter').textContent = `${String(slide.id).padStart(2, '0')} / ${slidesData.length}`;
+            document.getElementById('slide-jump').value = currentSlideIndex;
+            document.getElementById('progress-bar').style.width = `${((currentSlideIndex + 1) / slidesData.length) * 100}%`;
+            document.getElementById('notes-slide-title').textContent = `— Diapositiva ${slide.id}: ${slide.title}`;
+            document.getElementById('speaker-notes-text').textContent = slide.notes;
+
+            if (slide.id === 12) {
+                setSimMode(simMode);
+            }
+
+            lucide.createIcons();
+            if (window.renderMathInElement) {
+                renderMathInElement(container, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        }
+
+        function setSimMode(mode) {
+            simMode = mode;
+            ['raw', 'ibot', 'uni'].forEach(m => {
+                const btn = document.getElementById(`btn-mode-${m}`);
+                if (!btn) return;
+                if (m === mode) {
+                    btn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold border border-teal-400 bg-teal-500/25 text-teal-200';
+                } else {
+                    btn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold border border-slate-700 bg-slate-900 text-slate-300 hover:border-slate-500';
+                }
+            });
+            updateSim();
+        }
+
+        function updateSim() {
+            const checkboxes = document.querySelectorAll('.sim-ds');
+            if (!checkboxes.length) return;
+
+            let totalGB = 0;
+            let totalInst = 0;
+            let totalBags = 0;
+            let maxSingleGB = 0;
+
+            checkboxes.forEach(cb => {
+                const key = cb.dataset.key;
+                const d = SIM_DATASETS[key];
+                const gb = simMode === 'raw' ? d.rawGB : (simMode === 'ibot' ? d.ibotGB : d.uniGB);
+                const lbl = document.getElementById(`sz-${key}`);
+                if (lbl) lbl.textContent = `${gb.toFixed(2)} GB`;
+                if (cb.checked) {
+                    totalGB += gb;
+                    totalInst += d.instances;
+                    totalBags += d.bags;
+                    if (gb > maxSingleGB) maxSingleGB = gb;
+                }
+            });
+
+            document.getElementById('sim-total-gb').textContent = `${totalGB.toFixed(2)} GB`;
+            document.getElementById('sim-instances').textContent = `${totalInst.toLocaleString('es-CL')}`;
+
+            const speedEl = document.getElementById('sim-speed');
+            const badgeEl = document.getElementById('sim-status-badge');
+            const barEl = document.getElementById('sim-bar-fill');
+            const pctEl = document.getElementById('sim-bar-pct');
+            const recEl = document.getElementById('sim-recommendation');
+
+            const pct = Math.min(100, (totalGB / 20.0) * 100);
+            barEl.style.width = `${pct}%`;
+            pctEl.textContent = `${totalGB.toFixed(1)} / 20 GB ref.`;
+
+            if (simMode === 'raw') {
+                speedEl.textContent = 'Lenta (CPU)';
+                speedEl.className = 'text-lg font-extrabold text-rose-400 mono mt-1';
+                barEl.className = 'h-full bg-gradient-to-r from-amber-500 to-rose-500 transition-all duration-300';
+            } else {
+                speedEl.textContent = 'Rápida (Min.)';
+                speedEl.className = 'text-lg font-extrabold text-emerald-400 mono mt-1';
+                barEl.className = 'h-full bg-gradient-to-r from-teal-500 to-blue-500 transition-all duration-300';
+            }
+
+            if (maxSingleGB > 10.0) {
+                badgeEl.textContent = `EXCEDE 10 GB/dataset (máx ${maxSingleGB.toFixed(2)} GB)`;
+                badgeEl.className = 'inline-block mt-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40';
+            } else {
+                badgeEl.textContent = `CUMPLE < 10 GB por dataset`;
+                badgeEl.className = 'inline-block mt-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40';
+            }
+
+            if (simMode === 'raw') {
+                recEl.innerHTML = `<strong>Diagnóstico:</strong> En formato de imágenes/parches crudos (${totalInst.toLocaleString('es-CL')} instancias, ${totalBags.toLocaleString('es-CL')} unidades), entrenar backbones visuales en <strong>PyTorch CPU</strong> sin CUDA demoraría horas por época y supera el límite de 10 GB en NCT-CRC (15.19 GB) y CAMELYON16 (10.77 GB).`;
+            } else {
+                const dim = simMode === 'ibot' ? '768-d' : '1024-d';
+                recEl.innerHTML = `<strong>Diagnóstico Óptimo (${simMode.toUpperCase()} ${dim}):</strong> Todo el conjunto seleccionado ocupa apenas <strong>${totalGB.toFixed(2)} GB</strong>, cumpliendo estrictamente el límite &lt;10 GB. El cabezal <strong>Gated Attention (O(K))</strong> entrena en minutos sobre hardware local.`;
+            }
+        }
+
+        function openLightbox(src, caption) {
+            document.getElementById('lightbox-img').src = src;
+            document.getElementById('lightbox-caption').textContent = caption;
+            document.getElementById('lightbox-modal').classList.remove('hidden');
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox-modal').classList.add('hidden');
+        }
+
+        function nextSlide() {
+            if (currentSlideIndex < slidesData.length - 1) {
+                currentSlideIndex++;
+                renderCurrentSlide();
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlideIndex > 0) {
+                currentSlideIndex--;
+                renderCurrentSlide();
+            }
+        }
+
+        function goToSlide(index) {
+            if (index >= 0 && index < slidesData.length) {
+                currentSlideIndex = index;
+                renderCurrentSlide();
+            }
+        }
+
+        function toggleNotes() {
+            showNotes = !showNotes;
+            const drawer = document.getElementById('speaker-drawer');
+            const btn = document.getElementById('btn-notes');
+            if (showNotes) {
+                document.body.classList.add('with-notes');
+                drawer.style.transform = 'translateY(0)';
+                btn.classList.replace('bg-slate-800', 'bg-teal-500/20');
+            } else {
+                document.body.classList.remove('with-notes');
+                drawer.style.transform = 'translateY(100%)';
+                btn.classList.replace('bg-teal-500/20', 'bg-slate-800');
+            }
+        }
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeLightbox();
+            } else if (e.key === 'ArrowRight' || e.key === 'PageDown') {
+                nextSlide();
+            } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+                prevSlide();
+            }
+        });
+
+        window.addEventListener('DOMContentLoaded', initPresentation);
+    </script>
+</body>
+</html>

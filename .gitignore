@@ -1,0 +1,66 @@
+# ==============================================================================
+# .gitignore — Proyecto Magíster: MIL aplicado a Histopatología Digital
+# Protege el repositorio contra archivos masivos (>100 MB), datasets crudos y credenciales
+# ==============================================================================
+
+# 1. Datasets descargados y muestras masivas (~27.4 GB locales)
+data_samples/
+Datasets/
+
+# 2. Materia de cursos externos (contiene PDFs pesados, datasets, venv, node_modules y kaggle.json)
+Materia Util/
+
+# 3. Credenciales y secretos (NUNCA subir a GitHub)
+**/kaggle.json
+.env
+*.pem
+*.key
+*secret*
+*token*
+
+# 4. Archivos binarios grandes de datos, imágenes médicas y checkpoints
+*.h5
+*.hdf5
+*.svs
+*.tif
+*.tiff
+*.npy
+*.npz
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.onnx
+*.db
+*.sqlite
+*.sqlite3
+
+# 5. Archivos comprimidos
+*.zip
+*.rar
+*.7z
+*.tar
+*.gz
+*.tgz
+
+# 6. Entornos virtuales, cachés y dependencias
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+node_modules/
+
+# 7. Archivos temporales / Sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
+*.log
+*.tmp
+*.bak
+~$*.xlsx
+~$*.docx
+~$*.pptx

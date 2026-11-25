@@ -1,0 +1,1469 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presentación Magíster - Gated Attention en Deep MIL (Ilse et al., 2018)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- KaTeX for LaTeX Math Rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0b1120;
+            color: #f8fafc;
+            overflow: hidden;
+        }
+
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .slide-container {
+            height: calc(100vh - 64px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .with-notes .slide-container {
+            height: calc(100vh - 220px);
+        }
+
+        .glass-card {
+            background: rgba(15, 23, 42, 0.78);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(148, 163, 184, 0.16);
+        }
+
+        .forensic-badge {
+            background: linear-gradient(135deg, rgba(20, 184, 166, 0.18), rgba(30, 58, 138, 0.35));
+            border: 1px solid rgba(45, 212, 191, 0.35);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(71, 85, 105, 0.8);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(20, 184, 166, 0.8);
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 12px rgba(239, 68, 68, 0.6); }
+            50% { box-shadow: 0 0 25px rgba(239, 68, 68, 0.95); }
+        }
+        .tumor-glow {
+            animation: pulseGlow 2s infinite;
+        }
+
+        @media print {
+            body {
+                overflow: visible !important;
+                background: #0f172a !important;
+            }
+            #top-nav, #speaker-drawer, #bottom-controls {
+                display: none !important;
+            }
+            .slide-item {
+                display: block !important;
+                page-break-after: always;
+                height: 100vh;
+                padding: 2rem;
+            }
+        }
+    </style>
+</head>
+<body class="with-notes select-none">
+
+    <!-- BARRA SUPERIOR INSTITUCIONAL Y NAVEGACIÓN -->
+    <header id="top-nav" class="h-16 bg-slate-950/90 border-b border-slate-800 px-6 flex items-center justify-between z-30">
+        <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2 bg-red-600/15 border border-red-500/40 px-3 py-1 rounded-md">
+                <span class="font-extrabold tracking-tight text-red-500 text-lg">udp</span>
+                <span class="text-xs text-slate-300 font-medium border-l border-slate-700 pl-2">Facultad de Ingeniería y Ciencias</span>
+            </div>
+            <div class="hidden md:block">
+                <h1 class="text-xs font-semibold uppercase tracking-wider text-teal-400">Magíster en Ciencias de la Computación • Avance de Investigación</h1>
+                <p class="text-[11px] text-slate-400">Estudiante: Lucas • Profesor Guía: Dr. Jorge Eduardo Zambrano Ibujés</p>
+            </div>
+        </div>
+
+        <!-- Selector de Diapositivas y Controles -->
+        <div class="flex items-center gap-3">
+            <select id="slide-jump" onchange="goToSlide(parseInt(this.value))" class="bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-lg px-3 py-1.5 focus:outline-none focus:border-teal-500">
+                <!-- Populated by JS -->
+            </select>
+
+            <div class="flex items-center bg-slate-900 border border-slate-800 rounded-lg p-0.5">
+                <button onclick="prevSlide()" class="p-1.5 hover:bg-slate-800 rounded-md text-slate-300 hover:text-white transition" title="Anterior (←)">
+                    <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                </button>
+                <span id="slide-counter" class="px-3 text-xs font-mono font-semibold text-teal-400">01 / 16</span>
+                <button onclick="nextSlide()" class="p-1.5 hover:bg-slate-800 rounded-md text-slate-300 hover:text-white transition" title="Siguiente (→)">
+                    <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <button onclick="toggleNotes()" id="btn-notes" class="flex items-center gap-1.5 text-xs bg-teal-500/20 border border-teal-500/50 text-teal-300 px-3 py-1.5 rounded-lg hover:bg-teal-500/30 transition" title="Mostrar/Ocultar Guion del Orador">
+                <i data-lucide="mic" class="w-3.5 h-3.5"></i>
+                <span class="hidden sm:inline">Guion Orador</span>
+            </button>
+
+            <button onclick="toggleFullScreen()" class="p-2 bg-slate-900 border border-slate-700 rounded-lg text-slate-300 hover:text-white hover:border-slate-500 transition" title="Pantalla Completa">
+                <i data-lucide="maximize" class="w-4 h-4"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- BARRA DE PROGRESO -->
+    <div class="w-full h-1 bg-slate-900">
+        <div id="progress-bar" class="h-full bg-gradient-to-r from-blue-500 via-teal-400 to-amber-400 transition-all duration-300" style="width: 6.25%;"></div>
+    </div>
+
+    <!-- ÁREA PRINCIPAL DE DIAPOSITIVAS -->
+    <main id="slides-viewport" class="slide-container overflow-y-auto px-6 py-5 md:px-12 md:py-6 flex items-center justify-center relative">
+        <div id="slide-content" class="w-full max-w-7xl mx-auto my-auto">
+            <!-- Rendered dynamically by JS -->
+        </div>
+    </main>
+
+    <!-- TELEPROMPTER / GUION DEL ORADOR -->
+    <footer id="speaker-drawer" class="fixed bottom-0 left-0 right-0 h-[156px] bg-slate-950/95 border-t border-teal-500/30 px-6 py-3 z-30 transition-transform duration-300">
+        <div class="max-w-7xl mx-auto h-full flex flex-col">
+            <div class="flex items-center justify-between mb-1.5">
+                <div class="flex items-center gap-2">
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                        <i data-lucide="radio" class="w-3 h-3"></i> Teleprompter / Speech Técnico del Orador
+                    </span>
+                    <span id="notes-slide-title" class="text-xs text-slate-400 font-medium truncate"></span>
+                </div>
+                <span class="text-[11px] text-slate-500">Usa las flechas <kbd class="px-1.5 py-0.5 bg-slate-800 rounded text-slate-300">←</kbd> <kbd class="px-1.5 py-0.5 bg-slate-800 rounded text-slate-300">→</kbd> para avanzar</span>
+            </div>
+            <div id="speaker-notes-text" class="text-sm text-slate-200 leading-relaxed overflow-y-auto pr-2 font-normal">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // =========================================================================
+        // BASE DE DATOS DE LAS 16 DIAPOSITIVAS
+        // =========================================================================
+        const slidesData = [
+            // DIAPOSITIVA 1: PORTADA
+            {
+                id: 1,
+                badge: "EXPEDIENTE CENTRAL • ICML 2018 – ESTADO DEL ARTE 2026",
+                title: "De la Instancia al Espacio Latente: Enfoques de Agregación y Mecanismo de Gated Attention en Deep MIL",
+                subtitle: "Fundamentos Matemáticos (Ilse et al., 2018), Analogía con «Peras y Manzanas» y Evolución en Patología Computacional",
+                html: `
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center mt-2">
+                        <div class="lg:col-span-7 space-y-5">
+                            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full forensic-badge text-teal-300 text-xs font-semibold">
+                                <i data-lucide="shield-alert" class="w-4 h-4"></i>
+                                Narrativa Técnica: El Departamento de Detectives Forenses
+                            </div>
+                            <h2 class="text-3xl md:text-4xl font-extrabold leading-tight text-white">
+                                De la Instancia al Espacio Latente y <span class="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-blue-400">Gated Attention</span> en Deep MIL
+                            </h2>
+                            <p class="text-slate-300 text-base leading-relaxed">
+                                Investigación exhaustiva sobre la bifurcación arquitectónica planteada por <strong>Ilse, Tomczak & Welling (ICML 2018)</strong>, la formulación no-lineal de compuertas multiplicativas ($\\tanh \\odot \\text{sigm}$) y su impacto en el estado del arte.
+                            </p>
+                            <div class="grid grid-cols-2 gap-4 pt-2">
+                                <div class="glass-card p-3.5 rounded-xl border-l-4 border-l-blue-500">
+                                    <p class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">Autor / Candidato</p>
+                                    <p class="text-sm font-bold text-white mt-0.5">Lucas</p>
+                                    <p class="text-xs text-slate-400">Magíster en Ciencias de la Computación</p>
+                                </div>
+                                <div class="glass-card p-3.5 rounded-xl border-l-4 border-l-teal-500">
+                                    <p class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">Profesor Guía</p>
+                                    <p class="text-sm font-bold text-white mt-0.5">Dr. Jorge Eduardo Zambrano Ibujés</p>
+                                    <p class="text-xs text-slate-400">Universidad Diego Portales (UDP)</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="lg:col-span-5 space-y-3.5">
+                            <div class="glass-card p-4 rounded-xl border border-blue-500/30 hover:border-blue-400/60 transition">
+                                <div class="flex items-start gap-3">
+                                    <div class="p-2.5 rounded-lg bg-blue-500/20 text-blue-400 font-bold mono text-sm">01</div>
+                                    <div>
+                                        <h3 class="font-bold text-white text-sm">Expediente 1: Paradigmas de Agregación MIL</h3>
+                                        <p class="text-xs text-slate-300 mt-1">Contraste matemático y operativo entre <em>Instance-Level Approach</em> ($p_k \\in [0,1]$) y <em>Embedding-Level Approach</em> ($\\mathbf{h}_k \\in \\mathbb{R}^M \\to \\mathbf{z}$).</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="glass-card p-4 rounded-xl border border-teal-500/30 hover:border-teal-400/60 transition">
+                                <div class="flex items-start gap-3">
+                                    <div class="p-2.5 rounded-lg bg-teal-500/20 text-teal-400 font-bold mono text-sm">02</div>
+                                    <div>
+                                        <h3 class="font-bold text-white text-sm">Expediente 2: Gated Attention y «Peras y Manzanas»</h3>
+                                        <p class="text-xs text-slate-300 mt-1">Por qué $\\tanh$ es cuasi-lineal en $[-1,1]$, cómo actúa la compuerta $\\text{sigm}(\\mathbf{U}\\mathbf{h}_k^\\top)$ y simulación numérica paso a paso.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="glass-card p-4 rounded-xl border border-amber-500/30 hover:border-amber-400/60 transition">
+                                <div class="flex items-start gap-3">
+                                    <div class="p-2.5 rounded-lg bg-amber-500/20 text-amber-400 font-bold mono text-sm">03</div>
+                                    <div>
+                                        <h3 class="font-bold text-white text-sm">Expediente 3: Éxito, Vigencia y Adopción (2018–2026)</h3>
+                                        <p class="text-xs text-slate-300 mt-1">Evidencia de $>2,500$ citas y adopción directa en <strong>CLAM, DSMIL, SA-AbMILP, DTFD-MIL, TransMIL, UNI y CONCH</strong>.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                notes: `"Buenas tardes, Profesor Zambrano. En esta presentación abordaremos a fondo los puntos solicitados para nuestra reunión sobre el artículo seminal 'Attention-based Deep Multiple Instance Learning' de Ilse, Tomczak y Welling (ICML 2018). Para que la exposición sea tanto rigurosa en lo matemático como intuitiva en su funcionamiento interno, recorreremos la teoría a través de la narrativa de nuestro Departamento de Detectives Forenses, dividiendo la sesión en tres ejes: primero, el contraste estructural entre el enfoque a nivel de instancia y el enfoque a nivel de embebido; segundo, la formulación exacta del mecanismo de Atención con Compuertas (Gated Attention) aterrizada paso a paso con una simulación numérica de peras y manzanas; y tercero, la verificación bibliográfica de qué tan exitoso fue este mecanismo y quiénes lo utilizan hoy en el estado del arte."`
+            },
+
+            // DIAPOSITIVA 2: EL RASCACIELOS GIGAPÍXEL (WSI)
+            {
+                id: 2,
+                badge: "CASO #001 • EL DESAFÍO WSI Y SUPERVISIÓN DÉBIL",
+                title: "Caso #001: El Rascacielos Gigapíxel (WSI) y el Dilema de la Supervisión Débil",
+                subtitle: "Una biopsia gigapíxel equivale a un edificio de K = 20,000 oficinas con una única etiqueta global Y",
+                html: `
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                        <!-- Visual Izquierdo: WSI a Parches -->
+                        <div class="lg:col-span-5 glass-card p-5 rounded-xl border border-slate-700">
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="text-xs font-bold uppercase tracking-wider text-pink-400 flex items-center gap-1.5">
+                                    <i data-lucide="microscope" class="w-4 h-4"></i> Biopsia WSI (100,000 × 100,000 px)
+                                </span>
+                                <span class="text-[11px] mono bg-slate-800 px-2 py-0.5 rounded text-slate-300">Parches 256×256</span>
+                            </div>
+                            <div class="grid grid-cols-6 gap-1.5 p-3 bg-slate-900/90 rounded-lg border border-slate-800">
+                                ${Array.from({length: 36}).map((_, i) => i === 21 
+                                    ? `<div class="h-9 rounded bg-red-600/80 border-2 border-red-400 tumor-glow flex items-center justify-center text-[10px] font-bold text-white" title="Parche Tumoral (y_k = 1)">yₖ=1</div>`
+                                    : `<div class="h-9 rounded bg-pink-300/20 border border-pink-400/20 flex items-center justify-center text-[9px] text-slate-400 font-mono">x_${i+1}</div>`
+                                ).join('')}
+                            </div>
+                            <div class="mt-3 p-3 bg-slate-900/80 rounded-lg border border-slate-800 text-xs text-slate-300 space-y-1">
+                                <p>• <strong>Bolsa (Bag):</strong> $X = \\{\\mathbf{x}_1, \\mathbf{x}_2, \\dots, \\mathbf{x}_K\\}$ con cardinalidad variable $K$.</p>
+                                <p>• <strong>Instancias:</strong> $\\mathbf{x}_k \\in \\mathbb{R}^D$ (parches extraídos del tejido).</p>
+                                <p>• <strong>Desbalance extremo:</strong> El tumor real ocupa $< 1\\%$ de la lámina; el $99\\%$ restante es tejido sano normal.</p>
+                            </div>
+                        </div>
+
+                        <!-- Visual Derecho: El Rascacielos de los Detectives -->
+                        <div class="lg:col-span-7 glass-card p-5 rounded-xl border border-teal-500/30">
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="text-xs font-bold uppercase tracking-wider text-teal-400 flex items-center gap-1.5">
+                                    <i data-lucide="building-2" class="w-4 h-4"></i> Analogía Forense: El Rascacielos de K = 20,000 Oficinas
+                                </span>
+                                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-500/20 text-red-300 border border-red-500/40">Etiqueta Global: Y = 1</span>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+                                <!-- Dibujo Edificio -->
+                                <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 flex flex-col items-center">
+                                    <div class="text-[10px] font-mono text-amber-400 mb-1">🏢 RASCACIELOS (BOLSA X)</div>
+                                    <div class="w-48 bg-slate-900 border-2 border-slate-700 rounded-t-lg p-2.5 grid grid-cols-5 gap-1.5">
+                                        ${Array.from({length: 35}).map((_, i) => i === 12
+                                            ? `<div class="h-5 bg-red-600 rounded-sm tumor-glow flex items-center justify-center text-[9px] font-bold text-white">🚨</div>`
+                                            : `<div class="h-5 bg-amber-200/20 border border-amber-200/30 rounded-sm flex items-center justify-center text-[8px] text-slate-400">?</div>`
+                                        ).join('')}
+                                    </div>
+                                    <div class="w-56 h-3 bg-slate-700 rounded-b"></div>
+                                    <p class="text-[11px] text-slate-400 mt-2 text-center">Piso 143: Única oficina con actividad criminal ($y_k=1$ oculto)</p>
+                                </div>
+
+                                <!-- Explicación del Misterio -->
+                                <div class="space-y-3">
+                                    <div class="p-3 rounded-lg bg-blue-950/40 border border-blue-500/30">
+                                        <h4 class="text-xs font-bold text-blue-300 uppercase">1. Lo que sabe el Comisario Jefe</h4>
+                                        <p class="text-xs text-slate-300 mt-1">Solo nos entrega el expediente sellado de todo el edificio: $$Y \\in \\{0, 1\\}$$</p>
+                                    </div>
+                                    <div class="p-3 rounded-lg bg-amber-950/40 border border-amber-500/30">
+                                        <h4 class="text-xs font-bold text-amber-300 uppercase">2. Lo que ignora el Escuadrón</h4>
+                                        <p class="text-xs text-slate-300 mt-1">Las etiquetas individuales de cada oficina permanecen ocultas (<strong>Supervisión Débil</strong>): $$y_1, y_2, \\dots, y_K \\in \\{0, 1\\} \\text{ (Desconocidas)}$$</p>
+                                    </div>
+                                    <div class="p-3 rounded-lg bg-teal-950/40 border border-teal-500/30">
+                                        <h4 class="text-xs font-bold text-teal-300 uppercase">3. La Misión de MIL</h4>
+                                        <p class="text-xs text-slate-300 mt-1">Entrenar un escuadrón capaz de diagnosticar $Y$ e identificar la oficina culpable sin anotaciones por píxel.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                notes: `"Ubiquémonos primero en la escena del crimen de la patología computacional: las imágenes de lámina completa o Whole Slide Images (WSI). En el paradigma de Aprendizaje de Múltiples Instancias (MIL), nuestros datos no son imágenes simples, sino bolsas X = {x_1, x_2, ..., x_K}, donde cada bolsa contiene una cantidad variable K de instancias x_k en R^D (por ejemplo, parches histológicos de 256x256 píxeles). Imaginemos que cada bolsa X es un rascacielos de K = 20,000 oficinas y nosotros dirigimos el Departamento de Detectives. El desafío de la supervisión débil es que el Comisario Jefe (el patólogo) solo nos entrega una etiqueta global para todo el rascacielos: Y en {0, 1} (Y=1 si hay cáncer, Y=0 si está sano), mientras que las etiquetas reales de cada oficina individual, y_k, permanecen totalmente ocultas durante el entrenamiento. Además, en una biopsia real, el tumor puede ocupar menos del 1% de las oficinas y el 99% restante es tejido sano normal."`
+            },
+
+            // DIAPOSITIVA 3: LA LEY DEL DIAGNÓSTICO (SUPOSICIÓN MIL)
+            {
+                id: 3,
+                badge: "FUNDAMENTO FORMAL • SUPOSICIÓN ESTÁNDAR DE MIL",
+                title: "La Ley Forense del Diagnóstico: La Suposición Estándar de MIL",
+                subtitle: "Basta un único «tubo de ensayo rojo» (instancia positiva latente) para declarar en emergencia toda la bolsa",
+                html: `
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                        <!-- Bolsa Positiva vs Negativa -->
+                        <div class="lg:col-span-7 grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Bolsa Positiva -->
+                            <div class="glass-card p-5 rounded-xl border-2 border-red-500/50 relative overflow-hidden">
+                                <div class="flex items-center justify-between mb-3">
+                                    <span class="text-xs font-bold uppercase text-red-400">Bolsa Positiva ($Y_i = 1$)</span>
+                                    <span class="px-2 py-0.5 bg-red-500/20 text-red-300 text-xs font-bold rounded">🚨 EMERGENCIA</span>
+                                </div>
+                                <div class="p-4 bg-slate-950 rounded-xl border border-slate-800 grid grid-cols-5 gap-2 place-items-center">
+                                    ${Array.from({length: 15}).map((_, i) => i === 7
+                                        ? `<div class="w-9 h-9 rounded-lg bg-red-600 border-2 border-white tumor-glow flex flex-col items-center justify-center text-[10px] font-bold text-white" title="Tubo de Ensayo Rojo (y_k = 1)">🧪<span>1</span></div>`
+                                        : `<div class="w-9 h-9 rounded-lg bg-slate-800 border border-slate-700 flex flex-col items-center justify-center text-[10px] text-slate-400">⬜<span>0</span></div>`
+                                    ).join('')}
+                                </div>
+                                <p class="text-xs text-slate-300 mt-3">
+                                    Contiene $9,999$ oficinas sanas ($y_k=0$) y <strong>1 sola oficina con patógeno ($y_k=1$)</strong>. La alarma del edificio se activa.
+                                </p>
+                            </div>
+
+                            <!-- Bolsa Negativa -->
+                            <div class="glass-card p-5 rounded-xl border border-slate-700">
+                                <div class="flex items-center justify-between mb-3">
+                                    <span class="text-xs font-bold uppercase text-emerald-400">Bolsa Negativa ($Y_i = 0$)</span>
+                                    <span class="px-2 py-0.5 bg-emerald-500/20 text-emerald-300 text-xs font-bold rounded">✓ DESPEJADO</span>
+                                </div>
+                                <div class="p-4 bg-slate-950 rounded-xl border border-slate-800 grid grid-cols-5 gap-2 place-items-center">
+                                    ${Array.from({length: 15}).map(() => 
+                                        `<div class="w-9 h-9 rounded-lg bg-slate-800 border border-slate-700 flex flex-col items-center justify-center text-[10px] text-slate-400">⬜<span>0</span></div>`
+                                    ).join('')}
+                                </div>
+                                <p class="text-xs text-slate-300 mt-3">
+                                    Para certificar $Y_i = 0$, <strong>absolutamente todas</strong> las $K$ instancias deben ser negativas ($\\forall k, y_k = 0$).
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Formulación Matemática -->
+                        <div class="lg:col-span-5 glass-card p-6 rounded-xl border border-blue-500/40 space-y-4">
+                            <h3 class="text-base font-bold text-white flex items-center gap-2">
+                                <i data-lucide="scale" class="w-5 h-5 text-blue-400"></i>
+                                Formulación de la Ley MIL Estándar
+                            </h3>
+                            <div class="p-4 bg-slate-950 rounded-xl border border-slate-800 text-center">
+                                $$Y = \\begin{cases} 1, & \\text{si } \\exists k \\in \\{1, \\dots, K\\} : y_k = 1 \\\\ 0, & \\text{si } \\forall k \\in \\{1, \\dots, K\\} : y_k = 0 \\end{cases}$$
+                            </div>
+                            <div class="p-3.5 bg-blue-950/40 border border-blue-500/30 rounded-xl text-center">
+                                <p class="text-xs text-blue-300 font-semibold mb-1">Forma Compacta Equivalente (Operador OR / Max):</p>
+                                $$Y = \\max_{k \\in \\{1, \\dots, K\\}} \\{y_k\\}$$
+                            </div>
+                            <p class="text-xs text-slate-300 leading-relaxed">
+                                <strong>Implicación para el diseño neuronal:</strong> Esta asimetría extrema explica por qué un agregador ingenuo que promedie todas las oficinas destruirá la evidencia del único tubo de ensayo rojo, y por qué necesitamos mecanismos de <em>Atención Selectiva</em> (hipótesis MIL extendida).
+                            </p>
+                        </div>
+                    </div>
+                `,
+                notes: `"¿Cuál es la regla legal que rige a nuestro escuadrón para declarar culpable o inocente a un edificio completo? Bajo la Suposición Estándar de MIL, basta con que los detectives encuentren un solo 'tubo de ensayo rojo' —es decir, al menos una instancia positiva y_k = 1— dentro del rascacielos para que la etiqueta global de la bolsa sea positiva (Y = 1). Por el contrario, para certificar que el edificio está libre de peligro (Y = 0), absolutamente todas las K oficinas inspeccionadas deben ser negativas (y_k = 0 para todo k). Esta asimetría extrema implica que nuestra red neuronal no puede darse el lujo de promediar a la ligera ni de ignorar una sola oficina crítica."`
+            },
+
+            // DIAPOSITIVA 4: INVARIANZA AL ORDEN Y DEEP SETS
+            {
+                id: 4,
+                badge: "TEOREMA DE FUNCIONES SIMÉTRICAS • ECUACIÓN (1) DE ILSE ET AL.",
+                title: "El Orden de Inspección No Altera el Caso: Descomposición de Ilse et al. (2018)",
+                subtitle: "Toda función de puntuación de bolsas invariante a permutaciones se descompone en tres etapas: f, σ y g",
+                html: `
+                    <div class="space-y-5">
+                        <!-- Ecuación Maestra -->
+                        <div class="glass-card p-5 rounded-xl border-2 border-teal-500/40 text-center">
+                            <p class="text-xs font-bold uppercase tracking-wider text-teal-400 mb-1">Ecuación Maestra de Invarianza a Permutaciones (Ilse et al., 2018 — Teorema Deep Sets)</p>
+                            <div class="text-xl md:text-2xl text-white py-1">
+                                $$\\theta(X) = g\\Big(\\sigma\\big(f(\\mathbf{x}_1), f(\\mathbf{x}_2), \\dots, f(\\mathbf{x}_K)\\big)\\Big)$$
+                            </div>
+                            <p class="text-xs text-slate-400">El diagnóstico médico $\\theta(X) = P(Y=1 \\mid X)$ es idéntico sin importar el orden en que se inspeccionen los parches $\\{\\mathbf{x}_1, \\dots, \\mathbf{x}_K\\}$.</p>
+                        </div>
+
+                        <!-- Las 3 Etapas Policiales -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                            <!-- Etapa 1: f -->
+                            <div class="glass-card p-5 rounded-xl border-t-4 border-t-blue-500 relative">
+                                <div class="flex items-center justify-between mb-3">
+                                    <span class="px-2.5 py-1 rounded bg-blue-500/20 text-blue-300 font-mono font-bold text-sm">1. Transformación f(·)</span>
+                                    <i data-lucide="search" class="w-5 h-5 text-blue-400"></i>
+                                </div>
+                                <h4 class="font-bold text-white text-base mb-2">El Detective de Campo</h4>
+                                <p class="text-xs text-slate-300 leading-relaxed">
+                                    Red neuronal aplicada individualmente a cada instancia $\\mathbf{x}_k$. Inspecciona cada oficina por separado.
+                                </p>
+                                <div class="mt-3 p-2.5 bg-slate-900 rounded-lg text-xs text-blue-200 border border-slate-800">
+                                    ¿Entrega un veredicto escalar $p_k$ o un expediente descriptivo $\\mathbf{h}_k$? <strong>¡Aquí nace la gran bifurcación!</strong>
+                                </div>
+                            </div>
+
+                            <!-- Etapa 2: sigma -->
+                            <div class="glass-card p-5 rounded-xl border-t-4 border-t-teal-500 relative">
+                                <div class="flex items-center justify-between mb-3">
+                                    <span class="px-2.5 py-1 rounded bg-teal-500/20 text-teal-300 font-mono font-bold text-sm">2. Operador σ(·)</span>
+                                    <i data-lucide="layers" class="w-5 h-5 text-teal-400"></i>
+                                </div>
+                                <h4 class="font-bold text-white text-base mb-2">Mesa de Evidencias (MIL Pooling)</h4>
+                                <p class="text-xs text-slate-300 leading-relaxed">
+                                    Función simétrica invariante al orden que fusiona las $K$ salidas de $f(\\mathbf{x}_k)$ en una representación consolidada de la bolsa.
+                                </p>
+                                <div class="mt-3 p-2.5 bg-slate-900 rounded-lg text-xs text-teal-200 border border-slate-800">
+                                    Puede ser estática (<em>Max, Mean</em>) o adaptativa entrenable (<strong>Gated Attention</strong>).
+                                </div>
+                            </div>
+
+                            <!-- Etapa 3: g -->
+                            <div class="glass-card p-5 rounded-xl border-t-4 border-t-amber-500 relative">
+                                <div class="flex items-center justify-between mb-3">
+                                    <span class="px-2.5 py-1 rounded bg-amber-500/20 text-amber-300 font-mono font-bold text-sm">3. Clasificador g(·)</span>
+                                    <i data-lucide="gavel" class="w-5 h-5 text-amber-400"></i>
+                                </div>
+                                <h4 class="font-bold text-white text-base mb-2">El Inspector Jefe / Juez</h4>
+                                <p class="text-xs text-slate-300 leading-relaxed">
+                                    Procesa la evidencia agregada por $\\sigma$ y emite el dictamen final de probabilidad diagnóstica para toda la bolsa:
+                                </p>
+                                <div class="mt-3 p-2.5 bg-slate-900 rounded-lg text-center text-xs text-amber-200 border border-slate-800">
+                                    $$\\theta(X) = P(Y = 1 \\mid X) \\in [0, 1]$$
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                notes: `"Ahora bien, una propiedad fundamental de una bolsa MIL es que no posee un orden secuencial intrínseco: si nuestros detectives inspeccionan primero el piso 10 y luego el piso 1, o viceversa, el diagnóstico del paciente debe ser exactamente el mismo. Apoyándose en el Teorema de Funciones Simétricas (Deep Sets), Ilse et al. (2018) demuestran que toda función de puntuación de bolsas theta(X) que sea invariante a permutaciones se descompone forzosamente en tres etapas matemáticas: 1. Una transformación neuronal f(.) aplicada por separado a cada instancia x_k. 2. Una función simétrica de agregación o MIL pooling sigma(.) que fusiona las instancias sin depender de su orden. 3. Y un clasificador final g(.) que transforma la representación agregada en la probabilidad global theta(X) = P(Y=1|X). A partir de esta ecuación general, Ilse et al. definen los dos grandes enfoques arquitectónicos según el rol que le demos a f y a g."`
+            },
+
+            // DIAPOSITIVA 5: ENFOQUE (i) INSTANCE-LEVEL APPROACH
+            {
+                id: 5,
+                badge: "PARADIGMA (i) DE ILSE ET AL. (2018) • INSTANCE-LEVEL APPROACH",
+                title: "Enfoque (i): The Instance-Level Approach (El Detective Novato y el Botón de Pánico)",
+                subtitle: "La función f clasifica cada parche a ciegas en un escalar p_k ∈ [0,1] y la función g es la identidad",
+                html: `
+                    <div class="space-y-4">
+                        <!-- Cita Original del Paper -->
+                        <div class="p-4 rounded-xl bg-amber-950/30 border-l-4 border-l-amber-500 border border-amber-500/30">
+                            <p class="text-[11px] font-bold uppercase tracking-wider text-amber-400 mb-1">Cita Textual Analizada — Ilse, Tomczak & Welling (ICML 2018):</p>
+                            <p class="text-sm italic text-slate-200">
+                                "(i) <strong>The instance-level approach:</strong> The transformation $f$ is an instance-level classifier that returns scores for each instance. Then individual scores are aggregated by MIL pooling to obtain $\\theta(X)$. The function $g$ is the identity function."
+                            </p>
+                        </div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
+                            <!-- Ecuación y Flujo -->
+                            <div class="lg:col-span-6 glass-card p-5 rounded-xl border border-slate-700 space-y-4">
+                                <h3 class="text-sm font-bold text-amber-300 uppercase tracking-wider">Formulación Matemática y Operativa</h3>
+                                <div class="p-3.5 bg-slate-950 rounded-lg border border-slate-800 text-center">
+                                    $$\\theta_{\\text{inst}}(X) = \\text{Id}\\Big(\\sigma\\big(\\underbrace{f(\\mathbf{x}_1)}_{p_1 \\in [0,1]}, \\underbrace{f(\\mathbf{x}_2)}_{p_2 \\in [0,1]}, \\dots, \\underbrace{f(\\mathbf{x}_K)}_{p_K \\in [0,1]}\\big)\\Big) = \\sigma(p_1, \\dots, p_K)$$
+                                </div>
+                                <div class="flex items-center justify-between text-xs bg-slate-900 p-3 rounded-lg border border-slate-800">
+                                    <div class="text-center">
+                                        <span class="font-bold text-slate-200">Parche $\\mathbf{x}_k$</span>
+                                        <p class="text-[10px] text-slate-400">$256\\times 256\\times 3$</p>
+                                    </div>
+                                    <span class="text-amber-400 font-mono">→ $f(\\mathbf{x}_k)$ →</span>
+                                    <div class="text-center bg-amber-500/20 border border-amber-500/40 px-2.5 py-1 rounded">
+                                        <span class="font-bold text-amber-300">Escalar $p_k$</span>
+                                        <p class="text-[10px] text-amber-200">1 solo número</p>
+                                    </div>
+                                    <span class="text-amber-400 font-mono">→ $\\sigma(\\{p_k\\})$ →</span>
+                                    <div class="text-center">
+                                        <span class="font-bold text-white">$g = \\text{Id}$</span>
+                                        <p class="text-[10px] text-slate-400">$\\theta(X) \\in [0,1]$</p>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-slate-300">
+                                    <strong>Analogía del Detective Novato:</strong> Enviamos un recluta a cada oficina y le prohibimos describir lo que vio; solo tiene un botón numérico para gritar del $0\\%$ al $100\\%$ de culpabilidad antes de hablar con el resto del escuadrón.
+                                </p>
+                            </div>
+
+                            <!-- Por qué falla -->
+                            <div class="lg:col-span-6 space-y-3.5">
+                                <div class="glass-card p-4 rounded-xl border-l-4 border-l-red-500">
+                                    <div class="flex items-center gap-2 text-red-400 font-bold text-sm mb-1">
+                                        <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+                                        Deficiencia 1: Cuello de Botella de Información Prematuro
+                                    </div>
+                                    <p class="text-xs text-slate-300 leading-relaxed">
+                                        Cada parche histológico complejo ($\\mathbf{x}_k \\in \\mathbb{R}^D$) es colapsado abruptamente a un único escalar $p_k \\in [0,1]$ <strong>antes de conocer el contexto del resto de la bolsa</strong>. Se destruye toda la riqueza morfológica multidimensional.
+                                    </p>
+                                </div>
+
+                                <div class="glass-card p-4 rounded-xl border-l-4 border-l-red-500">
+                                    <div class="flex items-center gap-2 text-red-400 font-bold text-sm mb-1">
+                                        <i data-lucide="flame" class="w-4 h-4"></i>
+                                        Deficiencia 2: Ruido de Etiquetas y Sobreajuste Severo
+                                    </div>
+                                    <p class="text-xs text-slate-300 leading-relaxed">
+                                        Como las etiquetas reales $y_k$ son desconocidas, entrenar el clasificador local $f$ obliga a asignarle a todos los parches la etiqueta de la bolsa (pseudo-etiquetas falsas) o depender de gradientes extremos, provocando un alto <strong>sobreajuste (overfitting)</strong>.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                notes: `"Revisemos la primera cita textual del artículo de Ilse et al. (2018): el Enfoque a Nivel de Instancia (Instance-Level Approach). Aquí, la función f: R^D -> [0, 1] actúa directamente como un clasificador local de instancias que devuelve un puntaje escalar p_k = f(x_k) para cada parche antes de hacer cualquier fusión. Luego, el operador sigma agrega esos K números escalares, y la función exterior g es simplemente la función identidad (g(z) = z). En nuestro Departamento de Detectives, esto equivale a meter a un policía novato en una oficina compleja y prohibirle describir qué pistas vio: lo obligamos a gritar inmediatamente un número del 0% al 100% de culpabilidad. ¿Por qué falla esto en Deep Learning? Primero, por un cuello de botella prematuro: comprimimos toda la estructura morfológica de un parche de 256x256 píxeles a un único número escalar p_k antes de conocer el contexto de la bolsa. Segundo, por ruido severo de etiquetas: como no tenemos etiquetas reales y_k, entrenar al clasificador f obliga a inventar pseudo-etiquetas ruidosas, provocando un severo sobreajuste (overfitting)."`
+            },
+
+            // DIAPOSITIVA 6: ENFOQUE (ii) EMBEDDING-LEVEL APPROACH
+            {
+                id: 6,
+                badge: "PARADIGMA (ii) DE ILSE ET AL. (2018) • EMBEDDING-LEVEL APPROACH",
+                title: "Enfoque (ii): The Embedding-Level Approach (Perfiles Forenses en el Espacio Latente)",
+                subtitle: "La función f extrae vectores ricos h_k ∈ ℝ^M, el pooling construye un vector de bolsa z ∈ ℝ^M y g decide con visión global",
+                html: `
+                    <div class="space-y-4">
+                        <!-- Cita Original del Paper -->
+                        <div class="p-4 rounded-xl bg-teal-950/30 border-l-4 border-l-teal-400 border border-teal-500/30">
+                            <p class="text-[11px] font-bold uppercase tracking-wider text-teal-300 mb-1">Cita Textual Analizada — Ilse, Tomczak & Welling (ICML 2018):</p>
+                            <p class="text-sm italic text-slate-200">
+                                "(ii) <strong>The embedding-level approach:</strong> The function $f$ maps instances to a low-dimensional embedding. MIL pooling is used to obtain a bag representation that is independent of the number of instances in the bag. The bag representation is further processed by a bag-level classifier to provide $\\theta(X)$."
+                            </p>
+                        </div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
+                            <!-- Ecuación y Flujo -->
+                            <div class="lg:col-span-6 glass-card p-5 rounded-xl border border-teal-500/30 space-y-4">
+                                <h3 class="text-sm font-bold text-teal-300 uppercase tracking-wider">Cadena de Transformación en el Espacio Latente</h3>
+                                <div class="p-3.5 bg-slate-950 rounded-lg border border-slate-800 text-center">
+                                    $$\\mathbf{h}_k = f(\\mathbf{x}_k) \\in \\mathbb{R}^M \\;\\longrightarrow\\; \\mathbf{z} = \\sigma(\\mathbf{h}_1, \\dots, \\mathbf{h}_K) \\in \\mathbb{R}^M \\;\\longrightarrow\\; \\theta_{\\text{emb}}(X) = g(\\mathbf{z})$$
+                                </div>
+                                <div class="flex items-center justify-between text-xs bg-slate-900 p-3 rounded-lg border border-slate-800">
+                                    <div class="text-center">
+                                        <span class="font-bold text-slate-200">Parche $\\mathbf{x}_k$</span>
+                                        <p class="text-[10px] text-slate-400">Imagen Cruda</p>
+                                    </div>
+                                    <span class="text-teal-400 font-mono">→ $f$ →</span>
+                                    <div class="text-center bg-teal-500/20 border border-teal-500/40 px-2.5 py-1 rounded">
+                                        <span class="font-bold text-teal-300">Embebido $\\mathbf{h}_k$</span>
+                                        <p class="text-[10px] text-teal-200">$\\mathbb{R}^{M}$ ($M=512$)</p>
+                                    </div>
+                                    <span class="text-teal-400 font-mono">→ $\\sigma$ →</span>
+                                    <div class="text-center bg-blue-500/20 border border-blue-500/40 px-2.5 py-1 rounded">
+                                        <span class="font-bold text-blue-300">Bolsa $\\mathbf{z}$</span>
+                                        <p class="text-[10px] text-blue-200">$\\mathbb{R}^M$ (Fijo)</p>
+                                    </div>
+                                    <span class="text-teal-400 font-mono">→ $g(\\mathbf{z})$ →</span>
+                                    <div class="text-center">
+                                        <span class="font-bold text-white">$\\theta(X)$</span>
+                                        <p class="text-[10px] text-slate-400">$[0,1]$</p>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-slate-300">
+                                    <strong>Analogía del Perito Forense:</strong> El agente $f$ redacta un expediente detallado de $M=512$ rasgos morfológicos por oficina ($\\mathbf{h}_k$). La mesa $\\sigma$ sintetiza un <strong>Resumen Maestro del Edificio ($\\mathbf{z}$)</strong> y el Inspector Jefe $g(\\mathbf{z})$ toma la decisión final con contexto global.
+                                </p>
+                            </div>
+
+                            <!-- Ventajas Clave -->
+                            <div class="lg:col-span-6 space-y-3.5">
+                                <div class="glass-card p-4 rounded-xl border-l-4 border-l-teal-400">
+                                    <div class="flex items-center gap-2 text-teal-300 font-bold text-sm mb-1">
+                                        <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+                                        Ventaja 1: Representación de Bolsa Independiente de K
+                                    </div>
+                                    <p class="text-xs text-slate-300 leading-relaxed">
+                                        Sin importar si un paciente tiene $K_1 = 800$ parches o $K_2 = 25,000$ parches, el operador $\\sigma$ entrega siempre un vector compacto $\\mathbf{z} \\in \\mathbb{R}^M$ de dimensión fija $M$, ideal para alimentar el clasificador neuronal $g(\\mathbf{z})$.
+                                    </p>
+                                </div>
+
+                                <div class="glass-card p-4 rounded-xl border-l-4 border-l-blue-400">
+                                    <div class="flex items-center gap-2 text-blue-300 font-bold text-sm mb-1">
+                                        <i data-lucide="shield-check" class="w-4 h-4"></i>
+                                        Ventaja 2: Cero Etiquetas Falsas y Menor Sobreajuste
+                                    </div>
+                                    <p class="text-xs text-slate-300 leading-relaxed">
+                                        Al no obligar a $f$ a predecir probabilidades prematuras a nivel de instancia, el flujo de gradiente optimiza extremo a extremo (<em>end-to-end</em>) la representación conjunta de la bolsa, evitando el sobreajuste por ruido de etiquetas.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                notes: `"Veamos ahora la segunda cita de Ilse et al. (2018): el Enfoque a Nivel de Embebido (Embedding-Level Approach). En lugar de forzar un veredicto prematuro en cada oficina, la transformación f: R^D -> R^M es un extractor neuronal de características que proyecta cada instancia x_k hacia un vector latente o embebido h_k = f(x_k) en R^M (por ejemplo, una ficha forense con M = 512 descriptores morfológicos). A continuación, el operador de MIL pooling sigma fusiona los K vectores en una única representación global de la bolsa z en R^M, cuya dimensión M es constante y totalmente independiente del número de parches K que tenga la biopsia. Recién en la última etapa, nuestro Inspector Jefe —el clasificador a nivel de bolsa g: R^M -> [0, 1]— analiza el resumen maestro z para emitir el diagnóstico theta_emb(X) = g(z) sin haber forzado jamás etiquetas falsas sobre los parches individuales."`
+            },
+
+            // DIAPOSITIVA 7: CONTRASTE ARQUITECTÓNICO DIRECTO (DIAGRAMA 1 + TABLA 1)
+            {
+                id: 7,
+                badge: "SÍNTESIS COMPARATIVA • DIAGRAMA ARQUITECTÓNICO 1 Y TABLA 1",
+                title: "Cara a Cara Arquitectónico: ¿Por Qué Ilse et al. Eligen el Espacio de Embebidos?",
+                subtitle: "Comparación estructural directa entre los dos paradigmas del artículo de Ilse et al. (2018)",
+                html: `
+                    <div class="space-y-4">
+                        <!-- Diagrama 1 recreado visualmente -->
+                        <div class="glass-card p-4 rounded-xl border border-slate-700">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="p-3 bg-amber-950/20 border border-amber-500/30 rounded-lg">
+                                    <p class="text-xs font-bold text-amber-400 mb-2">(i) Instance-Level Approach (Agregación de Escalares)</p>
+                                    <div class="flex items-center justify-between text-[11px] font-mono bg-slate-950 p-2.5 rounded border border-slate-800">
+                                        <span>Bolsa $X$</span>
+                                        <span class="text-amber-400">→ $f$ →</span>
+                                        <span class="text-amber-300 font-bold">$p_k \\in [0,1]$</span>
+                                        <span class="text-amber-400">→ $\\sigma$ →</span>
+                                        <span>$\\theta(X)$</span>
+                                        <span class="text-amber-400">→ $g=\\text{Id}$ →</span>
+                                        <span class="text-white font-bold">$\\theta(X)$</span>
+                                    </div>
+                                </div>
+                                <div class="p-3 bg-teal-950/20 border border-teal-500/30 rounded-lg">
+                                    <p class="text-xs font-bold text-teal-400 mb-2">(ii) Embedding-Level Approach (Agregación en Espacio Latente)</p>
+                                    <div class="flex items-center justify-between text-[11px] font-mono bg-slate-950 p-2.5 rounded border border-slate-800">
+                                        <span>Bolsa $X$</span>
+                                        <span class="text-teal-400">→ $f$ →</span>
+                                        <span class="text-teal-300 font-bold">$\\mathbf{h}_k \\in \\mathbb{R}^M$</span>
+                                        <span class="text-teal-400">→ $\\sigma$ →</span>
+                                        <span class="text-blue-300 font-bold">$\\mathbf{z} \\in \\mathbb{R}^M$</span>
+                                        <span class="text-teal-400">→ $g(\\mathbf{z})$ →</span>
+                                        <span class="text-white font-bold">$\\theta(X)$</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tabla 1 Comparativa -->
+                        <div class="glass-card rounded-xl overflow-hidden border border-slate-700">
+                            <table class="w-full text-left border-collapse text-xs">
+                                <thead>
+                                    <tr class="bg-slate-900 border-b border-slate-700 text-slate-200">
+                                        <th class="p-3 font-bold text-teal-400 w-1/4">Criterio Técnico</th>
+                                        <th class="p-3 font-bold text-amber-400 w-[37.5%]">(i) Enfoque a Nivel de Instancia</th>
+                                        <th class="p-3 font-bold text-teal-300 w-[37.5%]">(ii) Enfoque a Nivel de Embebido</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-800 text-slate-300">
+                                    <tr class="bg-slate-950/40">
+                                        <td class="p-2.5 font-semibold text-white">Transformación $f(\\mathbf{x}_k)$</td>
+                                        <td class="p-2.5">Clasificador local que entrega un puntaje escalar $p_k \\in [0,1]$.</td>
+                                        <td class="p-2.5">Extractor neuronal que proyecta a un vector latente $\\mathbf{h}_k \\in \\mathbb{R}^M$.</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-2.5 font-semibold text-white">Entrada / Salida de $\\sigma(\\cdot)$</td>
+                                        <td class="p-2.5">Entran $K$ escalares $\\{p_1, \\dots, p_K\\}$; sale probabilidad $\\theta(X) \\in [0,1]$.</td>
+                                        <td class="p-2.5">Entran $K$ vectores $\\{\\mathbf{h}_1, \\dots, \\mathbf{h}_K\\}$; sale vector $\\mathbf{z} \\in \\mathbb{R}^M$ (indep. de $K$).</td>
+                                    </tr>
+                                    <tr class="bg-slate-950/40">
+                                        <td class="p-2.5 font-semibold text-white">Función exterior $g(\\cdot)$</td>
+                                        <td class="p-2.5">Función Identidad: $g(x) = x$.</td>
+                                        <td class="p-2.5">Clasificador neuronal a nivel de bolsa (MLP): $g: \\mathbb{R}^M \\to [0,1]$.</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-2.5 font-semibold text-white">Riesgo de Sobreajuste</td>
+                                        <td class="p-2.5 text-red-300"><strong>Alto:</strong> Entrena un clasificador local sin etiquetas reales $y_k$.</td>
+                                        <td class="p-2.5 text-emerald-300"><strong>Bajo:</strong> No asigna etiquetas ruidosas; optimiza representación conjunta.</td>
+                                    </tr>
+                                    <tr class="bg-slate-950/40">
+                                        <td class="p-2.5 font-semibold text-white">Interpretabilidad</td>
+                                        <td class="p-2.5">Directa vía $p_k$, pero con alta tasa de falsos positivos.</td>
+                                        <td class="p-2.5 text-teal-300">Opaca con <em>mean/max</em>, pero <strong>resuelta por completo al usar Atención ($a_k$)</strong>.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `,
+                notes: `"En esta lámina sintetizamos frente a frente ambos paradigmas tal como los estructuramos en el informe técnico. Si observamos la tabla comparativa, la ventaja decisiva del enfoque Embedding-Level es que mantiene intacta la riqueza semántica multidimensional en vectores h_k en R^M hasta después de la agregación, reduciendo drásticamente el sobreajuste. Sin embargo, como indica la última fila de la tabla, el enfoque Embedding-Level tenía históricamente un talón de Aquiles: al usar operadores clásicos como mean o max, perdía interpretabilidad sobre qué instancia motivó la decisión. Ese es precisamente el vacío que Ilse et al. resuelven al introducir el mecanismo de Atención."`
+            },
+
+            // DIAPOSITIVA 8: EL FRACASO DEL POOLING CLÁSICO
+            {
+                id: 8,
+                badge: "LIMITACIONES DEL POOLING ESTÁTICO • MAX-POOLING VS. MEAN-POOLING",
+                title: "El Cuello de Botella en σ(·): ¿Por Qué Fallan Max-Pooling y Mean-Pooling?",
+                subtitle: "El dilema entre el detective extremista que descarta el 99.9% de la evidencia y la licuadora que diluye el tumor",
+                html: `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Max-Pooling -->
+                        <div class="glass-card p-5 rounded-xl border-t-4 border-t-rose-500 space-y-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <span class="text-xs font-bold uppercase text-rose-400">Operador Clásico 1</span>
+                                    <h3 class="text-lg font-bold text-white">Max-Pooling (El Detective Extremista)</h3>
+                                </div>
+                                <div class="p-2.5 bg-rose-500/20 rounded-xl text-rose-400">
+                                    <i data-lucide="scissors" class="w-6 h-6"></i>
+                                </div>
+                            </div>
+
+                            <div class="p-3 bg-slate-950 rounded-lg border border-slate-800 text-center">
+                                $$z_m = \\max_{k \\in \\{1, \\dots, K\\}} h_{k,m}$$
+                            </div>
+
+                            <div class="p-3.5 bg-rose-950/30 border border-rose-500/30 rounded-lg text-xs text-slate-200 space-y-2">
+                                <p><strong>Metáfora Forense:</strong> Toma con una pinza robótica únicamente la oficina con la señal más estridente y arroja a la trituradora el <strong>$99.9\\%$ restante de los expedientes del edificio</strong>.</p>
+                                <p class="text-rose-300">• <strong>Gradiente disperso:</strong> Durante <em>backpropagation</em>, el gradiente solo fluye hacia una única instancia ganadora por época.</p>
+                                <p class="text-rose-300">• <strong>Vulnerabilidad:</strong> Extremadamente sensible a artefactos de tinción o bordes borrosos, e ignora el microambiente tumoral circundante.</p>
+                            </div>
+                        </div>
+
+                        <!-- Mean-Pooling -->
+                        <div class="glass-card p-5 rounded-xl border-t-4 border-t-blue-500 space-y-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <span class="text-xs font-bold uppercase text-blue-400">Operador Clásico 2</span>
+                                    <h3 class="text-lg font-bold text-white">Mean-Pooling (La Licuadora / Dilución)</h3>
+                                </div>
+                                <div class="p-2.5 bg-blue-500/20 rounded-xl text-blue-400">
+                                    <i data-lucide="droplets" class="w-6 h-6"></i>
+                                </div>
+                            </div>
+
+                            <div class="p-3 bg-slate-950 rounded-lg border border-slate-800 text-center">
+                                $$\\mathbf{z} = \\frac{1}{K} \\sum_{k=1}^{K} \\mathbf{h}_k$$
+                            </div>
+
+                            <div class="p-3.5 bg-blue-950/30 border border-blue-500/30 rounded-lg text-xs text-slate-200 space-y-2">
+                                <p><strong>Analogía de las Gotas de Tinta:</strong> Imagine un vaso con <strong>100 gotas de agua pura</strong> (tejido sano) y solo <strong>2 gotas de tinta roja</strong> (cáncer). Si promedia todo con peso idéntico $1/K$, obtiene un líquido casi transparente.</p>
+                                <p class="text-blue-300">• <strong>Dilución de la señal (Signal Dilution):</strong> El grito de "todo está sano" de $9,999$ oficinas ahoga matemáticamente al único detective que encontró células malignas.</p>
+                                <p class="text-blue-300">• <strong>Rigidez:</strong> No posee parámetros entrenables para priorizar regiones diagnósticas.</p>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                notes: `"Adoptado el enfoque a nivel de embebido, surge la pregunta central: ¿cómo agregamos K vectores h_k en R^M en un único vector de bolsa z en R^M? Antes de Ilse et al., se utilizaban operadores fijos no entrenables que sufren dos patologías matemáticas graves en imágenes WSI: 1. Max-Pooling (z_m = max_k h_{k,m}): Retiene únicamente el valor máximo por característica. Es extremadamente sensible a artefactos de tinción o bordes borrosos, y durante la retropropagación el gradiente fluye hacia una sola instancia ganadora, desperdiciando el 99.9% restante de la bolsa. 2. Mean-Pooling (z = 1/K sum h_k): Le asigna exactamente el mismo peso fijo (1/K) a todas las oficinas. Como en la analogía del vaso con 100 gotas de agua y 2 gotas de tinta roja, cuando el tumor ocupa apenas el 1% de los parches, el promedio aritmético diluye por completo la señal tumoral (signal dilution)."`
+            },
+
+            // DIAPOSITIVA 9: ATENCIÓN ESTÁNDAR Y LA TRAMPA CUASI-LINEAL DE TANH
+            {
+                id: 9,
+                badge: "JUSTIFICACIÓN MATEMÁTICA • ¿POR QUÉ NO BASTA LA ATENCIÓN SIMPLE?",
+                title: "De la Suma Ponderada a la Atención Simple: La Trampa Cuasi-Lineal de tanh",
+                subtitle: "Ilse et al. advierten que tanh(x) se comporta casi como una recta lineal en el intervalo [-1, 1]",
+                html: `
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                        <!-- Ecuaciones 4 y 5 -->
+                        <div class="lg:col-span-6 glass-card p-5 rounded-xl border border-slate-700 space-y-4">
+                            <h3 class="text-sm font-bold text-teal-400 uppercase">1. Suma Ponderada Adaptativa (Ecuación 4)</h3>
+                            <div class="p-3 bg-slate-950 rounded-lg border border-slate-800 text-center">
+                                $$\\mathbf{z} = \\sum_{k=1}^{K} a_k \\mathbf{h}_k, \\quad \\text{con } a_k \\ge 0 \\text{ y } \\sum_{k=1}^{K} a_k = 1$$
+                            </div>
+
+                            <h3 class="text-sm font-bold text-amber-400 uppercase">2. Atención Estándar / Plain Attention (Ecuación 5)</h3>
+                            <div class="p-3 bg-slate-950 rounded-lg border border-slate-800 text-center">
+                                $$a_k^{\\text{plain}} = \\frac{\\exp\\big\\{\\mathbf{w}^\\top \\tanh(\\mathbf{V}\\mathbf{h}_k^\\top)\\big\\}}{\\sum_{j=1}^{K} \\exp\\big\\{\\mathbf{w}^\\top \\tanh(\\mathbf{V}\\mathbf{h}_j^\\top)\\big\\}}$$
+                            </div>
+
+                            <div class="p-3.5 bg-amber-950/30 border border-amber-500/40 rounded-lg text-xs text-slate-200 space-y-1.5">
+                                <p class="font-bold text-amber-300">⚠️ El Problema Matemático detectado por Ilse et al.:</p>
+                                <p>Por su desarrollo en serie de Taylor alrededor de $x=0$:</p>
+                                <p class="text-center font-mono text-amber-200 py-1">$$\\tanh(x) = \\frac{e^x - e^{-x}}{e^x + e^{-x}} = x - \\frac{x^3}{3} + \\mathcal{O}(x^5) \\approx x \\quad \\text{en } [-1, 1]$$</p>
+                                <p>Cuando $\\mathbf{h}_k$ está normalizado, $\\mathbf{V}\\mathbf{h}_k^\\top$ cae frecuentemente en $[-1, 1]$, haciendo que el filtro sea <strong>cuasi-lineal</strong> e incapaz de suprimir falsas alarmas.</p>
+                            </div>
+                        </div>
+
+                        <!-- Gráfico SVG de tanh(x) vs x -->
+                        <div class="lg:col-span-6 glass-card p-5 rounded-xl border border-amber-500/30 flex flex-col items-center">
+                            <h4 class="text-xs font-bold uppercase tracking-wider text-amber-300 mb-2">Gráfica de $\\tanh(x)$ vs. Recta Lineal $y = x$</h4>
+                            <svg viewBox="0 0 420 260" class="w-full max-w-md bg-slate-950 rounded-xl border border-slate-800 p-2">
+                                <!-- Zona Cuasi-Lineal Sombreada [-1, 1] -->
+                                <rect x="150" y="20" width="120" height="220" fill="rgba(245, 158, 11, 0.14)" stroke="rgba(245, 158, 11, 0.5)" stroke-dasharray="4 4"/>
+                                <text x="210" y="36" fill="#fbbf24" font-size="10" font-weight="bold" text-anchor="middle">Zona Cuasi-Lineal [-1, 1]</text>
+
+                                <!-- Ejes Coordenados -->
+                                <line x1="30" y1="130" x2="390" y2="130" stroke="#475569" stroke-width="1.5"/>
+                                <line x1="210" y1="20" x2="210" y2="240" stroke="#475569" stroke-width="1.5"/>
+
+                                <!-- Marcas -1 y 1 -->
+                                <text x="145" y="145" fill="#94a3b8" font-size="10" text-anchor="middle">-1.0</text>
+                                <text x="275" y="145" fill="#94a3b8" font-size="10" text-anchor="middle">+1.0</text>
+                                <text x="195" y="65" fill="#94a3b8" font-size="10">+1</text>
+                                <text x="195" y="205" fill="#94a3b8" font-size="10">-1</text>
+
+                                <!-- Recta Lineal y = x (Punteada Roja) -->
+                                <line x1="120" y1="220" x2="300" y2="40" stroke="#ef4444" stroke-width="2" stroke-dasharray="5 5"/>
+
+                                <!-- Curva tanh(x) (Verde Azulado) -->
+                                <path d="M 30 198 C 90 197, 130 190, 150 176 C 180 155, 195 145, 210 130 C 225 115, 240 105, 270 84 C 290 70, 330 63, 390 62" fill="none" stroke="#2dd4bf" stroke-width="3.5"/>
+
+                                <!-- Leyenda -->
+                                <rect x="42" y="28" width="10" height="3" fill="#2dd4bf"/>
+                                <text x="56" y="33" fill="#e2e8f0" font-size="10">Curva tanh(x)</text>
+                                <line x1="42" y1="45" x2="52" y2="45" stroke="#ef4444" stroke-width="2" stroke-dasharray="3 2"/>
+                                <text x="56" y="48" fill="#fca5a5" font-size="10">Aprox. Lineal y = x</text>
+                            </svg>
+                            <p class="text-xs text-slate-300 mt-3 text-center">
+                                En el recuadro ámbar ($x \\in [-1, 1]$), la curva turquesa $\\tanh(x)$ casi se superpone con la recta roja $y = x$. Por eso necesitamos multiplicar por una <strong>compuerta sigmoide $\\sigma(\\mathbf{U}\\mathbf{h}_k^\\top)$</strong>.
+                            </p>
+                        </div>
+                    </div>
+                `,
+                notes: `"Para superar la rigidez de Max y Mean-Pooling, Ilse et al. proponen que el vector de bolsa z sea una combinación convexa o suma ponderada adaptativa de los embebidos h_k, gobernada por pesos de atención aprendibles a_k que suman 1. En su primera propuesta —llamada Atención Estándar o Plain Attention (Ecuación 5)—, parametrizan a_k mediante un perceptrón multicapa de una capa oculta con activación tangente hiperbólica (tanh). ¿Por qué no basta con esta ecuación y por qué se diseñó el Gated Attention? Ilse et al. advierten un problema matemático fundamental: como demuestra su desarrollo en serie de Taylor (tanh(x) = x - x^3/3 + O(x^5)), la función tanh(x) se comporta de forma aproximadamente lineal en el intervalo x en [-1, 1]. Cuando los vectores latentes h_k están normalizados, el producto V h_k^T cae frecuentemente dentro de esta zona cuasi-lineal. Y una proyección cuasi-lineal resulta ineficaz para aprender separaciones discriminativas complejas del tipo 'todo o nada', dejando pasar falsas alarmas histológicas hacia el vector z."`
+            },
+
+            // DIAPOSITIVA 10: FORMULACIÓN MATEMÁTICA DEL GATED ATTENTION
+            {
+                id: 10,
+                badge: "EL NÚCLEO TÉCNICO • ECUACIÓN (6) DE ILSE ET AL. (2018)",
+                title: "El Mecanismo de Gated Attention: Formulación Matemática y Glosario de Variables",
+                subtitle: "La interacción multiplicativa entre el Detective de Sospecha (tanh) y el Guardia de Compuerta (sigm)",
+                html: `
+                    <div class="space-y-4">
+                        <!-- Ecuación Canónica Destacada -->
+                        <div class="p-4 rounded-xl bg-gradient-to-r from-teal-950/80 via-slate-900 to-blue-950/80 border-2 border-teal-400/60 text-center shadow-lg">
+                            <p class="text-xs font-bold uppercase tracking-widest text-teal-300 mb-1">Ecuación Canónica del Mecanismo Gated Attention (Ilse, Tomczak & Welling, ICML 2018)</p>
+                            <div class="text-lg md:text-xl text-white overflow-x-auto py-1">
+                                $$a_k = \\frac{\\exp\\Big\\{\\mathbf{w}^\\top \\Big(\\tanh(\\mathbf{V}\\mathbf{h}_k^\\top) \\odot \\text{sigm}(\\mathbf{U}\\mathbf{h}_k^\\top)\\Big)\\Big\\}}{\\sum_{j=1}^{K} \\exp\\Big\\{\\mathbf{w}^\\top \\Big(\\tanh(\\mathbf{V}\\mathbf{h}_j^\\top) \\odot \\text{sigm}(\\mathbf{U}\\mathbf{h}_j^\\top)\\Big)\\Big\\}}$$
+                            </div>
+                        </div>
+
+                        <!-- Glosario de Variables en Grid -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                            <div class="glass-card p-3.5 rounded-xl border-l-4 border-l-slate-400">
+                                <span class="text-xs font-mono font-bold text-white">$\\mathbf{h}_k^\\top \\in \\mathbb{R}^{M \\times 1}$</span>
+                                <p class="text-xs text-slate-300 mt-1"><strong>Vector Latente (Embebido):</strong> Expediente forense de dimensión $M$ (ej. $M=512$) de la $k$-ésima instancia de la bolsa.</p>
+                            </div>
+
+                            <div class="glass-card p-3.5 rounded-xl border-l-4 border-l-blue-400">
+                                <span class="text-xs font-mono font-bold text-blue-300">$\\mathbf{V} \\in \\mathbb{R}^{L \\times M}, \\; \\tanh(\\mathbf{V}\\mathbf{h}_k^\\top)$</span>
+                                <p class="text-xs text-slate-300 mt-1"><strong>Rama de Contenido (Sospecha Bruta):</strong> Proyecta hacia $L$ detectores ($L=128$) con rango $(-1, +1)$ para captar rasgos morfológicos.</p>
+                            </div>
+
+                            <div class="glass-card p-3.5 rounded-xl border-l-4 border-l-teal-400">
+                                <span class="text-xs font-mono font-bold text-teal-300">$\\mathbf{U} \\in \\mathbb{R}^{L \\times M}, \\; \\text{sigm}(\\mathbf{U}\\mathbf{h}_k^\\top)$</span>
+                                <p class="text-xs text-slate-300 mt-1"><strong>Rama de Compuerta (Gate):</strong> Función logística $\\frac{1}{1+e^{-x}} \\in (0, 1)$. Actúa como válvula continua: $\\approx 0$ bloquea, $\\approx 1$ deja pasar.</p>
+                            </div>
+
+                            <div class="glass-card p-3.5 rounded-xl border-l-4 border-l-purple-400">
+                                <span class="text-xs font-mono font-bold text-purple-300">$\\odot \\in \\mathbb{R}^{L \\times 1}$ (Hadamard)</span>
+                                <p class="text-xs text-slate-300 mt-1"><strong>Multiplicación Elemento a Elemento:</strong> Rompe la cuasi-linealidad de $\\tanh$ permitiendo que la compuerta $\\text{sigm}$ anule falsos positivos.</p>
+                            </div>
+
+                            <div class="glass-card p-3.5 rounded-xl border-l-4 border-l-amber-400">
+                                <span class="text-xs font-mono font-bold text-amber-300">$\\mathbf{w}^\\top \\in \\mathbb{R}^{1 \\times L}$</span>
+                                <p class="text-xs text-slate-300 mt-1"><strong>Vector de Proyección Escalar:</strong> Combina linealmente las $L$ dimensiones ya filtradas por la compuerta en un logit de atención $e_k$.</p>
+                            </div>
+
+                            <div class="glass-card p-3.5 rounded-xl border-l-4 border-l-emerald-400">
+                                <span class="text-xs font-mono font-bold text-emerald-300">$a_k \\in (0, 1) \\implies \\mathbf{z} = \\sum a_k \\mathbf{h}_k$</span>
+                                <p class="text-xs text-slate-300 mt-1"><strong>Peso Normalizado Softmax:</strong> Cuantifica el porcentaje exacto de contribución de la instancia $k$ al diagnóstico global.</p>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                notes: `"Inspirándose en las compuertas multiplicativas de las redes LSTM/GRU y las redes convolucionales con compuertas de Dauphin et al. (2017), Ilse et al. introducen una segunda rama paralela gobernada por la función logística sigmoide (sigm), dando origen a la ecuación del Gated Attention (Ecuación 6). Examinemos cada variable con precisión: El embebido h_k^T en R^{Mx1} entra simultáneamente a dos matrices entrenables de dimensión LxM: la matriz V y la matriz U. En la primera rama, tanh(V h_k^T) en (-1, +1)^L actúa como nuestro 'Detective de Sospecha Bruta': detecta combinaciones de características morfológicas. En la segunda rama paralela, sigm(U h_k^T) = 1 / (1 + e^{-U h_k^T}) en (0, 1)^L actúa como un 'Guardia de Compuerta o Válvula Continua': un valor cercano a 0 cierra la válvula y bloquea por completo esa dimensión latente, mientras que un valor cercano a 1 abre la compuerta y deja pasar la señal íntegra. Ambas ramas se multiplican elemento a elemento mediante el producto de Hadamard, rompiendo la linealidad antes de proyectar con w^T y normalizar con Softmax."`
+            },
+
+            // DIAPOSITIVA 11: FLUJO INTERNO DE TENSORES Y MAPAS DE CALOR
+            {
+                id: 11,
+                badge: "DIAGRAMA ARQUITECTÓNICO 2 • FLUJO DE TENSORES E INTERPRETABILIDAD CLÍNICA",
+                title: "Arquitectura Interna del Gated Attention y Mapas de Calor Fluorescentes",
+                subtitle: "Cómo la red neuronal genera interpretabilidad clínica gratuita sin haber usado anotaciones de píxeles",
+                html: `
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                        <!-- Diagrama 2: Flujo Interno Gated Attention -->
+                        <div class="lg:col-span-7 glass-card p-5 rounded-xl border border-teal-500/30">
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-teal-400 mb-3">Diagrama Arquitectónico 2: Flujo Interno de Tensores (Gated Attention)</h3>
+                            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-4">
+                                <div class="grid grid-cols-12 items-center gap-2 text-center text-xs">
+                                    <!-- Entrada -->
+                                    <div class="col-span-3 p-2.5 bg-slate-900 border border-slate-700 rounded-lg">
+                                        <p class="font-bold text-white">Embebido $k$</p>
+                                        <p class="text-[11px] text-slate-400">$\\mathbf{h}_k^\\top \\in \\mathbb{R}^{M\\times 1}$</p>
+                                    </div>
+
+                                    <!-- Bifurcación -->
+                                    <div class="col-span-4 space-y-2.5">
+                                        <div class="p-2 bg-blue-950/60 border border-blue-500/50 rounded-lg">
+                                            <p class="font-bold text-blue-300 text-[11px]">Rama Contenido ($\mathbf{V}$)</p>
+                                            <p class="text-[10px] text-slate-200">$\\tanh(\\mathbf{V}\\mathbf{h}_k^\\top) \\in (-1,1)^L$</p>
+                                        </div>
+                                        <div class="p-2 bg-teal-950/60 border border-teal-500/50 rounded-lg">
+                                            <p class="font-bold text-teal-300 text-[11px]">Rama Compuerta ($\mathbf{U}$)</p>
+                                            <p class="text-[10px] text-slate-200">$\\text{sigm}(\\mathbf{U}\\mathbf{h}_k^\\top) \\in (0,1)^L$</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Hadamard -->
+                                    <div class="col-span-2 flex flex-col items-center">
+                                        <div class="w-11 h-11 rounded-full bg-purple-600/30 border-2 border-purple-400 flex items-center justify-center text-lg font-bold text-purple-200">
+                                            $\\odot$
+                                        </div>
+                                        <span class="text-[10px] text-purple-300 mt-1">$\\mathbb{R}^{L\\times 1}$</span>
+                                    </div>
+
+                                    <!-- Softmax -->
+                                    <div class="col-span-3 p-2.5 bg-amber-500/20 border border-amber-500/50 rounded-lg">
+                                        <p class="font-bold text-amber-300">Softmax $\\mathbf{w}^\\top$</p>
+                                        <p class="text-[11px] text-white">$a_k \\in (0,1)$</p>
+                                        <p class="text-[10px] text-amber-200">$\\sum a_k = 1$</p>
+                                    </div>
+                                </div>
+
+                                <div class="border-t border-slate-800 pt-3 text-center text-xs text-slate-300">
+                                    <strong>Agregación Convexa de Bolsa:</strong> $\\mathbf{z} = a_1\\mathbf{h}_1 + a_2\\mathbf{h}_2 + \\dots + a_K\\mathbf{h}_K \\in \\mathbb{R}^{1\\times M} \\;\\longrightarrow\\; \\text{Clasificador } g(\\mathbf{z}) \\longrightarrow \\theta(X)$
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Mapa de Calor / Marcador Fluorescente -->
+                        <div class="lg:col-span-5 glass-card p-5 rounded-xl border border-amber-500/30 space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold uppercase tracking-wider text-amber-400">Intuición Clínica: Marcador Fluorescente</span>
+                                <i data-lucide="flame" class="w-4 h-4 text-amber-400"></i>
+                            </div>
+                            <p class="text-xs text-slate-300 leading-relaxed">
+                                Igual que la inmunohistoquímica en laboratorio ilumina selectivamente células malignas, proyectar los pesos $a_k$ sobre las coordenadas originales de la WSI genera un <strong>Mapa de Calor (Attention Heatmap)</strong> automático:
+                            </p>
+                            <!-- Simulación Visual Heatmap -->
+                            <div class="p-3 bg-slate-950 rounded-xl border border-slate-800 flex items-center justify-around">
+                                <div class="grid grid-cols-5 gap-1">
+                                    ${[
+                                        0.02, 0.03, 0.05, 0.04, 0.01,
+                                        0.04, 0.15, 0.88, 0.76, 0.05,
+                                        0.02, 0.12, 0.94, 0.82, 0.04,
+                                        0.01, 0.04, 0.18, 0.10, 0.02,
+                                        0.01, 0.02, 0.03, 0.02, 0.01
+                                    ].map(v => {
+                                        let bg = v > 0.7 ? 'bg-red-500 text-white font-bold' : v > 0.1 ? 'bg-amber-400/70 text-slate-950' : 'bg-blue-950 text-blue-400';
+                                        return `<div class="w-8 h-8 rounded text-[9px] font-mono flex items-center justify-center ${bg}">${v}</div>`;
+                                    }).join('')}
+                                </div>
+                                <div class="text-xs space-y-1.5">
+                                    <div class="flex items-center gap-2"><span class="w-3 h-3 rounded bg-red-500 inline-block"></span> <span>Alta Atención ($a_k \\approx 0.90$): <strong>Tumor</strong></span></div>
+                                    <div class="flex items-center gap-2"><span class="w-3 h-3 rounded bg-amber-400 inline-block"></span> <span>Atención Media: <strong>Borde reactivo</strong></span></div>
+                                    <div class="flex items-center gap-2"><span class="w-3 h-3 rounded bg-blue-950 border border-blue-600 inline-block"></span> <span>Baja Atención ($a_k \\approx 0.02$): <strong>Tejido Sano</strong></span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                notes: `"En el Diagrama Arquitectónico 2 vemos el recorrido completo del tensor dentro de la red neuronal: cada instancia h_k pasa por la bifurcación V y U, se filtra en el producto de Hadamard, se condensa con w^T y compite en el Softmax contra las demás instancias de la bolsa. Y aquí aparece uno de los mayores triunfos clínicos del trabajo de Ilse et al.: la interpretabilidad gratuita sin anotaciones de píxeles. Al proyectar los pesos finales a_k de vuelta sobre las coordenadas espaciales de la lámina WSI original, obtenemos un marcador digital fluorescente —un mapa de calor o heatmap— que ilumina en rojo (a_k ~ 0.90) exactamente las regiones malignas y deja en azul (a_k ~ 0.02) el tejido sano, coincidiendo con las demarcaciones de los patólogos humanos sin haber usado jamás segmentaciones manuales durante el entrenamiento."`
+            },
+
+            // DIAPOSITIVA 12: ANALOGÍA DE PERAS Y MANZANAS (PARTE 1)
+            {
+                id: 12,
+                badge: "ANALOGÍA DIDÁCTICA EXPLÍCITA (PARTE 1) • ENFOQUES MIL EN LA EXPORTADORA",
+                title: "Analogía con «Peras y Manzanas» (Parte 1): Instance-Level vs. Embedding-Level",
+                subtitle: "Inspección sanitaria de cajones cerrados de fruta de exportación (Bolsas X) bajo supervisión débil",
+                html: `
+                    <div class="space-y-4">
+                        <!-- Escenario de la Exportadora -->
+                        <div class="glass-card p-4 rounded-xl border border-emerald-500/30 flex flex-col md:flex-row items-center justify-between gap-4">
+                            <div class="space-y-1">
+                                <span class="text-xs font-bold uppercase text-emerald-400">Planteamiento del Caso Agrícola-Industrial</span>
+                                <p class="text-xs text-slate-200 leading-relaxed">
+                                    Una planta exportadora recibe <strong>cajones cerrados de fruta (Bolsas $X$)</strong> con $K$ piezas (<strong>Instancias $\\mathbf{x}_k$</strong>): manzanas rojas sanas, peras verdes con pecas naturales, manzanas con roces leves y ocasionalmente <strong>una manzana con un hongo tóxico</strong>. El inspector jefe solo etiqueta el cajón completo: <strong>Rechazado ($Y=1$)</strong> o <strong>Aprobado ($Y=0$)</strong>.
+                                </p>
+                            </div>
+                            <div class="flex gap-2 shrink-0 text-2xl bg-slate-950 p-3 rounded-xl border border-slate-800">
+                                <span title="Manzana Roja Sana">🍎</span>
+                                <span title="Pera Verde con Pecas">🍐</span>
+                                <span title="Manzana Verde Magullada">🍏</span>
+                                <span title="Manzana con Hongo Tóxico" class="p-0.5 bg-red-500/30 rounded border border-red-500">🍎🍄</span>
+                            </div>
+                        </div>
+
+                        <!-- Comparación en 2 Columnas -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <!-- Instance-Level con Peras y Manzanas -->
+                            <div class="glass-card p-5 rounded-xl border-l-4 border-l-amber-500 space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <h3 class="text-sm font-bold text-amber-400 uppercase">1. Cómo falla el Enfoque Instance-Level</h3>
+                                    <span class="text-xs bg-red-500/20 text-red-300 px-2 py-0.5 rounded font-bold">Falso Rechazo</span>
+                                </div>
+                                <p class="text-xs text-slate-300 leading-relaxed">
+                                    Contratamos a un <strong>operario novato ($f$)</strong> que mira cada fruta por separado y está obligado a gritar únicamente un número del $0\\%$ al $100\\%$ de <em>"probabilidad de hongo" ($p_k$)</em>, <strong>sin poder decir si lo que vio era una pera o una manzana</strong>.
+                                </p>
+                                <div class="p-3 bg-slate-950 rounded-lg border border-slate-800 text-xs space-y-1.5">
+                                    <p class="text-amber-300 font-semibold">🍐 Entra una Pera Verde Sana con pecas naturales:</p>
+                                    <p class="text-slate-300">Como nunca le enseñaron etiquetas por fruta individual, el novato se confunde por las manchas de la cáscara y grita: <strong>"¡$85\\%$ de hongo!" ($p_2 = 0.85$)</strong>.</p>
+                                    <p class="text-rose-300">El agregador $\\sigma = \\max$ escucha ese $85\\%$ y <strong>rechaza todo el cajón por error</strong>. Al colapsar la fruta a un escalar, se perdió el dato de que era una pera sana.</p>
+                                </div>
+                            </div>
+
+                            <!-- Embedding-Level con Peras y Manzanas -->
+                            <div class="glass-card p-5 rounded-xl border-l-4 border-l-teal-400 space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <h3 class="text-sm font-bold text-teal-300 uppercase">2. Cómo triunfa el Enfoque Embedding-Level</h3>
+                                    <span class="text-xs bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded font-bold">Decisión Contextual</span>
+                                </div>
+                                <p class="text-xs text-slate-300 leading-relaxed">
+                                    En lugar de pedir un veredicto prematuro, el inspector ($f$) anota una <strong>ficha descriptiva multivariable ($\mathbf{h}_k \\in \\mathbb{R}^M$)</strong> para cada pieza de fruta:
+                                </p>
+                                <div class="p-3 bg-slate-950 rounded-lg border border-slate-800 text-xs font-mono text-teal-300">
+                                    h_k = [Color, Textura_Piel, Forma(Pera/Manzana), Olor, Firmeza]
+                                </div>
+                                <p class="text-xs text-slate-300 leading-relaxed">
+                                    Luego, el mecanismo de <strong>Atención</strong> pondera estas fichas completas para armar un <strong>Resumen Maestro del Cajón ($\mathbf{z}$)</strong>, y recién ahí el <strong>Ingeniero Agrónomo Experto ($g(\\mathbf{z})$)</strong> toma la decisión final sabiendo distinguir perfectamente una pera pecosa de una manzana infectada.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                notes: `"Para conectar esta teoría con una intuición cristalina utilizando peras y manzanas, traslademos nuestro Departamento de Detectives a una planta exportadora de frutas: cada cajón cerrado de fruta es una Bolsa X, y cada pieza dentro del cajón es una Instancia x_k. El inspector jefe solo nos da una etiqueta por cajón completo: Cajón Rechazado (Y=1) si contiene al menos una manzana con hongo tóxico, o Cajón Aprobado (Y=0) si todas las frutas son sanas. Veamos primero la diferencia entre los dos enfoques: En el enfoque Instance-Level, contratamos a un operario novato (f) obligado a gritar solo un porcentaje de 'probabilidad de hongo' (p_k) por cada fruta sin poder decir si es pera o manzana. Cuando ve una pera verde sana con pecas naturales, se confunde por las manchas y grita '¡85% de hongo!'. El operador max escucha ese 85% y rechaza todo el cajón por error. En cambio, en el enfoque Embedding-Level, el inspector (f) redacta una ficha multivariable rica h_k: [Color, Textura, Forma (Pera vs. Manzana), Olor, Firmeza]. Luego la atención pondera esas fichas en el Resumen Maestro del Cajón (z), y el Ingeniero Agrónomo (g) toma la decisión final con contexto completo."`
+            },
+
+            // DIAPOSITIVA 13: ANALOGÍA DE PERAS Y MANZANAS (PARTE 2: LAS DOS RAMAS)
+            {
+                id: 13,
+                badge: "ANALOGÍA DIDÁCTICA EXPLÍCITA (PARTE 2) • LAS DOS RAMAS DE GATED ATTENTION",
+                title: "Analogía con «Peras y Manzanas» (Parte 2): Cómo Actúan tanh(Vh_k^⊤) y sigm(Uh_k^⊤)",
+                subtitle: "Inspección de K = 4 frutas críticas por el Detector de Sospecha Bruta (V) y el Guardia de Compuerta (U)",
+                html: `
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <!-- Fruta 1 -->
+                            <div class="glass-card p-4 rounded-xl border border-slate-700 flex flex-col justify-between">
+                                <div>
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="text-2xl">🍎</span>
+                                        <span class="text-[11px] font-mono bg-slate-800 px-2 py-0.5 rounded text-slate-300">Instancia k = 1</span>
+                                    </div>
+                                    <h4 class="font-bold text-white text-sm">Manzana Roja Sana</h4>
+                                    <p class="text-[11px] text-slate-400 mt-1">Color rojo brillante, piel lisa, forma esférica, tejido firme.</p>
+                                </div>
+                                <div class="mt-4 space-y-2 pt-3 border-t border-slate-800 text-xs">
+                                    <div class="flex justify-between items-center bg-blue-950/40 p-2 rounded border border-blue-500/30">
+                                        <span class="text-blue-300">Rama $\\tanh(\\mathbf{V}\\mathbf{h}_1^\\top)$:</span>
+                                        <span class="font-mono font-bold text-white">-0.80 (Calma)</span>
+                                    </div>
+                                    <div class="flex justify-between items-center bg-teal-950/40 p-2 rounded border border-teal-500/30">
+                                        <span class="text-teal-300">Compuerta $\\text{sigm}$:</span>
+                                        <span class="font-mono font-bold text-slate-300">0.05 (Cerrada)</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Fruta 2 -->
+                            <div class="glass-card p-4 rounded-xl border border-slate-700 flex flex-col justify-between">
+                                <div>
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="text-2xl">🍐</span>
+                                        <span class="text-[11px] font-mono bg-slate-800 px-2 py-0.5 rounded text-slate-300">Instancia k = 2</span>
+                                    </div>
+                                    <h4 class="font-bold text-white text-sm">Pera Sana con Pecas</h4>
+                                    <p class="text-[11px] text-slate-400 mt-1">Color verde-amarillo, piel rugosa con manchas naturales, piriforme.</p>
+                                </div>
+                                <div class="mt-4 space-y-2 pt-3 border-t border-slate-800 text-xs">
+                                    <div class="flex justify-between items-center bg-amber-950/40 p-2 rounded border border-amber-500/40">
+                                        <span class="text-amber-300">Rama $\\tanh(\\mathbf{V}\\mathbf{h}_2^\\top)$:</span>
+                                        <span class="font-mono font-bold text-amber-300">+0.50 (Sospecha)</span>
+                                    </div>
+                                    <div class="flex justify-between items-center bg-teal-950/40 p-2 rounded border border-teal-500/30">
+                                        <span class="text-teal-300">Compuerta $\\text{sigm}$:</span>
+                                        <span class="font-mono font-bold text-emerald-300">0.02 (Cerrada)</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Fruta 3 -->
+                            <div class="glass-card p-4 rounded-xl border-2 border-amber-500/50 flex flex-col justify-between">
+                                <div>
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="text-2xl">🍏</span>
+                                        <span class="text-[11px] font-mono bg-amber-500/20 px-2 py-0.5 rounded text-amber-300 font-bold">k = 3 (Falso Pos.)</span>
+                                    </div>
+                                    <h4 class="font-bold text-white text-sm">Manzana con Golpe Leve</h4>
+                                    <p class="text-[11px] text-slate-300 mt-1">Mancha oscura por roce mecánico inocuo, pero cutícula intacta y firme.</p>
+                                </div>
+                                <div class="mt-4 space-y-2 pt-3 border-t border-slate-800 text-xs">
+                                    <div class="flex justify-between items-center bg-rose-950/50 p-2 rounded border border-rose-500/40">
+                                        <span class="text-rose-300">Rama $\\tanh(\\mathbf{V}\\mathbf{h}_3^\\top)$:</span>
+                                        <span class="font-mono font-bold text-rose-300">+0.75 (¡Alta!)</span>
+                                    </div>
+                                    <div class="flex justify-between items-center bg-teal-950/60 p-2 rounded border border-teal-400">
+                                        <span class="text-teal-300">Compuerta $\\text{sigm}$:</span>
+                                        <span class="font-mono font-bold text-emerald-300">0.04 (¡Frenada!)</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Fruta 4 -->
+                            <div class="glass-card p-4 rounded-xl border-2 border-red-500 tumor-glow flex flex-col justify-between">
+                                <div>
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="text-2xl">🍎🍄</span>
+                                        <span class="text-[11px] font-mono bg-red-500/30 px-2 py-0.5 rounded text-red-200 font-bold">k = 4 (Hongo Real)</span>
+                                    </div>
+                                    <h4 class="font-bold text-white text-sm">Manzana Infectada</h4>
+                                    <p class="text-[11px] text-slate-200 mt-1">Mancha necrótica + micelio algodonoso y ablandamiento tisular fúngico.</p>
+                                </div>
+                                <div class="mt-4 space-y-2 pt-3 border-t border-slate-800 text-xs">
+                                    <div class="flex justify-between items-center bg-red-950/60 p-2 rounded border border-red-500">
+                                        <span class="text-red-200">Rama $\\tanh(\\mathbf{V}\\mathbf{h}_4^\\top)$:</span>
+                                        <span class="font-mono font-bold text-white">+0.90 (¡Alta!)</span>
+                                    </div>
+                                    <div class="flex justify-between items-center bg-emerald-950/60 p-2 rounded border border-emerald-400">
+                                        <span class="text-emerald-300">Compuerta $\\text{sigm}$:</span>
+                                        <span class="font-mono font-bold text-emerald-300">0.98 (¡Abierta!)</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="glass-card p-4 rounded-xl border border-slate-700 text-xs text-slate-300 grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <strong class="text-blue-300">• Paso 1 — Rama $\\tanh(\\mathbf{V}\\mathbf{h}_k^\\top)$ (Sospecha Visual Bruta):</strong> Como $+0.50$ (Pera) y $+0.75$ (Manzana golpeada) caen en la región cuasi-lineal de $\\tanh$, la Atención Simple les daría pesos enormes.
+                            </div>
+                            <div>
+                                <strong class="text-teal-300">• Paso 2 — Rama $\\text{sigm}(\\mathbf{U}\\mathbf{h}_k^\\top)$ (Guardia de Compuerta):</strong> Verifica contexto biológico. Cierra la válvula para la pera ($0.02$) y para el golpe mecánico ($0.04$), y la abre solo para el hongo real ($0.98$).
+                            </div>
+                        </div>
+                    </div>
+                `,
+                notes: `"Abramos ahora un cajón con K = 4 piezas críticas para ver exactamente qué hace cada rama de la ecuación de Gated Attention: Tenemos x_1 (una manzana roja sana), x_2 (una pera sana con pecas en su cáscara), x_3 (una manzana verde con un golpe mecánico superficial inocuo, nuestro falso positivo visual) y x_4 (una manzana con infección fúngica real y micelio algodonoso, nuestro verdadero positivo). Paso 1 — Entra en acción la Rama tanh(V h_k^T), nuestro 'Detector de Sospecha Visual Bruta': A la manzana roja le da -0.80; a la pera pecosa le da +0.50; a la manzana golpeada le asigna una sospecha alta de +0.75; y a la manzana con hongo real le asigna +0.90. ¡Noten el peligro! Como +0.50 y +0.75 caen en la región cuasi-lineal de tanh, si usáramos Atención Simple sin compuerta, tanto la pera como la manzana golpeada contaminarían gravemente el resumen del cajón. Paso 2 — Entra en acción la Rama sigm(U h_k^T), el 'Guardia de Compuerta Contextual': Para la pera (x_2), reconoce su forma piriforme y cierra la compuerta (sigm = 0.02). Para la manzana golpeada (x_3), detecta que la piel está firme y sin hongo, y cierra la compuerta (sigm = 0.04). Solo ante la manzana con hongo real (x_4) abre totalmente la compuerta (sigm = 0.98)."`
+            },
+
+            // DIAPOSITIVA 14: SIMULACIÓN NUMÉRICA INTERACTIVA DE PERAS Y MANZANAS (TABLA 2)
+            {
+                id: 14,
+                badge: "ANALOGÍA DIDÁCTICA EXPLÍCITA (PARTE 3) • TABLA 2 Y SIMULADOR INTERACTIVO",
+                title: "Analogía con «Peras y Manzanas» (Parte 3): El Producto de Hadamard (⊙) en Números",
+                subtitle: "Demostración cuantitativa de cómo la compuerta sigmoide anula el falso positivo del 31.0% al 12.1%",
+                html: `
+                    <div class="space-y-4">
+                        <!-- Controles del Simulador Interactivo -->
+                        <div class="glass-card p-3.5 rounded-xl border border-teal-500/40 flex flex-wrap items-center justify-between gap-4">
+                            <div class="flex items-center gap-2">
+                                <span class="px-2.5 py-1 rounded bg-teal-500/20 text-teal-300 font-bold text-xs flex items-center gap-1.5">
+                                    <i data-lucide="sliders" class="w-4 h-4"></i> Simulador Numérico en Vivo
+                                </span>
+                                <span class="text-xs text-slate-300">Ajusta el peso de proyección escalar $w$ para ver cómo cambia el Softmax:</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <label class="text-xs font-mono text-amber-300">Factor $w = $ <span id="w-val-label" class="font-bold">4.0</span></label>
+                                <input id="w-slider" type="range" min="1.0" max="6.0" step="0.5" value="4.0" oninput="updateFruitSimulation(this.value)" class="w-36 accent-teal-400 cursor-pointer">
+                                <button onclick="updateFruitSimulation(4.0); document.getElementById('w-slider').value=4.0;" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded border border-slate-700">Reset (w=4.0)</button>
+                            </div>
+                        </div>
+
+                        <!-- Tabla 2 Dinámica -->
+                        <div class="glass-card rounded-xl overflow-hidden border border-slate-700">
+                            <table class="w-full text-left border-collapse text-xs">
+                                <thead>
+                                    <tr class="bg-slate-900 border-b border-slate-700 text-slate-200">
+                                        <th class="p-3 font-bold text-teal-300">Instancia en el Cajón (Bolsa $X$)</th>
+                                        <th class="p-3 text-center">Rama $\\tanh(\\mathbf{V}\\mathbf{h}_k^\\top)$</th>
+                                        <th class="p-3 text-center">Compuerta $\\text{sigm}(\\mathbf{U}\\mathbf{h}_k^\\top)$</th>
+                                        <th class="p-3 text-center text-purple-300">Producto Hadamard $\\odot$</th>
+                                        <th class="p-3 text-center text-amber-300">Peso $a_k$ (Atención Simple)</th>
+                                        <th class="p-3 text-center text-emerald-300">Peso $a_k$ (Gated Attention)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="fruit-table-body" class="divide-y divide-slate-800 text-slate-200 font-mono">
+                                    <!-- Populated dynamically by updateFruitSimulation() -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Conclusión de la Tabla -->
+                        <div class="p-3.5 rounded-xl bg-emerald-950/30 border border-emerald-500/40 text-xs text-slate-200 flex items-center gap-3">
+                            <i data-lucide="check-circle" class="w-5 h-5 text-emerald-400 shrink-0"></i>
+                            <p>
+                                <strong>Conclusión Matemática:</strong> En la Atención Simple ($\\tanh$), la manzana con un golpe inocuo ($k=3$) acapara el <strong>$31.0\\%$</strong> de la atención total. Con <strong>Gated Attention</strong>, la compuerta sigmoide ($\\text{sigm}=0.04$) aplasta multiplicativamente esa falsa alarma ($0.75 \\times 0.04 = 0.030$), reduciéndola al <strong>$12.1\\%$</strong> y haciendo que la manzana con hongo real ($k=4$) domine con el <strong>$67.7\\%$</strong>.
+                            </p>
+                        </div>
+                    </div>
+                `,
+                notes: `"Veamos en la Tabla 2 el resultado numérico exacto del Paso 3: el Producto de Hadamard y el Softmax final (con w = 4.0): En la columna de Atención Simple (usando solo tanh), la manzana con un golpe leve inocuo (k=3) acapara un alarmante 31.0% de la atención total, y sumada a la pera pecosa (11.4%), más del 42% del vector z del cajón queda contaminado por ruido y falsos positivos. En cambio, en la columna de Gated Attention (tanh por sigm), al multiplicar 0.75 x 0.04 = 0.030, la compuerta sigmoide aplasta multiplicativamente la falsa alarma de la manzana golpeada, reduciendo su peso de 31.0% a solo 12.1%, mientras que la manzana con infección fúngica real (0.90 x 0.98 = 0.882) pasa limpia y domina de manera inequívoca la representación del cajón con el 67.7% de la atención total."`
+            },
+
+            // DIAPOSITIVA 15: IMPACTO, ÉXITO Y ADOPCIÓN EN EL ESTADO DEL ARTE (2018-2026)
+            {
+                id: 15,
+                badge: "VERIFICACIÓN BIBLIOGRÁFICA • ÉXITO, VIGENCIA Y LINAJE DE ARQUITECTURAS",
+                title: "Evidencia de Impacto (2018–2026): ¿Qué Tan Exitoso Fue y Quiénes Más lo Usaron?",
+                subtitle: "Respuestas directas con respaldo en la literatura a las interrogantes del Profesor Guía",
+                html: `
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+                        <!-- Columna Izquierda: Éxito y Vigencia -->
+                        <div class="lg:col-span-5 space-y-3.5">
+                            <div class="glass-card p-4 rounded-xl border-l-4 border-l-amber-400">
+                                <h3 class="text-xs font-bold uppercase text-amber-300 mb-1">1. ¿Qué tan exitoso fue tras 2018?</h3>
+                                <ul class="text-xs text-slate-300 space-y-1.5 list-disc list-inside">
+                                    <li><strong>$> 2,500+$ citas</strong> (trabajo fundacional del Deep MIL moderno).</li>
+                                    <li>Superó a <em>Max/Mean-pooling, LSE, mi-SVM, MI-SVM y MI-Net</em>.</li>
+                                    <li><strong>¿Dónde ganó Gated vs. Plain Attention?</strong> Obtuvo el mayor AUC y F1-score en <strong>Cáncer de Mama y Cáncer de Colon</strong>, donde abundan los distractores morfológicos.</li>
+                                </ul>
+                            </div>
+
+                            <div class="glass-card p-4 rounded-xl border-l-4 border-l-teal-400">
+                                <h3 class="text-xs font-bold uppercase text-teal-300 mb-1">2. ¿Qué tan usado es hoy (2024–2026)?</h3>
+                                <ul class="text-xs text-slate-300 space-y-1.5 list-disc list-inside">
+                                    <li><strong>Complejidad Lineal $\\mathcal{O}(K)$:</strong> Procesa $K > 20,000$ parches en milisegundos sin colapsar la GPU como el costo cuadrático $\\mathcal{O}(K^2)$ de un Transformer puro.</li>
+                                    <li><strong>Cabezal oficial de Modelos Fundacionales:</strong> <strong>UNI</strong> (Chen et al., <em>Nature Medicine</em> 2024) y <strong>CONCH</strong> (Lu et al., <em>Nature Medicine</em> 2024) usan exactamente ABMIL / Gated Attention de Ilse.</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Columna Derecha: Quiénes más lo usaron -->
+                        <div class="lg:col-span-7 glass-card p-4 rounded-xl border border-slate-700 space-y-2.5">
+                            <h3 class="text-xs font-bold uppercase text-blue-300 mb-1">3. ¿Quiénes más lo adoptaron, hibridaron o mejoraron después de Ilse?</h3>
+
+                            <div class="p-2.5 bg-slate-950 rounded-lg border border-slate-800 text-xs">
+                                <div class="flex justify-between"><strong class="text-teal-300">CLAM — Lu et al. (Harvard, Nature Biomed. Eng. 2021)</strong> <span class="text-[10px] font-mono text-slate-400">Adopción Directa</span></div>
+                                <p class="text-slate-300 mt-0.5">Usa literalmente la ecuación de <strong>Gated Attention de Ilse</strong> en $n$ ramas paralelas por clase ($\\mathbf{W}_{a,m}(\\tanh(\\mathbf{V}_a\\mathbf{h}_k^\\top) \\odot \\text{sigm}(\\mathbf{U}_a\\mathbf{h}_k^\\top))$) + <em>Smooth SVM Clustering Loss</em> sobre los parches extremos.</p>
+                            </div>
+
+                            <div class="p-2.5 bg-slate-950 rounded-lg border border-slate-800 text-xs">
+                                <div class="flex justify-between"><strong class="text-amber-300">DSMIL — Li et al. (CVPR 2021)</strong> <span class="text-[10px] font-mono text-slate-400">Hibridación (i) + (ii)</span></div>
+                                <p class="text-slate-300 mt-0.5">Une los dos enfoques de Ilse: el primer flujo usa Max-Pooling para hallar la <em>instancia crítica $\\mathbf{h}_m$</em> y el segundo flujo calcula atención midiendo la similitud de cada parche hacia $\\mathbf{h}_m$.</p>
+                            </div>
+
+                            <div class="p-2.5 bg-slate-950 rounded-lg border border-slate-800 text-xs">
+                                <div class="flex justify-between"><strong class="text-purple-300">SA-AbMILP — Rymarczyk et al. (WACV 2021)</strong> <span class="text-[10px] font-mono text-slate-400">Kernel Self-Attn + Ilse</span></div>
+                                <p class="text-slate-300 mt-0.5">Integra dependencias entre instancias mediante <em>Kernel Self-Attention</em> (RBF/Laplace) y luego agrega los vectores enriquecidos usando directamente el módulo <strong>AbMILP / Gated Attention de Ilse</strong>.</p>
+                            </div>
+
+                            <div class="p-2.5 bg-slate-950 rounded-lg border border-slate-800 text-xs">
+                                <div class="flex justify-between"><strong class="text-blue-300">DTFD-MIL — Zhang et al. (CVPR 2022) & Federated MIL (2024)</strong> <span class="text-[10px] font-mono text-slate-400">Doble Nivel Jerárquico</span></div>
+                                <p class="text-slate-300 mt-0.5">Subdivide cada WSI en <em>pseudo-bolsas</em> y aplica dos niveles en cascada (<em>Tier-1 y Tier-2</em>) del <strong>Gated Attention de Ilse</strong> para mitigar el sobreajuste en cohortes pequeñas.</p>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                notes: `"Respondamos ahora directamente a las interrogantes planteadas para esta reunión sobre el impacto y adopción del modelo de Ilse et al. (2018): 1. ¿Qué tan exitoso fue tras su propuesta? Tuvo un éxito rotundo e inmediato, superando las 2,500 citas. En los experimentos originales de Ilse et al., superó a todos los métodos previos, y específicamente Gated Attention venció a Plain Attention en los datasets histopatológicos de Cáncer de Mama y Cáncer de Colon, demostrando que cuando hay alta variabilidad morfológica y distractores celulares, la compuerta sigmoide marca la diferencia. 2. ¿Qué tan usado es hoy en día? Es el estándar de facto (Gold Standard Baseline) en patología digital por su eficiencia lineal O(K), capaz de procesar 20,000 parches en milisegundos. Más aún: los modelos fundacionales de patología más importantes publicados en Nature Medicine en 2024 —UNI y CONCH— utilizan exactamente el cabezal de Gated Attention de Ilse. 3. ¿Quiénes más lo usaron o integraron? CLAM (Harvard, 2021) utiliza literalmente la fórmula de Gated Attention de Ilse en ramas paralelas por clase; DSMIL (CVPR 2021) une los dos enfoques de Ilse; SA-AbMILP (WACV 2021) combina Kernel Self-Attention con el agregador de Ilse; y DTFD-MIL (CVPR 2022) aplica dos niveles en cascada de Gated Attention sobre pseudo-bolsas."`
+            },
+
+            // DIAPOSITIVA 16: EVOLUCIÓN DE LA MATRIZ DE POOLING P Y SÍNTESIS FINAL
+            {
+                id: 16,
+                badge: "DIAGRAMA 3 Y DEFENSA EJECUTIVA • DE DETECTIVES AISLADOS (I.I.D.) A TRANSMIL",
+                title: "De Detectives Aislados (I.I.D.) a Detectives con Smartphones (TransMIL) y Conclusiones",
+                subtitle: "Evolución de la Matriz de Pooling P ∈ ℝ^{K×K} (Shao et al., 2021) y síntesis ejecutiva para la reunión",
+                html: `
+                    <div class="space-y-4">
+                        <!-- Diagrama 3: Las 4 Matrices de Pooling P -->
+                        <div class="glass-card p-4 rounded-xl border border-slate-700">
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-teal-400 mb-3 text-center">Diagrama 3: Evolución de la Matriz de Interacción / Pooling $\\mathbf{P} \\in \\mathbb{R}^{K \\times K}$</h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-center text-xs">
+                                <div class="p-3 bg-slate-950 rounded-lg border border-slate-800">
+                                    <p class="font-bold text-slate-300 mb-1">(a) Max-Pooling</p>
+                                    <div class="py-1">$$\\begin{bmatrix} \\mathbf{1.0} & 0 & 0 \\\\ 0 & 0.0 & 0 \\\\ 0 & 0 & 0.0 \\end{bmatrix}$$</div>
+                                    <p class="text-[11px] text-slate-400">Diagonal con un solo $1$<br><em>(I.I.D. Extremo)</em></p>
+                                </div>
+
+                                <div class="p-3 bg-slate-950 rounded-lg border border-slate-800">
+                                    <p class="font-bold text-slate-300 mb-1">(b) Mean-Pooling</p>
+                                    <div class="py-1">$$\\begin{bmatrix} \\mathbf{0.33} & 0 & 0 \\\\ 0 & \\mathbf{0.33} & 0 \\\\ 0 & 0 & \\mathbf{0.33} \\end{bmatrix}$$</div>
+                                    <p class="text-[11px] text-slate-400">Diagonal uniforme $1/K$<br><em>(I.I.D. Promedio)</em></p>
+                                </div>
+
+                                <div class="p-3 bg-teal-950/30 rounded-lg border border-teal-500/50">
+                                    <p class="font-bold text-teal-300 mb-1">(c) Ilse Gated Attention</p>
+                                    <div class="py-1">$$\\begin{bmatrix} \\mathbf{0.74} & 0 & 0 \\\\ 0 & \\mathbf{0.05} & 0 \\\\ 0 & 0 & \\mathbf{0.21} \\end{bmatrix}$$</div>
+                                    <p class="text-[11px] text-teal-200">Diagonal selectiva aprendida $a_k$<br><em>(I.I.D. Selectivo $\\mathcal{O}(K)$)</em></p>
+                                </div>
+
+                                <div class="p-3 bg-purple-950/30 rounded-lg border border-purple-500/50">
+                                    <p class="font-bold text-purple-300 mb-1">(d) TransMIL (Self-Attention)</p>
+                                    <div class="py-1">$$\\begin{bmatrix} \\mathbf{0.42} & 0.18 & 0.40 \\\\ 0.15 & \\mathbf{0.65} & 0.20 \\\\ 0.38 & 0.12 & \\mathbf{0.50} \\end{bmatrix}$$</div>
+                                    <p class="text-[11px] text-purple-200">Matriz densa correlacionada $a_{ij}$<br><em>(No-I.I.D. Contextual)</em></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 3 Puntos de Defensa Final -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="glass-card p-3.5 rounded-xl border-t-2 border-t-blue-400 text-xs space-y-1">
+                                <p class="font-bold text-blue-300">1. ¿Por qué Embedding > Instance-Level?</p>
+                                <p class="text-slate-300">Evita comprimir prematuramente cada parche a un escalar $p_k$ sin etiquetas reales. Preserva vectores ricos $\\mathbf{h}_k \\in \\mathbb{R}^M$ y obtiene un vector de bolsa $\\mathbf{z} \\in \\mathbb{R}^M$ independiente de $K$.</p>
+                            </div>
+                            <div class="glass-card p-3.5 rounded-xl border-t-2 border-t-teal-400 text-xs space-y-1">
+                                <p class="font-bold text-teal-300">2. ¿Por qué Gated > Plain Attention?</p>
+                                <p class="text-slate-300">Rompe la cuasi-linealidad de $\\tanh$ en $[-1, 1]$ multiplicando elemento a elemento ($\\odot$) por la válvula sigmoide $\\text{sigm}(\\mathbf{U}\\mathbf{h}_k^\\top) \\in (0,1)$, suprimiendo falsos positivos.</p>
+                            </div>
+                            <div class="glass-card p-3.5 rounded-xl border-t-2 border-t-amber-400 text-xs space-y-1">
+                                <p class="font-bold text-amber-300">3. Trascendencia en el Estado del Arte</p>
+                                <p class="text-slate-300">Con $>2,500$ citas y costo lineal $\\mathcal{O}(K)$, es el núcleo de <strong>CLAM, DTFD-MIL, SA-AbMILP</strong> y de los Modelos Fundacionales actuales <strong>UNI y CONCH (2024–2026)</strong>.</p>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                notes: `"Para cerrar nuestra presentación, observemos el Diagrama 3 de la Matriz de Interacción o Pooling P en R^{KxK}: En Max-Pooling (a), Mean-Pooling (b) y el Gated Attention de Ilse (c), la matriz es estrictamente diagonal. Esto significa que operan bajo la hipótesis I.I.D. (instancias independientes e idénticamente distribuidas): la gran innovación de Ilse et al. fue hacer que los elementos de esa diagonal sean selectivos, no-lineales y aprendibles (0.74, 0.05, 0.21). Sin embargo, nuestros detectives seguían sin poder hablar entre oficinas (ceros fuera de la diagonal). Arquitecturas posteriores como TransMIL (Shao et al., NeurIPS 2021) les entregaron 'teléfonos inteligentes' a los detectives mediante Self-Attention aproximada con Nyström y codificación posicional 2D (PPEG), rellenando los términos fuera de la diagonal (a_{ij} != 0) para capturar correlaciones morfológicas a larga distancia. En conclusión, Profesor Zambrano: 1. El enfoque Embedding-Level preserva la riqueza semántica en h_k y evita entrenar clasificadores locales a ciegas. 2. El mecanismo de Gated Attention (tanh por sigm) soluciona la cuasi-linealidad de tanh en [-1, 1], actuando como una compuerta filtradora de falsos positivos —como demostramos con las peras y manzanas—. 3. Y lejos de quedar obsoleto tras 2018, su complejidad lineal O(K) e interpretabilidad lo mantienen hoy como el motor central desde CLAM hasta los Modelos Fundacionales de 2024–2026."`
+            }
+        ];
+
+        // =========================================================================
+        // ESTADO Y FUNCIONES DE NAVEGACIÓN
+        // =========================================================================
+        let currentSlideIndex = 0;
+        let showNotes = true;
+
+        function initPresentation() {
+            const select = document.getElementById('slide-jump');
+            select.innerHTML = slidesData.map((s, idx) => 
+                `<option value="${idx}">${String(s.id).padStart(2, '0')} — ${s.title.substring(0, 52)}...</option>`
+            ).join('');
+
+            renderCurrentSlide();
+            lucide.createIcons();
+        }
+
+        function renderCurrentSlide() {
+            const slide = slidesData[currentSlideIndex];
+            const container = document.getElementById('slide-content');
+
+            container.innerHTML = `
+                <div class="space-y-4 animate-fadeIn">
+                    <!-- Cabecera de la Diapositiva -->
+                    <div class="border-b border-slate-800 pb-3 flex flex-col md:flex-row md:items-end justify-between gap-2">
+                        <div>
+                            <div class="inline-flex items-center gap-2 text-[11px] font-mono font-bold uppercase tracking-wider text-teal-400 mb-1">
+                                <span class="px-2 py-0.5 rounded bg-teal-500/15 border border-teal-500/30">DIAPOSITIVA ${String(slide.id).padStart(2, '0')} / ${slidesData.length}</span>
+                                <span>${slide.badge}</span>
+                            </div>
+                            <h2 class="text-xl md:text-2xl font-extrabold text-white tracking-tight">${slide.title}</h2>
+                        </div>
+                        <p class="text-xs text-slate-400 md:text-right max-w-md">${slide.subtitle}</p>
+                    </div>
+
+                    <!-- Cuerpo de la Diapositiva -->
+                    <div class="pt-1">
+                        ${slide.html}
+                    </div>
+                </div>
+            `;
+
+            // Actualizar contadores y barra de progreso
+            document.getElementById('slide-counter').textContent = `${String(slide.id).padStart(2, '0')} / ${slidesData.length}`;
+            document.getElementById('slide-jump').value = currentSlideIndex;
+            document.getElementById('progress-bar').style.width = `${((currentSlideIndex + 1) / slidesData.length) * 100}%`;
+
+            // Actualizar Teleprompter / Guion
+            document.getElementById('notes-slide-title').textContent = `— Diapositiva ${slide.id}: ${slide.title}`;
+            document.getElementById('speaker-notes-text').textContent = slide.notes;
+
+            // Si estamos en la Diapositiva 14, inicializar la tabla interactiva de Peras y Manzanas
+            if (slide.id === 14) {
+                updateFruitSimulation(4.0);
+            }
+
+            // Renderizar íconos y fórmulas LaTeX con KaTeX
+            lucide.createIcons();
+            if (window.renderMathInElement) {
+                renderMathInElement(container, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        }
+
+        function nextSlide() {
+            if (currentSlideIndex < slidesData.length - 1) {
+                currentSlideIndex++;
+                renderCurrentSlide();
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlideIndex > 0) {
+                currentSlideIndex--;
+                renderCurrentSlide();
+            }
+        }
+
+        function goToSlide(index) {
+            if (index >= 0 && index < slidesData.length) {
+                currentSlideIndex = index;
+                renderCurrentSlide();
+            }
+        }
+
+        function toggleNotes() {
+            showNotes = !showNotes;
+            const drawer = document.getElementById('speaker-drawer');
+            const btn = document.getElementById('btn-notes');
+            if (showNotes) {
+                document.body.classList.add('with-notes');
+                drawer.style.transform = 'translateY(0)';
+                btn.classList.replace('bg-slate-800', 'bg-teal-500/20');
+            } else {
+                document.body.classList.remove('with-notes');
+                drawer.style.transform = 'translateY(100%)';
+                btn.classList.replace('bg-teal-500/20', 'bg-slate-800');
+            }
+        }
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        // =========================================================================
+        // SIMULADOR INTERACTIVO DE "PERAS Y MANZANAS" (DIAPOSITIVA 14)
+        // =========================================================================
+        function updateFruitSimulation(wValue) {
+            const w = parseFloat(wValue);
+            const label = document.getElementById('w-val-label');
+            if (label) label.textContent = w.toFixed(1);
+
+            const fruits = [
+                { name: "🍎 k=1: Manzana Roja Sana", tanh: -0.80, sigm: 0.05, gateDesc: "Cerrada", rowClass: "" },
+                { name: "🍐 k=2: Pera Sana con pecas", tanh: 0.50, sigm: 0.02, gateDesc: "Cerrada", rowClass: "bg-slate-950/40" },
+                { name: "🍏 k=3: Manzana con golpe leve", tanh: 0.75, sigm: 0.04, gateDesc: "Cerrada (Falso Pos.)", rowClass: "bg-amber-950/20" },
+                { name: "🍎🍄 k=4: Manzana con Hongo Real", tanh: 0.90, sigm: 0.98, gateDesc: "Abierta (Hongo Real)", rowClass: "bg-red-950/30 font-bold" }
+            ];
+
+            // Cálculo Softmax para Atención Simple (solo tanh)
+            const expPlain = fruits.map(f => Math.exp(w * f.tanh));
+            const sumExpPlain = expPlain.reduce((a, b) => a + b, 0);
+
+            // Cálculo Softmax para Gated Attention (tanh * sigm)
+            const expGated = fruits.map(f => Math.exp(w * (f.tanh * f.sigm)));
+            const sumExpGated = expGated.reduce((a, b) => a + b, 0);
+
+            const tbody = document.getElementById('fruit-table-body');
+            if (!tbody) return;
+
+            tbody.innerHTML = fruits.map((f, i) => {
+                const hadamard = f.tanh * f.sigm;
+                const aPlain = (expPlain[i] / sumExpPlain) * 100;
+                const aGated = (expGated[i] / sumExpGated) * 100;
+
+                return `
+                    <tr class="${f.rowClass}">
+                        <td class="p-3 font-sans font-semibold text-white">${f.name}</td>
+                        <td class="p-3 text-center">${f.tanh >= 0 ? '+' : ''}${f.tanh.toFixed(2)}</td>
+                        <td class="p-3 text-center">${f.sigm.toFixed(2)} <span class="text-[10px] text-slate-400 font-sans">(${f.gateDesc})</span></td>
+                        <td class="p-3 text-center text-purple-300 font-bold">${hadamard >= 0 ? '+' : ''}${hadamard.toFixed(3)}</td>
+                        <td class="p-3">
+                            <div class="flex items-center justify-center gap-2">
+                                <span class="${i === 2 ? 'text-rose-400 font-bold' : 'text-amber-200'} w-12 text-right">${aPlain.toFixed(1)}%</span>
+                                <div class="w-24 h-2.5 bg-slate-800 rounded-full overflow-hidden">
+                                    <div class="h-full ${i === 2 ? 'bg-rose-500' : 'bg-amber-400'}" style="width: ${Math.min(100, aPlain)}%"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="p-3">
+                            <div class="flex items-center justify-center gap-2">
+                                <span class="${i === 3 ? 'text-emerald-300 font-extrabold' : 'text-teal-200'} w-12 text-right">${aGated.toFixed(1)}%</span>
+                                <div class="w-24 h-2.5 bg-slate-800 rounded-full overflow-hidden">
+                                    <div class="h-full ${i === 3 ? 'bg-emerald-400' : 'bg-teal-500'}" style="width: ${Math.min(100, aGated)}%"></div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Navegación por teclado
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === 'PageDown') {
+                nextSlide();
+            } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+                prevSlide();
+            }
+        });
+
+        window.addEventListener('DOMContentLoaded', initPresentation);
+    </script>
+</body>
+</html>
