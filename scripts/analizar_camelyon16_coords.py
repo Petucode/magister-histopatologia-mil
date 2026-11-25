@@ -8,11 +8,13 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from pathlib import Path
 
-COORDS_DIR = Path(r'c:\Universidad\Magister\20 Noviembre Reunion\data_samples\camelyon16\coords\CAMELYON16_FULL')
-MASKS_DIR  = Path(r'c:\Universidad\Magister\20 Noviembre Reunion\data_samples\camelyon16\masks')
-FIG_DIR    = Path(r'c:\Universidad\Magister\20 Noviembre Reunion\figures\05_CAMELYON16')
-TABLAS_DIR = Path(r'c:\Universidad\Magister\20 Noviembre Reunion\tablas')
+BASE_DIR   = Path(__file__).resolve().parent.parent
+COORDS_DIR = BASE_DIR / 'data_samples' / 'camelyon16' / 'coords' / 'CAMELYON16_FULL'
+MASKS_DIR  = BASE_DIR / 'data_samples' / 'camelyon16' / 'masks'
+FIG_DIR    = BASE_DIR / 'figures' / '05_CAMELYON16'
+TABLAS_DIR = BASE_DIR / 'tablas'
 FIG_DIR.mkdir(parents=True, exist_ok=True)
+TABLAS_DIR.mkdir(parents=True, exist_ok=True)
 
 def guardar_subplots_individuales(fig, nombre_base, fig_dir, dpi=150):
     axes = [ax for ax in fig.axes if ax.get_visible()]
@@ -34,15 +36,20 @@ for wsi_dir in sorted(COORDS_DIR.iterdir()):
         coords_file = wsi_dir / 'coords.npy'
         if coords_file.exists():
             coords = np.load(coords_file)
-            is_tumor = 'Tumor' in wsi_dir.name or 'tumor' in wsi_dir.name
+            # coords tiene columnas [level, x, y]
+            is_tumor = 'tumor' in wsi_dir.name.lower()
+            is_test  = 'test' in wsi_dir.name.lower()
+            tipo     = 'Tumor' if is_tumor else ('Test' if is_test else 'Normal')
             records.append({
                 'WSI': wsi_dir.name,
-                'Tipo': 'Tumor' if is_tumor else 'Normal',
-                'N_Parches': len(coords),
-                'Coord_Min_X': int(coords[:, 0].min()) if len(coords) > 0 else 0,
-                'Coord_Max_X': int(coords[:, 0].max()) if len(coords) > 0 else 0,
-                'Coord_Min_Y': int(coords[:, 1].min()) if len(coords) > 0 else 0,
-                'Coord_Max_Y': int(coords[:, 1].max()) if len(coords) > 0 else 0,
+                'Tipo': tipo,
+                'Split': 'Test' if is_test else 'Train',
+                'N_Parches': int(len(coords)),
+                'Nivel_Resolucion': int(coords[0, 0]) if len(coords) > 0 else -1,
+                'Coord_Min_X': int(coords[:, 1].min()) if len(coords) > 0 else 0,
+                'Coord_Max_X': int(coords[:, 1].max()) if len(coords) > 0 else 0,
+                'Coord_Min_Y': int(coords[:, 2].min()) if len(coords) > 0 else 0,
+                'Coord_Max_Y': int(coords[:, 2].max()) if len(coords) > 0 else 0,
             })
 
 df_coords = pd.DataFrame(records)
@@ -50,6 +57,7 @@ print(df_coords.head(10).to_string(index=False))
 print(f"\nTotal WSIs: {len(df_coords)}")
 print(f"Normales: {(df_coords['Tipo']=='Normal').sum()}")
 print(f"Tumor:    {(df_coords['Tipo']=='Tumor').sum()}")
+print(f"Test:     {(df_coords['Tipo']=='Test').sum()}")
 print(f"Total parches: {df_coords['N_Parches'].sum():,}")
 print(f"Parches por WSI: {df_coords['N_Parches'].mean():.0f} (mean)")
 
@@ -60,24 +68,28 @@ print("Excel guardado: camelyon16_coords_por_wsi.xlsx")
 # =============================================================
 # 2. FIGURA: Distribución de parches por WSI
 # =============================================================
-fig, axes = plt.subplots(1, 2, figsize=(16, 7))
-fig.suptitle('CAMELYON16 — Análisis de Parches Extraídos por WSI\n(Coordenadas @ 224×224 px, 20x)', 
+fig, axes = plt.subplots(1, 2, figsize=(17, 7), gridspec_kw={'width_ratios': [2.0, 1.1]})
+fig.suptitle('CAMELYON16 — Analisis de Parches Extraidos por WSI (224x224 px @ 20x)',
              fontsize=14, fontweight='bold')
 
-# Panel 1: Barras por tipo
-colors = {'Normal': '#2A9D8F', 'Tumor': '#E63946'}
-for tipo, grp in df_coords.groupby('Tipo'):
-    ax = axes[0]
-    bars = ax.bar(grp['WSI'].str[:15], grp['N_Parches'], 
-                  color=colors[tipo], alpha=0.85, label=tipo, edgecolor='white', linewidth=0.5)
-axes[0].set_title('Número de Parches por WSI', fontweight='bold')
-axes[0].set_ylabel('N° Parches (224×224 px)')
-axes[0].set_xlabel('WSI (nombre)')
-axes[0].tick_params(axis='x', rotation=90, labelsize=5)
-axes[0].legend()
+# Panel 1: Barras ordenadas por volumen tisular y cohorte
+colors = {'Normal': '#2A9D8F', 'Tumor': '#E63946', 'Test': '#3498DB'}
+df_sorted = df_coords.sort_values('N_Parches', ascending=False).reset_index(drop=True)
+bar_colors = [colors[t] for t in df_sorted['Tipo']]
+axes[0].bar(np.arange(len(df_sorted)), df_sorted['N_Parches'],
+            color=bar_colors, width=1.0, alpha=0.88, edgecolor='none')
+axes[0].set_title('Parches por WSI (399 laminas ordenadas de mayor a menor)', fontweight='bold')
+axes[0].set_ylabel('N Parches (224x224 px)')
+axes[0].set_xlabel('Indice de WSI (ordenadas por carga tisular)')
+legend_handles = [
+    mpatches.Patch(color=colors['Normal'], label=f"Normal Train ({(df_coords['Tipo']=='Normal').sum()} WSIs)"),
+    mpatches.Patch(color=colors['Tumor'], label=f"Tumor Train ({(df_coords['Tipo']=='Tumor').sum()} WSIs)"),
+    mpatches.Patch(color=colors['Test'], label=f"Test Ciego ({(df_coords['Tipo']=='Test').sum()} WSIs)"),
+]
+axes[0].legend(handles=legend_handles, loc='upper right')
 axes[0].grid(axis='y', alpha=0.3)
 
-# Panel 2: Resumen por tipo
+# Panel 2: Resumen por cohorte
 resumen = df_coords.groupby('Tipo').agg(
     N_WSI=('WSI', 'count'),
     Total_Parches=('N_Parches', 'sum'),
@@ -85,18 +97,19 @@ resumen = df_coords.groupby('Tipo').agg(
     Max_Parches=('N_Parches', 'max'),
 ).reset_index()
 
-x = range(len(resumen))
-bars2 = axes[1].bar([r['Tipo'] for _, r in resumen.iterrows()], 
-                    resumen['Total_Parches'],
+bars2 = axes[1].bar(resumen['Tipo'], resumen['Total_Parches'],
                     color=[colors[t] for t in resumen['Tipo']],
-                    edgecolor='black', linewidth=0.8, width=0.5)
-axes[1].bar_label(bars2, fmt='%,.0f', padding=5, fontsize=12, fontweight='bold')
-axes[1].set_title('Total Parches por Clase', fontweight='bold')
+                    edgecolor='black', linewidth=0.8, width=0.55)
+for bar, (_, row) in zip(bars2, resumen.iterrows()):
+    h = bar.get_height()
+    axes[1].text(bar.get_x() + bar.get_width() / 2, h + df_coords['N_Parches'].sum() * 0.01,
+                 f"{int(h):,}", ha='center', va='bottom', fontsize=10, fontweight='bold')
+    axes[1].text(bar.get_x() + bar.get_width() / 2, h * 0.5,
+                 f"WSIs: {int(row['N_WSI'])}\nMedia: {row['Media_Parches']:.0f}",
+                 ha='center', va='center', color='white', fontweight='bold', fontsize=10)
+axes[1].set_ylim(0, resumen['Total_Parches'].max() * 1.15)
+axes[1].set_title('Total de Parches por Cohorte', fontweight='bold')
 axes[1].set_ylabel('Total Parches')
-for i, (_, row) in enumerate(resumen.iterrows()):
-    axes[1].text(i, row['Total_Parches'] * 0.5, 
-                f"N WSIs: {int(row['N_WSI'])}\nMedia: {row['Media_Parches']:.0f}",
-                ha='center', va='center', color='white', fontweight='bold', fontsize=11)
 axes[1].grid(axis='y', alpha=0.3)
 
 plt.tight_layout()
@@ -108,44 +121,34 @@ print("Figura guardada: camelyon16_distribucion_parches.png")
 # =============================================================
 # 3. FIGURA: Mapa de coordenadas de una WSI de ejemplo
 # =============================================================
-# Tomar la primera WSI de tumor con mas parches
 tumor_wsis = df_coords[df_coords['Tipo'] == 'Tumor'].sort_values('N_Parches', ascending=False)
 normal_wsis = df_coords[df_coords['Tipo'] == 'Normal'].sort_values('N_Parches', ascending=False)
 
 fig2, axes2 = plt.subplots(1, 2, figsize=(16, 8))
-fig2.suptitle('CAMELYON16 — Mapa Espacial de Coordenadas de Parches\n(Localización en la WSI gigapíxel)', 
+fig2.suptitle('CAMELYON16 — Mapa Espacial 2D de Coordenadas de Parches\n(Grid Nivel 17, 224x224 px @ 20x)',
               fontsize=13, fontweight='bold')
 
 for idx, (ax, row, color, label) in enumerate(zip(
     axes2,
-    [tumor_wsis.iloc[0], normal_wsis.iloc[0]],
-    ['#E63946', '#2A9D8F'],
-    ['Tumor (Positiva)', 'Normal (Negativa)']
+    [normal_wsis.iloc[0], tumor_wsis.iloc[0]],
+    ['#2A9D8F', '#E63946'],
+    ['Normal (Negativa)', 'Tumor (Positiva)']
 )):
     wsi_name = row['WSI']
     coords_file = COORDS_DIR / wsi_name / 'coords.npy'
     coords = np.load(coords_file)
-    
-    # Muestra aleatoria si hay muchos parches
-    if len(coords) > 5000:
-        idx_sample = np.random.choice(len(coords), 5000, replace=False)
-        coords_plot = coords[idx_sample]
-        title_extra = f' (5000/{len(coords):,} mostrados)'
-    else:
-        coords_plot = coords
-        title_extra = ''
-    
-    ax.scatter(coords_plot[:, 0], coords_plot[:, 1], 
-               c=color, s=1, alpha=0.5)
-    ax.set_title(f'{label}\n{wsi_name}{title_extra}\n{len(coords):,} parches totales', 
+
+    ax.scatter(coords[:, 1], coords[:, 2],
+               c=color, s=2.2, alpha=0.55, edgecolors='none')
+    ax.set_title(f'{label}\n{wsi_name}\n{len(coords):,} parches totales',
                  fontweight='bold', fontsize=11)
-    ax.set_xlabel('Coordenada X (píxeles)')
-    ax.set_ylabel('Coordenada Y (píxeles)')
-    ax.invert_yaxis()  # Coordenadas de imagen (Y hacia abajo)
+    ax.set_xlabel('Coordenada Grid X (Nivel 17)')
+    ax.set_ylabel('Coordenada Grid Y (Nivel 17)')
+    ax.invert_yaxis()
+    ax.set_aspect('equal')
     ax.grid(alpha=0.3)
-    
-    # Agregar parche de leyenda
-    patch = mpatches.Patch(color=color, label=f'{len(coords):,} parches 224×224px')
+
+    patch = mpatches.Patch(color=color, label=f'{len(coords):,} parches 224x224px')
     ax.legend(handles=[patch], loc='upper right')
 
 plt.tight_layout()

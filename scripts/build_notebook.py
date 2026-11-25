@@ -65,7 +65,7 @@ plt.rcParams['font.sans-serif'] = 'DejaVu Sans'
 sns.set_theme(style='whitegrid')
 
 # Configuración de rutas relativas y absolutas
-BASE_DIR = Path('..')
+BASE_DIR = Path.cwd().parent if Path.cwd().name == 'notebooks' else Path.cwd()
 DATA_DIR = BASE_DIR / 'data_samples' / 'nct_crc'
 VAL_DIR = DATA_DIR / 'CRC-VAL-HE-7K'
 TRAIN_DIR = DATA_DIR / 'NCT-CRC-HE-100K'
@@ -91,7 +91,15 @@ CLASES_NCT = {
 
 def guardar_subplots_individuales(fig, nombre_base, fig_dir, dpi=150):
     \"\"\"Guarda cada panel de una figura multi-panel como imagen individual.\"\"\"
-    axes = [ax for ax in fig.axes if ax.get_visible()]
+    axes = []
+    pos_vistas = set()
+    for ax in fig.axes:
+        if not ax.get_visible():
+            continue
+        pos = tuple(round(v, 4) for v in ax.get_position().bounds)
+        if pos not in pos_vistas:
+            pos_vistas.add(pos)
+            axes.append(ax)
     for i, ax in enumerate(axes):
         extent = ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
         bbox = extent.expanded(1.2, 1.2)
@@ -265,7 +273,7 @@ def plot_distribution(df, dataset_label, filename_base):
     conteo = conteo.sort_values('n', ascending=True).reset_index(drop=True)
 
     fig, axes = plt.subplots(1, 2, figsize=(16, 6))
-    fig.suptitle(f'📊 Distribución de Clases — {dataset_label} (N = {len(df):,})', fontsize=16, fontweight='bold')
+    fig.suptitle(f'Distribucion de Clases — {dataset_label} (N = {len(df):,})', fontsize=16, fontweight='bold')
 
     # Panel 1: Bar chart horizontal
     ax1 = axes[0]
@@ -312,7 +320,7 @@ if len(df_val) > 0 and len(df_train) > 0:
     ns_t = [c_train.get(c, 0) for c in clases_orden]
     
     fig, axes = plt.subplots(1, 2, figsize=(16, 6))
-    fig.suptitle('⚖️ Comparativa de Distribución: CRC-VAL-HE-7K (Val) vs NCT-CRC-HE-100K (Train)',
+    fig.suptitle('Comparativa de Distribucion: CRC-VAL-HE-7K (Val) vs NCT-CRC-HE-100K (Train)',
                  fontsize=16, fontweight='bold')
                  
     # Panel 1: Barras agrupadas de porcentajes
@@ -365,7 +373,7 @@ cells.append(nbf.v4.new_code_cell("""# =========================================
 # 6. CUADRÍCULA DE MUESTRAS HISTOLÓGICAS (9 CLASES TISULARES)
 # ============================================================
 fig, axes = plt.subplots(3, 3, figsize=(13, 13))
-fig.suptitle('🔬 NCT-CRC-HE — Muestras Histológicas de las 9 Clases Tisulares (224×224 px)',
+fig.suptitle('NCT-CRC-HE — Muestras Histologicas de las 9 Clases Tisulares (224x224 px)',
              fontsize=16, fontweight='bold', y=0.99)
 
 for idx, (codigo, info) in enumerate(CLASES_NCT.items()):
@@ -489,7 +497,7 @@ df_specs = pd.DataFrame([
     {'Parámetro': 'Magnificación y Resolución Óptica', 'Valor': '20x (~0.5 µm/píxel)'},
     {'Parámetro': 'Tinción Histológica', 'Valor': 'Hematoxilina y Eosina (H&E)'},
     {'Parámetro': 'Normalización de Tinción', 'Valor': 'Macenko stain normalization'},
-    {'Parámetro': 'Almacenamiento en Disco (Extraído)', 'Valor': '~11.15 GB (Train) + ~763 MB (Val)'},
+    {'Parámetro': 'Almacenamiento en Disco (Extraído)', 'Valor': '14.44 GB (Train 100K) + 0.75 GB (Val 7K) = 15.19 GB'},
     {'Parámetro': 'Utilidad en Modelos MIL (CLAM, ABMIL)', 'Valor': 'Preentrenamiento autosupervisado (SSL) y clasificación de microentorno'},
 ])
 

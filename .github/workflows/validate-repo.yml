@@ -1,0 +1,65 @@
+name: Validar Integridad del Repositorio
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  verify-repo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Verificar enlaces, JSON de notebooks y ausencia de datos crudos/secretos
+        run: |
+          python - << 'PYEOF'
+          import json
+          import re
+          from pathlib import Path
+
+          ws = Path(".")
+          errors = []
+
+          # 1. Validar JSON de notebooks
+          for nb in sorted((ws / "notebooks").glob("*.ipynb")):
+              data = json.loads(nb.read_text(encoding="utf-8"))
+              assert "cells" in data and len(data["cells"]) > 0, f"Notebook vacío: {nb}"
+
+          # 2. Validar enlaces e imágenes en Markdown y HTML
+          for md in [ws / "README.md", ws / "docs" / "ANALISIS_PROFUNDO.md"]:
+              txt = md.read_text(encoding="utf-8")
+              for m in re.finditer(r"!\[[^\]]*\]\(([^)]+)\)|\[[^\]]*\]\(([^)]+)\)", txt):
+                  href = m.group(1) or m.group(2)
+                  if href and not href.startswith(("http://", "https://", "#", "mailto:")):
+                      if not (md.parent / href).resolve().exists():
+                          errors.append(f"Enlace roto en {md}: {href}")
+
+          for html in [ws / "informe" / "presentacion_reunion_20_noviembre.html", ws / "index.html"]:
+              txt = html.read_text(encoding="utf-8")
+              for m in re.finditer(r'(?:src|href)=["\']([^"\']+)["\']', txt):
+                  href = m.group(1)
+                  if not href.startswith(("http://", "https://", "#", "data:")) and "url=" not in href:
+                      if not (html.parent / href).resolve().exists():
+                          errors.append(f"Recurso roto en {html}: {href}")
+
+          # 3. Asegurar cero fugas de datos binarios pesados o tokens
+          forbidden_ext = (".h5", ".tif", ".tiff", ".npy", ".zip", ".rar", ".tar.gz")
+          for p in ws.rglob("*"):
+              if not p.is_file() or ".git" in p.parts:
+                  continue
+              low = p.as_posix().lower()
+              if low.endswith(forbidden_ext) or p.name == "kaggle.json":
+                  errors.append(f"Archivo prohibido en repo: {p}")
+
+          if errors:
+              raise SystemExit("\n".join(errors))
+          print("OK: Notebooks, enlaces locales y resguardo de datos validados sin errores.")
+          PYEOF

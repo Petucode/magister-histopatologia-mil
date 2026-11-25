@@ -19,7 +19,7 @@ plt.rcParams['figure.figsize'] = (14, 6)
 plt.rcParams['font.sans-serif'] = 'DejaVu Sans'
 sns.set_theme(style='whitegrid')
 
-BASE_DIR = Path(r"c:\Universidad\Magister\20 Noviembre Reunion")
+BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR / "data_samples" / "nct_crc"
 VAL_DIR = DATA_DIR / "CRC-VAL-HE-7K"
 TRAIN_DIR = DATA_DIR / "NCT-CRC-HE-100K"
