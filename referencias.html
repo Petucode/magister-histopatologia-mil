@@ -184,7 +184,7 @@
   <header>
     <div class="wrap">
       <span class="kicker">MCI UDP &middot; Jornadas de Investigación Diciembre 2026 &middot; Seminario I</span>
-      <h1>Capas tempranas CNN y atención MIL buscan clasificar biopsias en un pase</h1>
+      <h1>Capas tempranas CNN y Gated Attention buscan clasificar biopsias en un pase</h1>
       <p class="meta">
         <strong>Lucas Vicuña Fuenzalida</strong> &middot; Mención Informática y Telecomunicaciones<br />
         Profesor guía: <strong>Dr. Jorge E. Zambrano Ibujés</strong> &middot; Facultad de Ingeniería y Ciencias, Universidad Diego Portales
@@ -199,10 +199,10 @@
 
   <main class="wrap">
     <section class="summary-box">
-      <h2>Síntesis de la Propuesta y Auditoría de Datos</h2>
+      <h2>Síntesis Metodológica: Supervisión Débil, Capas Intermedias y Gated Attention</h2>
       <p>
         Esta página reúne las referencias científicas citadas a través del código QR del póster oficial A1.
-        La investigación evalúa extraer mapas de activación en <strong>capas tempranas e intermedias (&le;33 % de profundidad)</strong> de CNNs preentrenadas en un solo pase hacia adelante, tratando sus sub-regiones espaciales como instancias de <strong>Gated Attention MIL</strong> para diagnosticar cáncer y localizar tejido tumoral sobre cohortes auditadas localmente (<strong>31,4 GB</strong>: BreaKHis con 81 pacientes únicos, PatchCamelyon, NCT-CRC-HE, MHIST y CAMELYON16 con 399 WSIs y 25.235 máscaras espaciales).
+        Frente a la escasez de anotaciones píxel a píxel (<em>supervisión débil</em>, Y &isin; {0,1}), la dilución de focos pequeños en <em>Mean-Pooling</em> y el colapso cuadrático de VRAM al procesar miles de parches en el espacio de píxeles, esta investigación propone pasar la biopsia una sola vez por una <strong>CNN preentrenada truncada (&le;33 % de profundidad)</strong> para construir bolsas de sub-regiones en el espacio de características y agregarlas mediante <strong>Gated Attention</strong> (tanh(Vh<sub>k</sub><sup>&top;</sup>) &odot; sigm(Uh<sub>k</sub><sup>&top;</sup>)) en costo lineal O(K), validando sobre cinco cohortes histopatológicas curadas sin fuga entre pacientes.
       </p>
     </section>
 
@@ -250,22 +250,38 @@
         <li class="ref-card">
           <div class="ref-top">
             <span class="ref-num">[5]</span>
-            <div class="ref-cit"><strong>Shao, Z., Bian, H., Chen, Y., Wang, Y., Zhang, J., Ji, X., &amp; Zhang, Y. (2021).</strong> TransMIL: Transformer based Correlated Multiple Instance Learning for Whole Slide Image Classification. <em>NeurIPS</em>, 34, 2136–2147.</div>
+            <div class="ref-cit"><strong>Li, B., Li, Y., &amp; Eliceiri, K. W. (2021).</strong> Dual-stream multiple instance learning network for whole slide image classification with self-supervised contrastive learning (DSMIL). <em>IEEE/CVF CVPR</em>, 14318–14328.</div>
           </div>
-          <p class="ref-note">Modela correlación espacial entre instancias mediante autoatención aproximada Nyström (0,9309 AUC en CAMELYON16 frente a 0,4647 AUC con promedio simple).</p>
-          <a class="ref-link" href="https://arxiv.org/abs/2106.00908">https://arxiv.org/abs/2106.00908</a>
+          <p class="ref-note">Hibrida el enfoque <em>Instance-Level</em> (detección de instancia crítica vía Max-Pooling) con atención en el espacio de embebidos.</p>
+          <a class="ref-link" href="https://doi.org/10.1109/CVPR46437.2021.01409">https://doi.org/10.1109/CVPR46437.2021.01409</a>
         </li>
         <li class="ref-card">
           <div class="ref-top">
             <span class="ref-num">[6]</span>
-            <div class="ref-cit"><strong>Gadermayr, M., &amp; Tschuchnig, M. (2024).</strong> Multiple instance learning for digital pathology: A review of the state-of-the-art, limitations &amp; future potential. <em>Computerized Medical Imaging and Graphics</em>, 112, 102337.</div>
+            <div class="ref-cit"><strong>Shao, Z., Bian, H., Chen, Y., Wang, Y., Zhang, J., Ji, X., &amp; Zhang, Y. (2021).</strong> TransMIL: Transformer based Correlated Multiple Instance Learning for Whole Slide Image Classification. <em>NeurIPS</em>, 34, 2136–2147.</div>
           </div>
-          <p class="ref-note">Revisión crítica de arquitecturas MIL modernas, desacoplamiento de extracción de características y desafíos de generalización clínica.</p>
-          <a class="ref-link" href="https://doi.org/10.1016/j.compmedimag.2024.102337">https://doi.org/10.1016/j.compmedimag.2024.102337</a>
+          <p class="ref-note">Rompe la suposición I.I.D. modelando correlación espacial mediante autoatención aproximada Nyström y codificación piramidal PPEG.</p>
+          <a class="ref-link" href="https://arxiv.org/abs/2106.00908">https://arxiv.org/abs/2106.00908</a>
         </li>
         <li class="ref-card">
           <div class="ref-top">
             <span class="ref-num">[7]</span>
+            <div class="ref-cit"><strong>Zhang, H., Meng, Y., Zhao, Y., Qiao, Y., Yang, X., Coupland, S. E., &amp; Zheng, Y. (2022).</strong> DTFD-MIL: Double-tier feature distillation multiple instance learning for histopathology whole slide image classification. <em>IEEE/CVF CVPR</em>, 18802–18812.</div>
+          </div>
+          <p class="ref-note">Aplica <em>Gated Attention</em> en dos niveles sobre pseudo-bolsas para evitar sobreajuste cuando el número de pacientes es reducido frente a miles de parches.</p>
+          <a class="ref-link" href="https://doi.org/10.1109/CVPR52688.2022.01824">https://doi.org/10.1109/CVPR52688.2022.01824</a>
+        </li>
+        <li class="ref-card">
+          <div class="ref-top">
+            <span class="ref-num">[8]</span>
+            <div class="ref-cit"><strong>Gadermayr, M., &amp; Tschuchnig, M. (2024).</strong> Multiple instance learning for digital pathology: A review of the state-of-the-art, limitations &amp; future potential. <em>Computerized Medical Imaging and Graphics</em>, 112, 102337.</div>
+          </div>
+          <p class="ref-note">Revisión crítica de arquitecturas MIL modernas, desacoplamiento en espacio de características y cuellos de botella de memoria.</p>
+          <a class="ref-link" href="https://doi.org/10.1016/j.compmedimag.2024.102337">https://doi.org/10.1016/j.compmedimag.2024.102337</a>
+        </li>
+        <li class="ref-card">
+          <div class="ref-top">
+            <span class="ref-num">[9]</span>
             <div class="ref-cit"><strong>Keshvarikhojasteh, S., Pluim, J. P. W., &amp; Veta, M. (2025).</strong> Multi-instance learning in computational pathology: Are attention maps reliable? <em>PLOS One</em>, 20(1), e0319824.</div>
           </div>
           <p class="ref-note">Evidencia que un clasificador MIL puede lograr alto AUC atendiendo tejido sano (0,00 MI en Max-Pool), exigiendo medir localización espacial real (IoU / AUPRC).</p>
@@ -279,7 +295,7 @@
       <ol class="ref-list">
         <li class="ref-card">
           <div class="ref-top">
-            <span class="ref-num">[8]</span>
+            <span class="ref-num">[10]</span>
             <div class="ref-cit"><strong>Spanhol, F. A., Oliveira, L. S., Petitjean, C., &amp; Heutte, L. (2016).</strong> A Dataset for Breast Cancer Histopathological Image Classification. <em>IEEE Transactions on Biomedical Engineering</em>, 63(7), 1455–1462.</div>
           </div>
           <p class="ref-note">Presenta la cohorte BreaKHis (7.909 imágenes H&amp;E de 700&times;460 px entre 40&times; y 400&times;, correspondientes a 81 pacientes únicos) y descriptores PFTAS + SVM.</p>
@@ -287,21 +303,21 @@
         </li>
         <li class="ref-card">
           <div class="ref-top">
-            <span class="ref-num">[9]</span>
+            <span class="ref-num">[11]</span>
             <div class="ref-cit"><strong>Sudharshan, P. J., Petitjean, C., Spanhol, F., Oliveira, L. E., Heutte, L., &amp; Honeine, P. (2019).</strong> Multiple instance learning for histopathological breast cancer image classification. <em>Expert Systems with Applications</em>, 117, 103–111.</div>
           </div>
-          <p class="ref-note">Compara 12 algoritmos MIL sobre BreaKHis muestreando hasta 1.000 recortes de 64&times;64 px por biopsia (92,1 % &plusmn; 5,9 % a nivel paciente en 40&times;).</p>
+          <p class="ref-note">Línea base directa en BreaKHis: compara 12 algoritmos MIL muestreando hasta 1.000 recortes de 64&times;64 px por biopsia en el espacio de píxeles (92,1 % &plusmn; 5,9 % en 40&times;).</p>
           <a class="ref-link" href="https://doi.org/10.1016/j.eswa.2018.09.049">https://doi.org/10.1016/j.eswa.2018.09.049</a>
         </li>
       </ol>
     </section>
 
     <section class="cat">
-      <h2 class="cat-title"><span class="cat-dot"></span>4. Cohortes WSI, Representaciones Auto-Supervisadas y Normalización H&amp;E</h2>
+      <h2 class="cat-title"><span class="cat-dot"></span>4. Modelos Fundacionales, Cohortes WSI y Normalización H&amp;E</h2>
       <ol class="ref-list">
         <li class="ref-card">
           <div class="ref-top">
-            <span class="ref-num">[10]</span>
+            <span class="ref-num">[12]</span>
             <div class="ref-cit"><strong>Bejnordi, B. E., Veta, M., van Diest, P. J., et al. (2017).</strong> Diagnostic Assessment of Deep Learning Algorithms for Detection of Lymph Node Metastases in Women With Breast Cancer (CAMELYON16). <em>JAMA</em>, 318(22), 2199–2210.</div>
           </div>
           <p class="ref-note">Estándar internacional de metástasis en ganglio centinela con 399 láminas gigapíxel y anotaciones poligonales exhaustivas.</p>
@@ -309,7 +325,7 @@
         </li>
         <li class="ref-card">
           <div class="ref-top">
-            <span class="ref-num">[11]</span>
+            <span class="ref-num">[13]</span>
             <div class="ref-cit"><strong>Veeling, B. S., Linmans, J., Winkens, J., Cohen, T., &amp; Welling, M. (2018).</strong> Rotation Equivariant CNNs for Digital Pathology (PatchCamelyon). <em>MICCAI 2018</em>, LNCS 11071, 210–218.</div>
           </div>
           <p class="ref-note">Benchmark balanceado de recortes 96&times;96 px derivados de CAMELYON16 con región diagnóstica central de 32&times;32 px.</p>
@@ -317,7 +333,7 @@
         </li>
         <li class="ref-card">
           <div class="ref-top">
-            <span class="ref-num">[12]</span>
+            <span class="ref-num">[14]</span>
             <div class="ref-cit"><strong>Kather, J. N., Krisam, J., Charoentong, P., et al. (2019).</strong> Predicting survival from colorectal cancer histology slides using deep learning (NCT-CRC-HE-100K). <em>PLOS Medicine</em>, 16(1), e1002730.</div>
           </div>
           <p class="ref-note">107.180 parches multiclase de cáncer colorrectal (9 tejidos) que permiten cuantificar desplazamientos de dominio cromático entre cohortes.</p>
@@ -325,7 +341,7 @@
         </li>
         <li class="ref-card">
           <div class="ref-top">
-            <span class="ref-num">[13]</span>
+            <span class="ref-num">[15]</span>
             <div class="ref-cit"><strong>Wei, J., Suriawinata, A., Ren, B., et al. (2021).</strong> A Petri Dish for Histopathology Image Analysis (MHIST). <em>AIME 2021</em>, LNCS 12721, 11–24.</div>
           </div>
           <p class="ref-note">3.152 imágenes de pólipos colorrectales (HP vs SSA) etiquetadas por 7 patólogos gastrointestinales para estudiar incertidumbre inter-observador.</p>
@@ -333,7 +349,7 @@
         </li>
         <li class="ref-card">
           <div class="ref-top">
-            <span class="ref-num">[14]</span>
+            <span class="ref-num">[16]</span>
             <div class="ref-cit"><strong>Kang, M., Song, H., Park, S., Yoo, D., &amp; Pereira, S. (2023).</strong> Benchmarking Self-Supervised Learning on Diverse Pathology Datasets. <em>IEEE/CVF CVPR</em>, 3344–3354.</div>
           </div>
           <p class="ref-note">Cuantifica la ganancia de codificadores auto-supervisados en patología frente a pesos supervisados de ImageNet en PCam, NCT-CRC y MHIST.</p>
@@ -341,15 +357,15 @@
         </li>
         <li class="ref-card">
           <div class="ref-top">
-            <span class="ref-num">[15]</span>
+            <span class="ref-num">[17]</span>
             <div class="ref-cit"><strong>Chen, R. J., Ding, T., Lu, M. Y., Williamson, D. F. K., et al. (2024).</strong> Towards a general-purpose foundation model for computational pathology (UNI). <em>Nature Medicine</em>, 30, 850–862.</div>
           </div>
-          <p class="ref-note">Modelo fundacional histopatológico (1024-d) usado como cota superior de referencia frente a extracción ligera en capas intermedias CNN.</p>
+          <p class="ref-note">Modelo fundacional histopatológico (1024-d) que emplea cabezales ABMIL / Gated Attention como protocolo estándar de evaluación.</p>
           <a class="ref-link" href="https://doi.org/10.1038/s41591-024-02857-3">https://doi.org/10.1038/s41591-024-02857-3</a>
         </li>
         <li class="ref-card">
           <div class="ref-top">
-            <span class="ref-num">[16]</span>
+            <span class="ref-num">[18]</span>
             <div class="ref-cit"><strong>Macenko, M., Niethammer, M., Marron, J. S., et al. (2009).</strong> A method for normalizing histology slides for quantitative analysis. <em>IEEE ISBI 2009</em>, 1107–1110.</div>
           </div>
           <p class="ref-note">Descomposición de vectores de tinción Hematoxilina y Eosina para estandarizar intensidad cromática entre centros clínicos.</p>
