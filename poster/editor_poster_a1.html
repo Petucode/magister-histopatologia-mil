@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Editor en Vivo Póster A1 — Jornadas MCI UDP 2026 (Lucas Vicuña &amp; Dr. Jorge Zambrano)</title>
+  <style>
+    :root {
+      --udp-red: #DC3239;
+      --udp-pink: #FFE3E4;
+      --udp-coral: #F4858A;
+      --udp-ivory: #F6F3EE;
+      --udp-ink: #20242A;
+      --udp-footer: #2C3036;
+      --udp-muted: #4A4F57;
+      --udp-line: #D8D5CE;
+      --udp-footgray: #B8BEC6;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #14181F;
+      color: var(--udp-ink);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    /* Barra superior de herramientas para el Profesor Guía */
+    #toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      width: 100%;
+      background: rgba(15, 23, 42, 0.96);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+      color: #F8FAFC;
+      padding: 10px 18px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .tb-left, .tb-right {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+    .tb-badge {
+      font-size: 12px;
+      font-weight: 700;
+      padding: 5px 10px;
+      border-radius: 6px;
+      background: rgba(220, 50, 57, 0.22);
+      color: #FCA5A5;
+      border: 1px solid rgba(220, 50, 57, 0.45);
+    }
+    #word-badge {
+      font-size: 12.5px;
+      font-weight: 700;
+      padding: 5px 11px;
+      border-radius: 6px;
+      background: rgba(16, 185, 129, 0.2);
+      color: #6EE7B7;
+      border: 1px solid rgba(16, 185, 129, 0.45);
+    }
+    #word-badge.over {
+      background: rgba(239, 68, 68, 0.28);
+      color: #FCA5A5;
+      border-color: #EF4444;
+    }
+    .tb-btn {
+      cursor: pointer;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: #1E293B;
+      color: #F8FAFC;
+      font-size: 12.5px;
+      font-weight: 700;
+      padding: 7px 12px;
+      border-radius: 7px;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.15s ease;
+    }
+    .tb-btn:hover { background: #334155; }
+    .tb-btn-red { background: var(--udp-red); border-color: #F87171; }
+    .tb-btn-red:hover { background: #B91C1C; }
+    .tb-btn-green { background: #0F766E; border-color: #2DD4BF; }
+    .tb-btn-green:hover { background: #115E59; }
+    .tb-hint {
+      font-size: 12px;
+      color: #CBD5E1;
+    }
+    #toast {
+      position: fixed;
+      bottom: 22px;
+      right: 22px;
+      z-index: 200;
+      background: #0F766E;
+      color: #FFFFFF;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 12px 18px;
+      border-radius: 9px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45);
+      display: none;
+    }
+
+    /* Contenedor con escalado responsivo en pantalla y tamaño físico exacto A1 en impresión */
+    #stage {
+      padding: 24px 12px 48px;
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      overflow-x: auto;
+    }
+    #poster-scale-wrap {
+      transform-origin: top center;
+    }
+
+    /* Lienzo exacto A1: 594 mm x 841 mm */
+    #poster-sheet {
+      position: relative;
+      width: 594mm;
+      height: 841mm;
+      background: #FFFFFF;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.65);
+      overflow: hidden;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    /* Resaltado sutil de campos editables en pantalla */
+    body.show-guides [contenteditable="true"] {
+      outline: 1.5px dashed rgba(220, 50, 57, 0.48);
+      outline-offset: 3px;
+      border-radius: 3px;
+    }
+    [contenteditable="true"]:focus {
+      outline: 3px solid #2DD4BF !important;
+      outline-offset: 4px;
+      background: rgba(45, 212, 191, 0.08);
+    }
+
+    .abs { position: absolute; }
+
+    @page {
+      size: 594mm 841mm;
+      margin: 0;
+    }
+    @media print {
+      html, body {
+        background: #FFFFFF !important;
+        width: 594mm;
+        height: 841mm;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+      }
+      #toolbar, #toast { display: none !important; }
+      #stage { padding: 0 !important; margin: 0 !important; overflow: visible !important; }
+      #poster-scale-wrap { transform: none !important; width: 594mm !important; height: 841mm !important; }
+      #poster-sheet { box-shadow: none !important; }
+      [contenteditable="true"] { outline: none !important; background: transparent !important; }
+    }
+  </style>
+</head>
+<body class="show-guides">
+
+  <div id="toolbar">
+    <div class="tb-left">
+      <span class="tb-badge">Editor Directo A1 (59,4 &times; 84,1 cm)</span>
+      <span id="word-badge">Palabras: 0 / 300 máx</span>
+      <span class="tb-hint">Haga clic sobre cualquier texto del póster para editarlo en vivo.</span>
+    </div>
+    <div class="tb-right">
+      <button class="tb-btn" onclick="toggleGuides()" id="btn-guides">Ocultar bordes guía</button>
+      <button class="tb-btn" onclick="setZoom('fit')">Ajustar pantalla</button>
+      <button class="tb-btn" onclick="setZoom('wide')">Zoom lectura</button>
+      <button class="tb-btn tb-btn-green" onclick="copyShareLink()">Copiar link con mis correcciones</button>
+      <button class="tb-btn" onclick="downloadUpdatedTex()">Descargar .tex editado</button>
+      <a class="tb-btn" href="https://www.overleaf.com/docs?snip_uri=https://petucode.github.io/magister-histopatologia-mil/poster/latex/Poster_MCI_2026_Overleaf.zip" target="_blank" rel="noopener">Abrir en Overleaf (LaTeX)</a>
+      <a class="tb-btn" href="Poster_Lucas_Vicuna_MCI_2026.pptx" download>Descargar .pptx</a>
+      <button class="tb-btn tb-btn-red" onclick="printPosterA1()">Exportar PDF A1</button>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+  <div id="stage">
+    <div id="poster-scale-wrap">
+      <div id="poster-sheet">
+
+        <!-- Fondos de zonas exactos -->
+        <div class="abs" style="left:0; top:0; width:594mm; height:148mm; background:#DC3239;"></div>
+        <div class="abs" style="left:0; top:148mm; width:594mm; height:312mm; background:#F6F3EE;"></div>
+        <div class="abs" style="left:0; top:746mm; width:594mm; height:95mm; background:#2C3036;"></div>
+
+        <!-- Encabezado Institucional -->
+        <div class="abs" style="left:30mm; top:19.5mm; font-size:46pt; font-weight:700; color:#FFFFFF; line-height:1;">MCI</div>
+        <div class="abs" style="left:71.5mm; top:21.5mm; width:0.6mm; height:21mm; background:#FFFFFF;"></div>
+        <div class="abs" style="left:76.5mm; top:21mm; font-size:22.5pt; font-weight:700; color:#FFFFFF; line-height:1.15;">
+          Magíster en Ciencias<br />de la Ingeniería
+        </div>
+        <img class="abs" src="latex/assets/logo_fic_blanco.png" alt="UDP FIC" style="left:454mm; top:22mm; width:110mm; height:auto;" />
+
+        <!-- Título y Autor -->
+        <div id="f-titulo" contenteditable="true" class="abs" style="left:30mm; top:53.5mm; width:534mm; font-size:61pt; font-weight:700; color:#FFFFFF; line-height:1.12;">Capas tempranas CNN y Gated Attention buscan clasificar biopsias en un pase</div>
+
+        <div class="abs" style="left:30mm; top:120mm; width:534mm; font-size:24pt; line-height:1.2;">
+          <span id="f-etapa" contenteditable="true" style="font-weight:700; color:#FFFFFF;">Seminario I · Informática y Telecomunicaciones</span>
+          <span style="color:#FFE3E4;"> · </span>
+          <span id="f-autor" contenteditable="true" style="color:#FFE3E4;">Lucas Vicuña Fuenzalida · Profesor guía: Dr. Jorge E. Zambrano Ibujés</span>
+        </div>
+
+        <!-- ZONA 1: PROBLEMA Y ESTADO DEL ARTE -->
+        <div class="abs" style="left:30mm; top:165mm; width:16mm; height:2.2mm; background:#DC3239;"></div>
+        <div id="f-k1" contenteditable="true" class="abs" style="left:30mm; top:170mm; font-size:20pt; font-weight:700; color:#DC3239;">Problema y estado del arte</div>
+        <div id="f-z1msg" contenteditable="true" class="abs" style="left:30mm; top:180.5mm; width:534mm; font-size:31pt; font-weight:700; color:#20242A; line-height:1.18;">La supervisión débil y el recorte en píxeles diluyen el tumor y saturan la memoria.</div>
+
+        <div id="f-sub1" contenteditable="true" class="abs" style="left:30mm; top:206mm; width:261mm; font-size:26pt; font-weight:700; color:#20242A;">Introducción al problema</div>
+        <img class="abs" src="latex/assets/fig1_problema.png" alt="Figura 1 Problema" style="left:30mm; top:219mm; width:261mm; height:115mm; object-fit:fill;" />
+        <div id="f-intro" contenteditable="true" class="abs" style="left:30mm; top:339mm; width:261mm; font-size:24pt; color:#20242A; line-height:1.26;">Una biopsia gigapíxel solo tiene etiqueta global por paciente (Y = 0 o 1). Promediar parches diluye micro-tumores y evaluar miles colapsa la VRAM.</div>
+
+        <div id="f-sub2" contenteditable="true" class="abs" style="left:303mm; top:206mm; width:261mm; font-size:26pt; font-weight:700; color:#20242A;">Estado del arte</div>
+        <img class="abs" src="latex/assets/fig2_estado_arte.png" alt="Figura 2 Estado del Arte" style="left:303mm; top:219mm; width:261mm; height:115mm; object-fit:fill;" />
+        <div id="f-sota" contenteditable="true" class="abs" style="left:303mm; top:339mm; width:261mm; font-size:24pt; color:#20242A; line-height:1.26;">En MIL por embebidos, Gated Attention filtra ruido en costo lineal O(K). Aparte, truncar CNNs al 33 % ahorra ~60 % de cómputo sin reentrenar.</div>
+
+        <!-- Vacío y novedad + Objetivos -->
+        <div class="abs" style="left:30mm; top:386mm; width:3mm; height:55mm; background:#DC3239;"></div>
+        <div id="f-sub3" contenteditable="true" class="abs" style="left:40mm; top:385mm; width:251mm; font-size:26pt; font-weight:700; color:#20242A;">Vacío y novedad</div>
+        <div id="f-vacio" contenteditable="true" class="abs" style="left:40mm; top:398mm; width:251mm; font-size:30.5pt; font-weight:700; color:#DC3239; line-height:1.2;">Nadie ha formado instancias MIL desde mapas CNN intermedios en un pase junto a Gated Attention sin recortar píxeles.</div>
+
+        <div id="f-sub4" contenteditable="true" class="abs" style="left:303mm; top:385mm; width:261mm; font-size:26pt; font-weight:700; color:#20242A;">Objetivos</div>
+        <div class="abs" style="left:303mm; top:398mm; width:261mm; font-size:24pt; color:#20242A; line-height:1.26;">
+          <div><strong>General: </strong><span id="f-objg" contenteditable="true">clasificar biopsias H&amp;E uniendo sub-regiones de capas CNN intermedias (&le;33 %) con Gated Attention MIL.</span></div>
+          <div style="margin-top:2.5mm;"><strong>Específicos: </strong><span id="f-obje" contenteditable="true">1) extraer tensores en un pase; 2) reducir canales y ponderar con tanh&times;sigm; 3) medir AUC, IoU y FLOPs.</span></div>
+        </div>
+
+        <!-- ZONA 2: MÉTODO Y AVANCE -->
+        <div class="abs" style="left:30mm; top:475mm; width:16mm; height:2.2mm; background:#DC3239;"></div>
+        <div id="f-k2" contenteditable="true" class="abs" style="left:30mm; top:480mm; font-size:20pt; font-weight:700; color:#DC3239;">Diseño metodológico propuesto</div>
+        <div id="f-metmsg" contenteditable="true" class="abs" style="left:30mm; top:490.5mm; width:261mm; font-size:27.5pt; font-weight:700; color:#20242A; line-height:1.2;">Un pase CNN truncado genera sub-regiones filtradas por Gated Attention.</div>
+        <img class="abs" src="latex/assets/fig3_metodo.png" alt="Figura 3 Método" style="left:30mm; top:520mm; width:261mm; height:82mm; object-fit:fill;" />
+        <div id="f-metdet" contenteditable="true" class="abs" style="left:30mm; top:606mm; width:261mm; font-size:24pt; color:#20242A; line-height:1.25;">Redes congeladas frente a parches (Sudharshan). Evaluación por paciente: AUC, F1, IoU y FLOPs.</div>
+
+        <div class="abs" style="left:303mm; top:475mm; width:16mm; height:2.2mm; background:#DC3239;"></div>
+        <div id="f-k3" contenteditable="true" class="abs" style="left:303mm; top:480mm; font-size:20pt; font-weight:700; color:#DC3239;">Avance a la fecha</div>
+        <div id="f-avmsg" contenteditable="true" class="abs" style="left:303mm; top:490.5mm; width:261mm; font-size:27.5pt; font-weight:700; color:#20242A; line-height:1.2;">Verificamos el filtrado del Gated Attention y estructuramos cinco cohortes.</div>
+        <img class="abs" src="latex/assets/fig4_avance.png" alt="Figura 4 Avance" style="left:303mm; top:520mm; width:261mm; height:82mm; object-fit:fill;" />
+        <div id="f-avdet" contenteditable="true" class="abs" style="left:303mm; top:606mm; width:261mm; font-size:24pt; color:#20242A; line-height:1.25;">La compuerta sigm suprime falsos positivos y deja listas BreaKHis (81 IDs), PCam, CRC, MHIST y CAM16.</div>
+
+        <div class="abs" style="left:30mm; top:634mm; width:534mm; height:0.4mm; background:#D8D5CE;"></div>
+
+        <!-- ZONA 3: PLAN -->
+        <div class="abs" style="left:30mm; top:646mm; width:16mm; height:2.2mm; background:#DC3239;"></div>
+        <div id="f-k4" contenteditable="true" class="abs" style="left:30mm; top:651mm; font-size:20pt; font-weight:700; color:#DC3239;">Plan</div>
+        <div id="f-planmsg" contenteditable="true" class="abs" style="left:30mm; top:661.5mm; width:534mm; font-size:30pt; font-weight:700; color:#20242A; line-height:1.18;">Al cerrar Seminario II tendremos el pipeline intermedio con Gated-MIL medido ante el baseline.</div>
+        <img class="abs" src="latex/assets/fig5_plan.png" alt="Figura 5 Plan" style="left:30mm; top:682mm; width:534mm; height:54mm; object-fit:fill;" />
+
+        <!-- PIE OSCURO: PREGUNTAS Y QR -->
+        <div id="f-fbk" contenteditable="true" class="abs" style="left:30mm; top:757mm; width:420mm; font-size:24pt; font-weight:700; color:#F4858A;">Busco retroalimentación sobre</div>
+        <div class="abs" style="left:30mm; top:769.5mm; width:422mm; font-size:24pt; color:#FFFFFF; line-height:1.32;">
+          <div>1.&nbsp; <span id="f-q1" contenteditable="true">¿Conviene reducir canales del mapa intermedio con proyección 1&times;1 o filtro estadístico?</span></div>
+          <div>2.&nbsp; <span id="f-q2" contenteditable="true">¿Cómo incorporar contexto espacial entre sub-regiones manteniendo costo lineal O(K)?</span></div>
+        </div>
+
+        <div id="f-qrlbl" contenteditable="true" class="abs" style="left:456mm; top:764mm; width:59mm; font-size:16pt; color:#B8BEC6; text-align:right; line-height:1.22;">Referencias<br />y artículos<br />consultados</div>
+        <div class="abs" style="left:520mm; top:756mm; width:44mm; height:44mm; background:#FFFFFF; border-radius:1.5mm;"></div>
+        <img class="abs" src="latex/assets/qr_referencias.png" alt="Código QR Referencias" style="left:523mm; top:759mm; width:38mm; height:38mm;" />
+
+        <div class="abs" style="left:30mm; top:805.5mm; width:534mm; height:0.35mm; background:rgba(255,255,255,0.18);"></div>
+        <img class="abs" src="latex/assets/logo_posgrado_blanco.png" alt="Posgrados UDP" style="left:30mm; top:810.5mm; width:98.6mm; height:auto;" />
+        <div class="abs" style="left:138.6mm; top:811.5mm; width:425.4mm; font-size:16pt; color:#B8BEC6; text-align:right; line-height:1.25;">
+          <div id="f-ev1" contenteditable="true">Jornadas de Investigación del Magíster en Ciencias de la Ingeniería · diciembre de 2026</div>
+          <div id="f-ev2" contenteditable="true">Programa Magíster en Ciencias de la Ingeniería · Facultad de Ingeniería y Ciencias UDP</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var FIELD_IDS = [
+      "f-titulo", "f-etapa", "f-autor", "f-k1", "f-z1msg",
+      "f-sub1", "f-intro", "f-sub2", "f-sota", "f-sub3", "f-vacio",
+      "f-sub4", "f-objg", "f-obje", "f-k2", "f-metmsg", "f-metdet",
+      "f-k3", "f-avmsg", "f-avdet", "f-k4", "f-planmsg",
+      "f-fbk", "f-q1", "f-q2", "f-qrlbl", "f-ev1", "f-ev2"
+    ];
+
+    function showToast(msg) {
+      var t = document.getElementById("toast");
+      t.textContent = msg;
+      t.style.display = "block";
+      setTimeout(function () { t.style.display = "none"; }, 3600);
+    }
+
+    function updateWordCount() {
+      var sheet = document.getElementById("poster-sheet");
+      var raw = sheet.innerText || "";
+      var words = raw.trim().split(/\s+/).filter(function (w) { return w.length > 0; });
+      var n = words.length;
+      var badge = document.getElementById("word-badge");
+      badge.textContent = "Palabras: " + n + " / 300 máx";
+      if (n > 300) {
+        badge.classList.add("over");
+      } else {
+        badge.classList.remove("over");
+      }
+    }
+
+    function setZoom(mode) {
+      var sheet = document.getElementById("poster-sheet");
+      var wrap = document.getElementById("poster-scale-wrap");
+      var sheetPxW = sheet.offsetWidth;
+      var sheetPxH = sheet.offsetHeight;
+      var availW = window.innerWidth - 48;
+      var availH = window.innerHeight - 90;
+      var scale = 0.36;
+      if (mode === "fit") {
+        scale = Math.min(availW / sheetPxW, availH / sheetPxH);
+      } else if (mode === "wide") {
+        scale = Math.min((availW * 0.94) / sheetPxW, 0.72);
+      }
+      scale = Math.max(0.18, Math.min(scale, 1.0));
+      wrap.style.transform = "scale(" + scale.toFixed(4) + ")";
+      wrap.style.height = Math.round(sheetPxH * scale) + "px";
+    }
+
+    function toggleGuides() {
+      document.body.classList.toggle("show-guides");
+      var btn = document.getElementById("btn-guides");
+      btn.textContent = document.body.classList.contains("show-guides")
+        ? "Ocultar bordes guía"
+        : "Mostrar bordes guía";
+    }
+
+    function encodeState() {
+      var state = {};
+      FIELD_IDS.forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) state[id] = el.innerText.trim();
+      });
+      var json = JSON.stringify(state);
+      var bytes = new TextEncoder().encode(json);
+      var bin = "";
+      for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+      return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+    }
+
+    function loadStateFromHash() {
+      var h = window.location.hash || "";
+      if (h.indexOf("#edits=") !== 0) return;
+      try {
+        var b64 = h.slice(7).replace(/-/g, "+").replace(/_/g, "/");
+        while (b64.length % 4) b64 += "=";
+        var bin = atob(b64);
+        var bytes = new Uint8Array(bin.length);
+        for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+        var state = JSON.parse(new TextDecoder().decode(bytes));
+        FIELD_IDS.forEach(function (id) {
+          if (state[id] !== undefined && document.getElementById(id)) {
+            document.getElementById(id).innerText = state[id];
+          }
+        });
+        showToast("Se cargaron las ediciones compartidas en el enlace.");
+      } catch (e) {
+        console.error("Error leyendo estado compartido:", e);
+      }
+    }
+
+    function copyShareLink() {
+      var hash = "#edits=" + encodeState();
+      history.replaceState(null, "", hash);
+      var url = window.location.href;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(function () {
+          showToast("Enlace con sus cambios copiado al portapapeles. Envíelo a Lucas.");
+        });
+      } else {
+        window.prompt("Copie este enlace con sus cambios:", url);
+      }
+    }
+
+    function escTex(s) {
+      return (s || "")
+        .replace(/\\/g, "\\textbackslash{}")
+        .replace(/&/g, "\\&")
+        .replace(/%/g, "\\%")
+        .replace(/#/g, "\\#")
+        .replace(/_/g, "\\_");
+    }
+
+    function downloadUpdatedTex() {
+      var g = function (id) { return escTex(document.getElementById(id).innerText.trim()); };
+      var lines = [
+        "% Macros actualizadas desde el Editor Web A1 — Pegue en la cabecera de poster/latex/main.tex",
+        "\\newcommand{\\PosterTitulo}{" + g("f-titulo") + "}",
+        "\\newcommand{\\PosterEtapaMencion}{" + g("f-etapa") + "}",
+        "\\newcommand{\\PosterAutorGuia}{" + g("f-autor") + "}",
+        "\\newcommand{\\ZonaUnoMensaje}{" + g("f-z1msg") + "}",
+        "\\newcommand{\\IntroTexto}{" + g("f-intro") + "}",
+        "\\newcommand{\\EstadoArteTexto}{" + g("f-sota") + "}",
+        "\\newcommand{\\VacioNovedad}{" + g("f-vacio") + "}",
+        "\\newcommand{\\ObjetivoGeneral}{" + g("f-objg") + "}",
+        "\\newcommand{\\ObjetivosEspecificos}{" + g("f-obje") + "}",
+        "\\newcommand{\\MetodoMensaje}{" + g("f-metmsg") + "}",
+        "\\newcommand{\\MetodoDetalle}{" + g("f-metdet") + "}",
+        "\\newcommand{\\AvanceMensaje}{" + g("f-avmsg") + "}",
+        "\\newcommand{\\AvanceDetalle}{" + g("f-avdet") + "}",
+        "\\newcommand{\\PlanMensaje}{" + g("f-planmsg") + "}",
+        "\\newcommand{\\PreguntaUno}{" + g("f-q1") + "}",
+        "\\newcommand{\\PreguntaDos}{" + g("f-q2") + "}"
+      ];
+      var blob = new Blob([lines.join("\n") + "\n"], { type: "text/plain;charset=utf-8" });
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "textos_editados_poster.tex";
+      a.click();
+      showToast("Archivo textos_editados_poster.tex descargado.");
+    }
+
+    function printPosterA1() {
+      var wrap = document.getElementById("poster-scale-wrap");
+      var prevTransform = wrap.style.transform;
+      var prevHeight = wrap.style.height;
+      wrap.style.transform = "none";
+      wrap.style.height = "auto";
+      window.print();
+      setTimeout(function () {
+        wrap.style.transform = prevTransform;
+        wrap.style.height = prevHeight;
+      }, 400);
+    }
+
+    window.addEventListener("DOMContentLoaded", function () {
+      loadStateFromHash();
+      updateWordCount();
+      setZoom("wide");
+      FIELD_IDS.forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) {
+          el.addEventListener("input", function () {
+            updateWordCount();
+          });
+        }
+      });
+    });
+
+    window.addEventListener("resize", function () {
+      setZoom("wide");
+    });
+  </script>
+</body>
+</html>

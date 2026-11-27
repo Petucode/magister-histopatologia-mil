@@ -12,6 +12,7 @@
 /otras reuniones/
 /poster/Jornadas de Investigación MIG (1).pdf
 *.pptx
+!poster/Poster_Lucas_Vicuna_MCI_2026.pptx
 *.rar
 
 # 3. Credenciales y secretos (NUNCA subir a GitHub)
@@ -39,8 +40,9 @@
 *.sqlite
 *.sqlite3
 
-# 5. Archivos comprimidos
+# 5. Archivos comprimidos (excepto paquete ligero del póster para abrir en Overleaf)
 *.zip
+!poster/latex/Poster_MCI_2026_Overleaf.zip
 *.rar
 *.7z
 *.tar

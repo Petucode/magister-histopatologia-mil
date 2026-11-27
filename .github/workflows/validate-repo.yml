@@ -43,7 +43,7 @@ jobs:
                       if not (md.parent / href).resolve().exists():
                           errors.append(f"Enlace roto en {md}: {href}")
 
-          html_files = [ws / "index.html", ws / "referencias.html"] + sorted((ws / "informe").rglob("*.html"))
+          html_files = [ws / "index.html", ws / "referencias.html", ws / "poster" / "editor_poster_a1.html"] + sorted((ws / "informe").rglob("*.html"))
           for html in html_files:
               txt = html.read_text(encoding="utf-8")
               for m in re.finditer(r'(?:src|href)=["\']([^"\']+)["\']', txt):
@@ -54,10 +54,16 @@ jobs:
 
           # 3. Asegurar cero fugas de datos binarios pesados, carpetas ignoradas o tokens
           forbidden_ext = (".h5", ".tif", ".tiff", ".npy", ".zip", ".rar", ".tar.gz", ".pptx")
+          allowed_poster_files = {
+              "poster/poster_lucas_vicuna_mci_2026.pptx",
+              "poster/latex/poster_mci_2026_overleaf.zip",
+          }
           for p in ws.rglob("*"):
               if not p.is_file() or ".git" in p.parts:
                   continue
-              low = p.as_posix().lower()
+              low = p.as_posix().lstrip("./").lower()
+              if low in allowed_poster_files:
+                  continue
               if low.endswith(forbidden_ext) or p.name == "kaggle.json" or "otras reuniones" in p.parts:
                   errors.append(f"Archivo prohibido en repo: {p}")
 

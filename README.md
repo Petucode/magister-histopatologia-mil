@@ -16,6 +16,9 @@
 ## Póster Científico Oficial — Jornadas de Investigación MCI 2026 (Tamaño A1)
 
 - **Afiche A1 listo para impresión (`59,4 × 84,1 cm`, vertical, 300 DPI):** [poster/Poster_Lucas_Vicuna_MCI_2026_A1.pdf](poster/Poster_Lucas_Vicuna_MCI_2026_A1.pdf)
+- **Editor Interactivo Web A1 en Vivo (edición directa para Profesor Guía + contador de 300 palabras):** [poster/editor_poster_a1.html](poster/editor_poster_a1.html) (`https://petucode.github.io/magister-histopatologia-mil/poster/editor_poster_a1.html`)
+- **Edición directa en Overleaf / LaTeX (1 clic):** [Abrir proyecto A1 en Overleaf](https://www.overleaf.com/docs?snip_uri=https://petucode.github.io/magister-histopatologia-mil/poster/latex/Poster_MCI_2026_Overleaf.zip) &bull; Código fuente: [poster/latex/main.tex](poster/latex/main.tex)
+- **Editable PowerPoint oficial UDP (`.pptx`):** [poster/Poster_Lucas_Vicuna_MCI_2026.pptx](poster/Poster_Lucas_Vicuna_MCI_2026.pptx)
 - **Página móvil de referencias y artículos consultados (destino del código QR):** [referencias.html](referencias.html) (`https://petucode.github.io/magister-histopatologia-mil/referencias.html`)
 - **Sesión Informática y Telecomunicaciones:** Jueves 3 de diciembre de 2026, 14:00 a 16:00 hrs — Sala de Descanso FIC, UDP.
 
