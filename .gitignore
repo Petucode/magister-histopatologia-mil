@@ -7,9 +7,11 @@
 /data_samples/
 /Datasets/
 
-# 2. Materia de cursos externos y carpetas de reuniones previas (>1.2 GB de PDFs, PPTX, caché)
+# 2. Materia de cursos externos, insumos guía y carpetas de reuniones previas (>1.2 GB)
 /Materia Util/
 /otras reuniones/
+/poster/Jornadas de Investigación MIG (1).pdf
+*.pptx
 *.rar
 
 # 3. Credenciales y secretos (NUNCA subir a GitHub)

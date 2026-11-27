@@ -1,13 +1,29 @@
 # Histopatología Digital & Multiple Instance Learning (Magíster UDP)
 
-> **Proyecto de Investigación (Tesis de Magíster en Ciencias de la Computación)**  
-> **Estudiante:** Lucas Vicuña ([Petucode](https://github.com/Petucode)) &bull; **Profesor Guía:** Dr. Jorge Eduardo Zambrano Ibujés  
-> **Facultad de Ingeniería y Ciencias — Universidad Diego Portales (UDP)** &bull; *Reunión de Avance: Noviembre 2026*
+> **Proyecto de Investigación (Magíster en Ciencias de la Ingeniería — Mención Informática y Telecomunicaciones)**  
+> **Estudiante:** Lucas Vicuña Fuenzalida ([Petucode](https://github.com/Petucode)) &bull; **Profesor Guía:** Dr. Jorge Eduardo Zambrano Ibujés  
+> **Facultad de Ingeniería y Ciencias — Universidad Diego Portales (UDP)** &bull; *Seminario I · Jornadas de Investigación MCI 2026*
 
 [![Notebooks Verificados](https://img.shields.io/badge/Notebooks-7%2F7%20Ejecutados%20OK-0f766e)]()
 [![Auditoría](https://img.shields.io/badge/Auditor%C3%ADa-7%20Bugs%20Resueltos-be123c)]()
 [![Datos Locales](https://img.shields.io/badge/Datos%20Locales-31.4%20GB%20Auditados-1d4ed8)]()
 [![Presentación](https://img.shields.io/badge/Presentaci%C3%B3n-HTML5%20Interactiva-d97706)](informe/presentacion_reunion_20_noviembre.html)
+[![Póster A1 MCI 2026](https://img.shields.io/badge/P%C3%B3ster%20A1-Jornadas%20MCI%202026%20(PDF)-dc3239)](poster/Poster_Lucas_Vicuna_MCI_2026_A1.pdf)
+[![Referencias QR](https://img.shields.io/badge/QR%20M%C3%B3vil-16%20Referencias-334155)](referencias.html)
+
+---
+
+## Póster Científico Oficial — Jornadas de Investigación MCI 2026 (Tamaño A1)
+
+- **Afiche A1 listo para impresión (`59,4 × 84,1 cm`, vertical, 300 DPI):** [poster/Poster_Lucas_Vicuna_MCI_2026_A1.pdf](poster/Poster_Lucas_Vicuna_MCI_2026_A1.pdf)
+- **Página móvil de referencias y artículos consultados (destino del código QR):** [referencias.html](referencias.html) (`https://petucode.github.io/magister-histopatologia-mil/referencias.html`)
+- **Sesión Informática y Telecomunicaciones:** Jueves 3 de diciembre de 2026, 14:00 a 16:00 hrs — Sala de Descanso FIC, UDP.
+
+<p align="center">
+  <a href="poster/Poster_Lucas_Vicuna_MCI_2026_A1.pdf">
+    <img src="poster/Poster_Lucas_Vicuna_MCI_2026_preview.png" alt="Póster Científico A1 — Jornadas de Investigación MCI 2026" width="520"/>
+  </a>
+</p>
 
 ---
 

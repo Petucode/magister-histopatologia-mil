@@ -43,7 +43,7 @@ jobs:
                       if not (md.parent / href).resolve().exists():
                           errors.append(f"Enlace roto en {md}: {href}")
 
-          html_files = [ws / "index.html"] + sorted((ws / "informe").rglob("*.html"))
+          html_files = [ws / "index.html", ws / "referencias.html"] + sorted((ws / "informe").rglob("*.html"))
           for html in html_files:
               txt = html.read_text(encoding="utf-8")
               for m in re.finditer(r'(?:src|href)=["\']([^"\']+)["\']', txt):
