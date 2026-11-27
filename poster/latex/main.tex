@@ -19,46 +19,46 @@
 % Edite libremente los textos aqui y recompile en Overleaf (Ctrl + Enter).
 % ==============================================================================
 
-\newcommand{\PosterTitulo}{Capas tempranas CNN y Gated Attention buscan clasificar biopsias en un pase}
+\newcommand{\PosterTitulo}{Aprendizaje multi-instancia en una pasada para detectar c\'ancer en biopsias}
 \newcommand{\PosterEtapaMencion}{Seminario I $\cdot$ Inform\'atica y Telecomunicaciones}
 \newcommand{\PosterAutorGuia}{Lucas Vicu\~na Fuenzalida $\cdot$ Profesor gu\'ia: Dr. Jorge E. Zambrano Ibuj\'es}
 
 % --- ZONA 1: PROBLEMA Y ESTADO DEL ARTE ---
-\newcommand{\ZonaUnoMensaje}{La supervisi\'on d\'ebil y el recorte en p\'ixeles diluyen el tumor y saturan la memoria.}
+\newcommand{\ZonaUnoMensaje}{Una biopsia tiene millones de p\'ixeles, un solo diagn\'ostico y recortarla es muy costoso.}
 
 \newcommand{\IntroTexto}{%
-Una biopsia gigap\'ixel solo tiene etiqueta global por paciente ($Y \in \{0,1\}$). Promediar parches diluye micro-tumores y evaluar miles colapsa la VRAM.%
+En cl\'inica solo se anota el diagn\'ostico del paciente, no cada c\'elula. El enfoque multi-instancia (MIL) aprende as\'i, pero miles de recortes saturan la memoria.%
 }
 
 \newcommand{\EstadoArteTexto}{%
-En MIL por embebidos, \textit{Gated Attention} filtra ruido en costo lineal $\mathcal{O}(K)$. Aparte, truncar CNNs al 33\thinspace\% ahorra $\sim$60\thinspace\% de c\'omputo sin reentrenar.%
+La atenci\'on autom\'atica ubica zonas sospechosas e ignora tejido sano. Aparte, usar solo las primeras capas ahorra 60\thinspace\% de c\'alculo.%
 }
 
 \newcommand{\VacioNovedad}{%
-Nadie ha formado instancias MIL desde mapas CNN intermedios en un pase junto a Gated Attention sin recortar p\'ixeles.%
+Los modelos precisos recortan miles de parches; proponemos analizar la biopsia en una pasada enfocando el tumor con atenci\'on.%
 }
 
 \newcommand{\ObjetivoGeneral}{%
-clasificar biopsias H\&E uniendo sub-regiones de capas CNN intermedias ($\le 33$\thinspace\%) con Gated Attention MIL.%
+clasificar biopsias de c\'ancer uniendo extracci\'on r\'apida en una pasada con atenci\'on autom\'atica.%
 }
 
 \newcommand{\ObjetivosEspecificos}{%
-1) extraer tensores en un pase; 2) reducir canales y ponderar con $\tanh \odot \mathrm{sigm}$; 3) medir AUC, IoU y FLOPs.%
+1) extraer texturas iniciales sin recortar la imagen; 2) filtrar zonas clave con atenci\'on; 3) comparar precisi\'on, memoria y tiempo.%
 }
 
 % --- ZONA 2: METODO PROPUESTO Y AVANCE A LA FECHA ---
-\newcommand{\MetodoMensaje}{Un pase CNN truncado genera sub-regiones filtradas por Gated Attention.}
-\newcommand{\MetodoDetalle}{Redes congeladas frente a parches (Sudharshan). Evaluaci\'on por paciente: AUC, F1, IoU y FLOPs.}
+\newcommand{\MetodoMensaje}{Reemplazamos miles de recortes por una sola pasada guiada por atenci\'on.}
+\newcommand{\MetodoDetalle}{Comparamos nuestra propuesta liviana frente al m\'etodo por recortes, separando a cada paciente.}
 
-\newcommand{\AvanceMensaje}{Verificamos el filtrado del Gated Attention y estructuramos cinco cohortes.}
-\newcommand{\AvanceDetalle}{La compuerta $\mathrm{sigm}$ suprime falsos positivos y deja listas BreaKHis (81 IDs), PCam, CRC, MHIST y CAM16.}
+\newcommand{\AvanceMensaje}{Definimos el modelo propuesto y preparamos cinco bases m\'edicas reales.}
+\newcommand{\AvanceDetalle}{Revisamos 31,4 GB de biopsias sin mezclar muestras de un mismo paciente.}
 
 % --- ZONA 3: PLAN DE TRABAJO ---
-\newcommand{\PlanMensaje}{Al cerrar Seminario II tendremos el pipeline intermedio con Gated-MIL medido ante el baseline.}
+\newcommand{\PlanMensaje}{Al terminar Seminario II tendremos nuestro modelo entrenado y comparado en c\'ancer de mama.}
 
 % --- PIE: RETROALIMENTACION Y EVENTO ---
-\newcommand{\PreguntaUno}{?`Conviene reducir canales del mapa intermedio con proyecci\'on $1\times 1$ o filtro estad\'istico?}
-\newcommand{\PreguntaDos}{?`C\'omo incorporar contexto espacial entre sub-regiones manteniendo costo lineal $\mathcal{O}(K)$?}
+\newcommand{\PreguntaUno}{?`Conviene estandarizar el color de las biopsias antes de analizarlas con la red?}
+\newcommand{\PreguntaDos}{?`Qu\'e equilibrio entre precisi\'on m\'edica y ahorro de memoria resulta m\'as valioso demostrar?}
 \newcommand{\PieEvento}{Jornadas de Investigaci\'on del Mag\'ister en Ciencias de la Ingenier\'ia $\cdot$ diciembre de 2026}
 \newcommand{\PieFinanciamiento}{Programa Mag\'ister en Ciencias de la Ingenier\'ia $\cdot$ Facultad de Ingenier\'ia y Ciencias UDP}
 
@@ -75,7 +75,7 @@ clasificar biopsias H\&E uniendo sub-regiones de capas CNN intermedias ($\le 33$
 \definecolor{udpline}{HTML}{D8D5CE}
 \definecolor{udpfootgray}{HTML}{B8BEC6}
 
-\newcommand{\fsize}[2]{\fontsize{#1}{#2}\selectfont\spaceskip=0.32em\relax}
+\newcommand{\fsize}[2]{\fontsize{#1}{#2}\selectfont\spaceskip=0.32em\hyphenpenalty=10000\exhyphenpenalty=10000\relax}
 
 \begin{document}
 \noindent

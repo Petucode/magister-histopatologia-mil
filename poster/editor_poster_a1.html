@@ -210,7 +210,7 @@
         <img class="abs" src="latex/assets/logo_fic_blanco.png" alt="UDP FIC" style="left:454mm; top:22mm; width:110mm; height:auto;" />
 
         <!-- Título y Autor -->
-        <div id="f-titulo" contenteditable="true" class="abs" style="left:30mm; top:53.5mm; width:534mm; font-size:61pt; font-weight:700; color:#FFFFFF; line-height:1.12;">Capas tempranas CNN y Gated Attention buscan clasificar biopsias en un pase</div>
+        <div id="f-titulo" contenteditable="true" class="abs" style="left:30mm; top:53.5mm; width:534mm; font-size:61pt; font-weight:700; color:#FFFFFF; line-height:1.12;">Aprendizaje multi-instancia en una pasada para detectar cáncer en biopsias</div>
 
         <div class="abs" style="left:30mm; top:120mm; width:534mm; font-size:24pt; line-height:1.2;">
           <span id="f-etapa" contenteditable="true" style="font-weight:700; color:#FFFFFF;">Seminario I · Informática y Telecomunicaciones</span>
@@ -221,53 +221,53 @@
         <!-- ZONA 1: PROBLEMA Y ESTADO DEL ARTE -->
         <div class="abs" style="left:30mm; top:165mm; width:16mm; height:2.2mm; background:#DC3239;"></div>
         <div id="f-k1" contenteditable="true" class="abs" style="left:30mm; top:170mm; font-size:20pt; font-weight:700; color:#DC3239;">Problema y estado del arte</div>
-        <div id="f-z1msg" contenteditable="true" class="abs" style="left:30mm; top:180.5mm; width:534mm; font-size:31pt; font-weight:700; color:#20242A; line-height:1.18;">La supervisión débil y el recorte en píxeles diluyen el tumor y saturan la memoria.</div>
+        <div id="f-z1msg" contenteditable="true" class="abs" style="left:30mm; top:180.5mm; width:534mm; font-size:30.5pt; font-weight:700; color:#20242A; line-height:1.18;">Una biopsia tiene millones de píxeles, un solo diagnóstico y recortarla es muy costoso.</div>
 
         <div id="f-sub1" contenteditable="true" class="abs" style="left:30mm; top:206mm; width:261mm; font-size:26pt; font-weight:700; color:#20242A;">Introducción al problema</div>
         <img class="abs" src="latex/assets/fig1_problema.png" alt="Figura 1 Problema" style="left:30mm; top:219mm; width:261mm; height:115mm; object-fit:fill;" />
-        <div id="f-intro" contenteditable="true" class="abs" style="left:30mm; top:339mm; width:261mm; font-size:24pt; color:#20242A; line-height:1.26;">Una biopsia gigapíxel solo tiene etiqueta global por paciente (Y = 0 o 1). Promediar parches diluye micro-tumores y evaluar miles colapsa la VRAM.</div>
+        <div id="f-intro" contenteditable="true" class="abs" style="left:30mm; top:339mm; width:261mm; font-size:24pt; color:#20242A; line-height:1.25;">En clínica solo se anota el diagnóstico del paciente, no cada célula. El enfoque multi-instancia (MIL) aprende así, pero miles de recortes saturan la memoria.</div>
 
         <div id="f-sub2" contenteditable="true" class="abs" style="left:303mm; top:206mm; width:261mm; font-size:26pt; font-weight:700; color:#20242A;">Estado del arte</div>
         <img class="abs" src="latex/assets/fig2_estado_arte.png" alt="Figura 2 Estado del Arte" style="left:303mm; top:219mm; width:261mm; height:115mm; object-fit:fill;" />
-        <div id="f-sota" contenteditable="true" class="abs" style="left:303mm; top:339mm; width:261mm; font-size:24pt; color:#20242A; line-height:1.26;">En MIL por embebidos, Gated Attention filtra ruido en costo lineal O(K). Aparte, truncar CNNs al 33 % ahorra ~60 % de cómputo sin reentrenar.</div>
+        <div id="f-sota" contenteditable="true" class="abs" style="left:303mm; top:339mm; width:261mm; font-size:24pt; color:#20242A; line-height:1.25;">La atención automática ubica zonas sospechosas e ignora tejido sano. Aparte, usar solo las primeras capas ahorra 60 % de cálculo.</div>
 
         <!-- Vacío y novedad + Objetivos -->
         <div class="abs" style="left:30mm; top:386mm; width:3mm; height:55mm; background:#DC3239;"></div>
         <div id="f-sub3" contenteditable="true" class="abs" style="left:40mm; top:385mm; width:251mm; font-size:26pt; font-weight:700; color:#20242A;">Vacío y novedad</div>
-        <div id="f-vacio" contenteditable="true" class="abs" style="left:40mm; top:398mm; width:251mm; font-size:30.5pt; font-weight:700; color:#DC3239; line-height:1.2;">Nadie ha formado instancias MIL desde mapas CNN intermedios en un pase junto a Gated Attention sin recortar píxeles.</div>
+        <div id="f-vacio" contenteditable="true" class="abs" style="left:40mm; top:398mm; width:251mm; font-size:30pt; font-weight:700; color:#DC3239; line-height:1.2;">Los modelos precisos recortan miles de parches; proponemos analizar la biopsia en una pasada enfocando el tumor con atención.</div>
 
         <div id="f-sub4" contenteditable="true" class="abs" style="left:303mm; top:385mm; width:261mm; font-size:26pt; font-weight:700; color:#20242A;">Objetivos</div>
-        <div class="abs" style="left:303mm; top:398mm; width:261mm; font-size:24pt; color:#20242A; line-height:1.26;">
-          <div><strong>General: </strong><span id="f-objg" contenteditable="true">clasificar biopsias H&amp;E uniendo sub-regiones de capas CNN intermedias (&le;33 %) con Gated Attention MIL.</span></div>
-          <div style="margin-top:2.5mm;"><strong>Específicos: </strong><span id="f-obje" contenteditable="true">1) extraer tensores en un pase; 2) reducir canales y ponderar con tanh&times;sigm; 3) medir AUC, IoU y FLOPs.</span></div>
+        <div class="abs" style="left:303mm; top:398mm; width:261mm; font-size:24pt; color:#20242A; line-height:1.25;">
+          <div><strong>General: </strong><span id="f-objg" contenteditable="true">clasificar biopsias de cáncer uniendo extracción rápida en una pasada con atención automática.</span></div>
+          <div style="margin-top:2.5mm;"><strong>Específicos: </strong><span id="f-obje" contenteditable="true">1) extraer texturas iniciales sin recortar la imagen; 2) filtrar zonas clave con atención; 3) comparar precisión, memoria y tiempo.</span></div>
         </div>
 
         <!-- ZONA 2: MÉTODO Y AVANCE -->
         <div class="abs" style="left:30mm; top:475mm; width:16mm; height:2.2mm; background:#DC3239;"></div>
         <div id="f-k2" contenteditable="true" class="abs" style="left:30mm; top:480mm; font-size:20pt; font-weight:700; color:#DC3239;">Diseño metodológico propuesto</div>
-        <div id="f-metmsg" contenteditable="true" class="abs" style="left:30mm; top:490.5mm; width:261mm; font-size:27.5pt; font-weight:700; color:#20242A; line-height:1.2;">Un pase CNN truncado genera sub-regiones filtradas por Gated Attention.</div>
+        <div id="f-metmsg" contenteditable="true" class="abs" style="left:30mm; top:490.5mm; width:261mm; font-size:27.5pt; font-weight:700; color:#20242A; line-height:1.2;">Reemplazamos miles de recortes por una sola pasada guiada por atención.</div>
         <img class="abs" src="latex/assets/fig3_metodo.png" alt="Figura 3 Método" style="left:30mm; top:520mm; width:261mm; height:82mm; object-fit:fill;" />
-        <div id="f-metdet" contenteditable="true" class="abs" style="left:30mm; top:606mm; width:261mm; font-size:24pt; color:#20242A; line-height:1.25;">Redes congeladas frente a parches (Sudharshan). Evaluación por paciente: AUC, F1, IoU y FLOPs.</div>
+        <div id="f-metdet" contenteditable="true" class="abs" style="left:30mm; top:606mm; width:261mm; font-size:24pt; color:#20242A; line-height:1.25;">Comparamos nuestra propuesta liviana frente al método por recortes, separando a cada paciente.</div>
 
         <div class="abs" style="left:303mm; top:475mm; width:16mm; height:2.2mm; background:#DC3239;"></div>
         <div id="f-k3" contenteditable="true" class="abs" style="left:303mm; top:480mm; font-size:20pt; font-weight:700; color:#DC3239;">Avance a la fecha</div>
-        <div id="f-avmsg" contenteditable="true" class="abs" style="left:303mm; top:490.5mm; width:261mm; font-size:27.5pt; font-weight:700; color:#20242A; line-height:1.2;">Verificamos el filtrado del Gated Attention y estructuramos cinco cohortes.</div>
+        <div id="f-avmsg" contenteditable="true" class="abs" style="left:303mm; top:490.5mm; width:261mm; font-size:27.5pt; font-weight:700; color:#20242A; line-height:1.2;">Definimos el modelo propuesto y preparamos cinco bases médicas reales.</div>
         <img class="abs" src="latex/assets/fig4_avance.png" alt="Figura 4 Avance" style="left:303mm; top:520mm; width:261mm; height:82mm; object-fit:fill;" />
-        <div id="f-avdet" contenteditable="true" class="abs" style="left:303mm; top:606mm; width:261mm; font-size:24pt; color:#20242A; line-height:1.25;">La compuerta sigm suprime falsos positivos y deja listas BreaKHis (81 IDs), PCam, CRC, MHIST y CAM16.</div>
+        <div id="f-avdet" contenteditable="true" class="abs" style="left:303mm; top:606mm; width:261mm; font-size:24pt; color:#20242A; line-height:1.25;">Revisamos 31,4 GB de biopsias sin mezclar muestras de un mismo paciente.</div>
 
         <div class="abs" style="left:30mm; top:634mm; width:534mm; height:0.4mm; background:#D8D5CE;"></div>
 
         <!-- ZONA 3: PLAN -->
         <div class="abs" style="left:30mm; top:646mm; width:16mm; height:2.2mm; background:#DC3239;"></div>
         <div id="f-k4" contenteditable="true" class="abs" style="left:30mm; top:651mm; font-size:20pt; font-weight:700; color:#DC3239;">Plan</div>
-        <div id="f-planmsg" contenteditable="true" class="abs" style="left:30mm; top:661.5mm; width:534mm; font-size:30pt; font-weight:700; color:#20242A; line-height:1.18;">Al cerrar Seminario II tendremos el pipeline intermedio con Gated-MIL medido ante el baseline.</div>
+        <div id="f-planmsg" contenteditable="true" class="abs" style="left:30mm; top:661.5mm; width:534mm; font-size:30pt; font-weight:700; color:#20242A; line-height:1.18;">Al terminar Seminario II tendremos nuestro modelo entrenado y comparado en cáncer de mama.</div>
         <img class="abs" src="latex/assets/fig5_plan.png" alt="Figura 5 Plan" style="left:30mm; top:682mm; width:534mm; height:54mm; object-fit:fill;" />
 
         <!-- PIE OSCURO: PREGUNTAS Y QR -->
         <div id="f-fbk" contenteditable="true" class="abs" style="left:30mm; top:757mm; width:420mm; font-size:24pt; font-weight:700; color:#F4858A;">Busco retroalimentación sobre</div>
         <div class="abs" style="left:30mm; top:769.5mm; width:422mm; font-size:24pt; color:#FFFFFF; line-height:1.32;">
-          <div>1.&nbsp; <span id="f-q1" contenteditable="true">¿Conviene reducir canales del mapa intermedio con proyección 1&times;1 o filtro estadístico?</span></div>
-          <div>2.&nbsp; <span id="f-q2" contenteditable="true">¿Cómo incorporar contexto espacial entre sub-regiones manteniendo costo lineal O(K)?</span></div>
+          <div>1.&nbsp; <span id="f-q1" contenteditable="true">¿Conviene estandarizar el color de las biopsias antes de analizarlas con la red?</span></div>
+          <div>2.&nbsp; <span id="f-q2" contenteditable="true">¿Qué equilibrio entre precisión médica y ahorro de memoria resulta más valioso demostrar?</span></div>
         </div>
 
         <div id="f-qrlbl" contenteditable="true" class="abs" style="left:456mm; top:764mm; width:59mm; font-size:16pt; color:#B8BEC6; text-align:right; line-height:1.22;">Referencias<br />y artículos<br />consultados</div>
