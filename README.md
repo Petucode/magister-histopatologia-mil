@@ -9,22 +9,39 @@
 [![Datos Locales](https://img.shields.io/badge/Datos%20Locales-31.4%20GB%20Auditados-1d4ed8)]()
 [![Presentación](https://img.shields.io/badge/Presentaci%C3%B3n-HTML5%20Interactiva-d97706)](informe/presentacion_reunion_20_noviembre.html)
 [![Póster A1 MCI 2026](https://img.shields.io/badge/P%C3%B3ster%20A1-Jornadas%20MCI%202026%20(PDF)-dc3239)](poster/Poster_Lucas_Vicuna_MCI_2026_A1.pdf)
-[![Referencias QR](https://img.shields.io/badge/QR%20M%C3%B3vil-16%20Referencias-334155)](referencias.html)
+[![Overleaf En Vivo](https://img.shields.io/badge/Overleaf-Editar%20LaTeX%20en%20Vivo-15803d)](https://www.overleaf.com/project/6b08de871072c7dd22c0983e/share#72b7973197d1e1c6aeaa9a4c2b32d2e2dd235212ea7e6247)
+[![Editor Web A1](https://img.shields.io/badge/Editor%20Web-P%C3%B3ster%20A1%20Interactivo-0f766e)](poster/editor_poster_a1.html)
+[![Referencias QR](https://img.shields.io/badge/QR%20M%C3%B3vil-18%20Referencias-334155)](referencias.html)
 
 ---
 
 ## Póster Científico Oficial — Jornadas de Investigación MCI 2026 (Tamaño A1)
 
-- **Afiche A1 listo para impresión (`59,4 × 84,1 cm`, vertical, 300 DPI):** [poster/Poster_Lucas_Vicuna_MCI_2026_A1.pdf](poster/Poster_Lucas_Vicuna_MCI_2026_A1.pdf)
-- **Editor Interactivo Web A1 en Vivo (edición directa para Profesor Guía + contador de 300 palabras):** [poster/editor_poster_a1.html](poster/editor_poster_a1.html) (`https://petucode.github.io/magister-histopatologia-mil/poster/editor_poster_a1.html`)
-- **Edición colaborativa en Overleaf / LaTeX (proyecto compartido en vivo):** [Abrir proyecto compartido en Overleaf](https://www.overleaf.com/project/6b08de871072c7dd22c0983e/share#72b7973197d1e1c6aeaa9a4c2b32d2e2dd235212ea7e6247) &bull; [Importar copia desde ZIP](https://www.overleaf.com/docs?snip_uri=https://petucode.github.io/magister-histopatologia-mil/poster/latex/Poster_MCI_2026_Overleaf.zip) &bull; Código fuente: [poster/latex/main.tex](poster/latex/main.tex)
+> **Título del afiche:** *«Aprendizaje multi-instancia en una pasada para detectar cáncer en biopsias»*  
+> **Formato oficial UDP:** A1 vertical (`59,4 × 84,1 cm`, 300 DPI, `286 / 300 palabras`, tipografía `Arial` y paleta institucional `#DC3239`)  
+> **Sesión Informática y Telecomunicaciones:** Jueves 3 de diciembre de 2026, 14:00 a 16:00 hrs — Sala de Descanso FIC, UDP.
+
+### Enlaces Directos de Descarga y Edición Colaborativa
+
+- **Afiche A1 listo para imprenta (PDF):** [poster/Poster_Lucas_Vicuna_MCI_2026_A1.pdf](poster/Poster_Lucas_Vicuna_MCI_2026_A1.pdf) (`https://petucode.github.io/magister-histopatologia-mil/poster/Poster_Lucas_Vicuna_MCI_2026_A1.pdf`)
+- **Edición colaborativa en Overleaf / LaTeX (proyecto compartido en vivo para Profesor Guía):** [Abrir proyecto compartido en Overleaf](https://www.overleaf.com/project/6b08de871072c7dd22c0983e/share#72b7973197d1e1c6aeaa9a4c2b32d2e2dd235212ea7e6247) &bull; [Importar copia desde ZIP](https://www.overleaf.com/docs?snip_uri=https://petucode.github.io/magister-histopatologia-mil/poster/latex/Poster_MCI_2026_Overleaf.zip) &bull; Código fuente: [poster/latex/main.tex](poster/latex/main.tex)
+- **Editor Interactivo Web A1 en Vivo (edición sobre el navegador + contador de 300 palabras):** [poster/editor_poster_a1.html](poster/editor_poster_a1.html) (`https://petucode.github.io/magister-histopatologia-mil/poster/editor_poster_a1.html`)
 - **Editable PowerPoint oficial UDP (`.pptx`):** [poster/Poster_Lucas_Vicuna_MCI_2026.pptx](poster/Poster_Lucas_Vicuna_MCI_2026.pptx)
-- **Página móvil de referencias y artículos consultados (destino del código QR):** [referencias.html](referencias.html) (`https://petucode.github.io/magister-histopatologia-mil/referencias.html`)
-- **Sesión Informática y Telecomunicaciones:** Jueves 3 de diciembre de 2026, 14:00 a 16:00 hrs — Sala de Descanso FIC, UDP.
+- **Página móvil de referencias y artículos consultados (18 papers — destino del código QR):** [referencias.html](referencias.html) (`https://petucode.github.io/magister-histopatologia-mil/referencias.html`)
+
+### Estructura Narrativa del Póster (Lenguaje Claro y Rigor Metodológico)
+
+| Zona del Póster A1 | Mensaje Central Explicado de Forma Clara | Figura a 300 DPI |
+| :--- | :--- | :--- |
+| **1. Problema y MIL** | En clínica solo se anota el diagnóstico global del paciente, no cada célula; el enfoque **multi-instancia (MIL)** aprende así, pero cortar miles de parches satura los `24 GB` de memoria y promediar esconde focos pequeños. | [fig1_problema.png](poster/latex/assets/fig1_problema.png) |
+| **2. Estado del Arte y Vacío** | Compara ahorro de tiempo vs. capacidad de ubicar el tumor (`Promedio simple`, `Sudharshan 2019`, `Zambrano 2022`, `Ilse · Atención 2018`), destacando el vacío: **analizar la biopsia en una sola pasada enfocando el tumor con atención**. | [fig2_estado_arte.png](poster/latex/assets/fig2_estado_arte.png) |
+| **3. Propuesta en 4 Pasos** | Flujo directo: **`1. Biopsia entera`** &rarr; **`2. Red corta en 1 pasada`** (capta texturas iniciales) &rarr; **`3. Doble filtro de atención`** (ignora lo sano) &rarr; **`4. Diagnóstico + mapa del tumor`**, separando estrictamente a cada paciente. | [fig3_metodo.png](poster/latex/assets/fig3_metodo.png) |
+| **4. Avance (5 Bases Médicas)** | Gráfico comparativo de las **5 bases histopatológicas estudiadas** (`CAM16` 3,2 M zonas, `NCT-CRC` 107.180, `PCam` 32.768, `BreaKHis` 7.909 base inicial en mama y `MHIST` 3.152), con **`81 pacientes únicos sin mezclar datos`** (`31,4 GB`). | [fig4_avance.png](poster/latex/assets/fig4_avance.png) |
+| **5. Plan (Seminario I → Tesis)** | Hoja de ruta clara sin siglas crípticas: `Problema, método y datos (Nov 26)` &rarr; `Modelo de una pasada (Mar 27)` &rarr; `Filtro de atención propio (May 27)` &rarr; `Primeras pruebas en mama (Jul 27)` &rarr; `Validación en otras bases (Sep 27)` &rarr; `Defensa (Nov 27)`. | [fig5_plan.png](poster/latex/assets/fig5_plan.png) |
 
 <p align="center">
   <a href="poster/Poster_Lucas_Vicuna_MCI_2026_A1.pdf">
-    <img src="poster/Poster_Lucas_Vicuna_MCI_2026_preview.png" alt="Póster Científico A1 — Jornadas de Investigación MCI 2026" width="520"/>
+    <img src="poster/Poster_Lucas_Vicuna_MCI_2026_preview.png" alt="Póster Científico A1 — Aprendizaje multi-instancia en una pasada para detectar cáncer en biopsias" width="540"/>
   </a>
 </p>
 
@@ -171,13 +188,28 @@ La auditoría de los 4 cursos locales en `Materia Util/` (`5.16 GB`, excluidos d
 ## Estructura del Repositorio
 
 ```text
-├── README.md                          # Portada técnica con diagramas Mermaid y galería visual
-├── index.html                         # Redirección GitHub Pages a la presentación interactiva
-├── .gitignore                         # Excluye data_samples/ (27.4 GB), Materia Util/ (5.16 GB), tokens y binarios
-├── docs/
-│   └── ANALISIS_PROFUNDO.md           # Análisis técnico archivo por archivo y mapeo de cursos
+├── README.md                                  # Portada general, resumen del Póster A1, diagramas Mermaid y galería
+├── index.html                                 # Hub web principal en GitHub Pages (Póster A1 + Presentaciones)
+├── referencias.html                           # Página móvil de 18 referencias abierta por el código QR del póster
+├── .gitignore                                 # Resguarda datasets crudos (~27.4 GB), cursos externos y credenciales
+├── .github/workflows/validate-repo.yml        # CI automático: verifica notebooks, enlaces HTML/MD y cero fugas
+├── poster/
+│   ├── Poster_Lucas_Vicuna_MCI_2026_A1.pdf    # Afiche oficial A1 listo para imprenta (59,4 x 84,1 cm, 300 DPI)
+│   ├── Poster_Lucas_Vicuna_MCI_2026.pptx      # Plantilla oficial UDP editable de 1 lámina (Seminario I)
+│   ├── Poster_Lucas_Vicuna_MCI_2026_preview.png # Vista previa renderizada del póster completo
+│   ├── editor_poster_a1.html                  # Editor interactivo web A1 en vivo con contador de 300 palabras
+│   └── latex/
+│       ├── main.tex                           # Código fuente LaTeX A1 modular (sincronizado con Overleaf)
+│       ├── Poster_MCI_2026_Overleaf.zip       # Paquete autocontenido para importar en Overleaf en 1 clic
+│       └── assets/                            # Las 5 figuras científicas a 300 DPI, código QR y logos UDP
 ├── informe/
-│   └── presentacion_reunion_20_noviembre.html  # Presentación HTML5 (17 slides + simuladores + guion)
+│   ├── presentacion_reunion_20_noviembre.html # Presentación central HTML5 (19 slides + simuladores + guion)
+│   ├── datasets/                              # 5 presentaciones HTML dedicadas ("peras y manzanas") por dataset
+│   │   ├── 01_breakhis.html .. 05_camelyon16.html
+│   └── guias/                                 # 5 informes guía de exposición conectados con la literatura
+│       ├── 01_informe_breakhis.md .. 05_informe_camelyon16.md
+├── docs/
+│   └── ANALISIS_PROFUNDO.md                   # Análisis técnico archivo por archivo y mapeo de cursos
 ├── notebooks/
 │   ├── 00_Resumen_Datasets_Histopatologia.ipynb
 │   ├── 01_BreaKHis_EDA.ipynb
@@ -188,14 +220,14 @@ La auditoría de los 4 cursos locales en `Materia Util/` (`5.16 GB`, excluidos d
 │   └── 06_Comparativa_Final.ipynb
 ├── scripts/
 │   ├── 00_install_dependencies.py
-│   ├── analizar_camelyon16_coords.py  # Corregido: coords[:, 1:3] y 3 cohortes reales
+│   ├── analizar_camelyon16_coords.py          # Corregido: coords[:, 1:3] y 3 cohortes reales
 │   ├── analyze_and_generate.py
-│   ├── build_notebook.py              # Sincronizado con 03_NCT_CRC_EDA.ipynb
+│   ├── build_notebook.py                      # Sincronizado con 03_NCT_CRC_EDA.ipynb
 │   ├── check_camelyon_sources.py
 │   ├── download_train.py
 │   └── download_val.py
-├── figures/                           # Gráficos y muestras organizados por notebook (00_Resumen .. 06_Comparativa)
-└── tablas/                            # 36 libros Excel (.xlsx) generados determinísticamente por los notebooks
+├── figures/                                   # 82 gráficos y paneles organizados por notebook (00..06)
+└── tablas/                                    # 36 libros Excel (.xlsx) generados por los notebooks
 ```
 
 ## Reproducción Local
